@@ -28,7 +28,7 @@ public class OCTAnalysisApplication {
         System.out.println("Read in tiff image!");
         JFrame frame = new JFrame();
         frame.getContentPane().setLayout(new FlowLayout());
-        frame.getContentPane().add(new JLabel(new ImageIcon(bi)));
+        frame.getContentPane().add(new OCTImagePanel(bi));
         frame.pack();
         frame.setVisible(true);
     }
