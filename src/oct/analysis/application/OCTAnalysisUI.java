@@ -5,6 +5,7 @@
  */
 package oct.analysis.application;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -43,6 +44,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         openFileChooser = new javax.swing.JFileChooser();
         imageDispLabel = new javax.swing.JLabel();
+        lrpJScrollPane = new javax.swing.JScrollPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
@@ -60,6 +62,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
+            }
+        });
+
+        imageDispLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                imageDispLabelMouseClicked(evt);
             }
         });
 
@@ -93,12 +101,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(imageDispLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 925, Short.MAX_VALUE)
+            .addComponent(lrpJScrollPane)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(imageDispLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 385, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 195, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lrpJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
         );
 
         pack();
@@ -116,7 +126,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 System.out.println("Read in tiff image!");
                 //display the selected image in the display
                 imageDispLabel.setIcon(new ImageIcon(tiffBI));
-                imageDispLabel.repaint();
+                pack();
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Image loading failed for " + tiffFile.getAbsolutePath()
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
@@ -138,6 +148,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         // TODO add your handling code here:
     }//GEN-LAST:event_formWindowClosed
+
+    private void imageDispLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imageDispLabelMouseClicked
+        Graphics2D g = (Graphics2D)imageDispLabel.getGraphics();
+        g.setColor(Color.green);
+        g.drawRect(evt.getX(), 0, 5 , imageDispLabel.getHeight());
+        imageDispLabel.repaint();
+    }//GEN-LAST:event_imageDispLabelMouseClicked
 
     /**
      * @param args the command line arguments
@@ -181,6 +198,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JScrollPane lrpJScrollPane;
     private javax.swing.JFileChooser openFileChooser;
     // End of variables declaration//GEN-END:variables
 }
