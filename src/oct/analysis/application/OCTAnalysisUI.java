@@ -6,11 +6,12 @@
 package oct.analysis.application;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
@@ -24,7 +25,7 @@ import oct.io.TiffReader;
  */
 public class OCTAnalysisUI extends javax.swing.JFrame {
 
-    private BufferedImage tiffBI;
+    private boolean selectFoveaMode = false;
 
     /**
      * Creates new form OCTAnalysisUI
@@ -43,13 +44,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void initComponents() {
 
         openFileChooser = new javax.swing.JFileChooser();
-        imageDispLabel = new javax.swing.JLabel();
         lrpJScrollPane = new javax.swing.JScrollPane();
+        octImagePanel = new oct.analysis.application.OCTImagePanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         openFileChooser.setDialogTitle("Select OCT...");
         openFileChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -59,17 +61,29 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setLocationByPlatform(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
                 formWindowClosed(evt);
             }
         });
 
-        imageDispLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+        octImagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                imageDispLabelMouseClicked(evt);
+                octImagePanelMouseClicked(evt);
             }
         });
+
+        javax.swing.GroupLayout octImagePanelLayout = new javax.swing.GroupLayout(octImagePanel);
+        octImagePanel.setLayout(octImagePanelLayout);
+        octImagePanelLayout.setHorizontalGroup(
+            octImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        octImagePanelLayout.setVerticalGroup(
+            octImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 277, Short.MAX_VALUE)
+        );
 
         jMenu1.setText("File");
 
@@ -92,6 +106,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jMenuBar1.add(jMenu1);
 
         jMenu2.setText("Analysis");
+
+        foveaSelectMenuItem.setText("Select Fovea");
+        foveaSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                foveaSelectMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(foveaSelectMenuItem);
+
         jMenuBar1.add(jMenu2);
 
         setJMenuBar(jMenuBar1);
@@ -100,15 +123,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(imageDispLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 925, Short.MAX_VALUE)
-            .addComponent(lrpJScrollPane)
+            .addComponent(lrpJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 686, Short.MAX_VALUE)
+            .addComponent(octImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(imageDispLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 385, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(octImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lrpJScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 188, Short.MAX_VALUE))
+                .addComponent(lrpJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 170, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -122,12 +145,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             File tiffFile = openFileChooser.getSelectedFile();
             try {
                 //read in image and keep track of the image for later use
-                tiffBI = TiffReader.readTiffImage(tiffFile);
+                BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
                 System.out.println("Read in tiff image!");
                 //display the selected image in the display
-                imageDispLabel.setIcon(new ImageIcon(tiffBI));
+                octImagePanel.setOct(tiffBI);
+                octImagePanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
+                octImagePanel.repaint();
+                validate();
                 pack();
-            } catch (Exception ex) {
+            } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Image loading failed for " + tiffFile.getAbsolutePath()
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
                 );
@@ -149,12 +175,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_formWindowClosed
 
-    private void imageDispLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_imageDispLabelMouseClicked
-        Graphics2D g = (Graphics2D)imageDispLabel.getGraphics();
-        g.setColor(Color.green);
-        g.drawRect(evt.getX(), 0, 5 , imageDispLabel.getHeight());
-        imageDispLabel.repaint();
-    }//GEN-LAST:event_imageDispLabelMouseClicked
+    private void foveaSelectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foveaSelectMenuItemActionPerformed
+        //toggle if we are in fovea selection mode
+        selectFoveaMode = !selectFoveaMode;
+    }//GEN-LAST:event_foveaSelectMenuItemActionPerformed
+
+    private void octImagePanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_octImagePanelMouseClicked
+        if (selectFoveaMode && evt.getButton() == MouseEvent.BUTTON1) {
+            octImagePanel.addLrpSelection(evt.getX() - 3, 0, 5, octImagePanel.getHeight());
+        }
+    }//GEN-LAST:event_octImagePanelMouseClicked
 
     /**
      * @param args the command line arguments
@@ -194,11 +224,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Exit;
     private javax.swing.JMenuItem fileOpenMenuItem;
-    private javax.swing.JLabel imageDispLabel;
+    private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JScrollPane lrpJScrollPane;
+    private oct.analysis.application.OCTImagePanel octImagePanel;
     private javax.swing.JFileChooser openFileChooser;
     // End of variables declaration//GEN-END:variables
 }

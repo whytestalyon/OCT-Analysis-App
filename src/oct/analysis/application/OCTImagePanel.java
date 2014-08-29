@@ -19,7 +19,7 @@ import javax.swing.JPanel;
  */
 public class OCTImagePanel extends JPanel {
 
-    private final BufferedImage oct;
+    private BufferedImage oct = null;
 
     public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -44,21 +44,32 @@ public class OCTImagePanel extends JPanel {
         this.oct = oct;
     }
 
+    public OCTImagePanel() {
+    }
+
+    public void setOct(BufferedImage oct) {
+        this.oct = oct;
+    }
+
     @Override
     public Dimension getPreferredSize() {
-        /*
-         Dimensions method overriden so we can have the JFrame automatically resize
-         to the image once this JPanel is added to the JFrame. This makes it easy
-         to account for differences in the size of OCT images for display in the UI. 
-         */
-        return new Dimension(oct.getWidth(), oct.getHeight());
+        if (oct == null) {
+            return super.getPreferredSize(); //To change body of generated methods, choose Tools | Templates.
+        } else {
+            return new Dimension(oct.getWidth(), oct.getHeight());
+        }
     }
 
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
         //draw OCT to the JPanel
-        grphcs.drawImage(oct, 0, 0, this);              
+        grphcs.drawImage(oct, 0, 0, null);
     }
 
+    public void addLrpSelection(int x, int y, int width, int height) {
+        Graphics g = this.getGraphics();
+        g.setColor(Color.green);
+        g.drawRect(x, y, width, height);
+    }
 }
