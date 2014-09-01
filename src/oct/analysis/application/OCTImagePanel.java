@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 public class OCTImagePanel extends JPanel {
 
     private BufferedImage oct = null;
+    private OCTSelection octSelection;
+    private final int OFFSET = 1;
 
     public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -67,9 +69,12 @@ public class OCTImagePanel extends JPanel {
         grphcs.drawImage(oct, 0, 0, null);
     }
 
-    public void addLrpSelection(int x, int y, int width, int height) {
-        Graphics g = this.getGraphics();
-        g.setColor(Color.green);
-        g.drawRect(x, y, width, height);
+    public void addOCTSelection(OCTSelection o) {
+        o.drawSelection(this.getGraphics());
+        octSelection = o;
+    }
+
+    public void removeOCTSelection() {
+        repaint(octSelection.getX_position(), octSelection.getY_position(), octSelection.getWidth()+OFFSET, octSelection.getHeight());
     }
 }
