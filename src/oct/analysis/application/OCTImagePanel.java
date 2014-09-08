@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.image.BufferedImage;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 
@@ -22,6 +23,7 @@ public class OCTImagePanel extends JPanel {
     private BufferedImage oct = null;
     private OCTSelection octSelection;
     private final int OFFSET = 1;
+    private List<OCTSelection> selectionList;
 
     public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -69,12 +71,16 @@ public class OCTImagePanel extends JPanel {
         grphcs.drawImage(oct, 0, 0, null);
     }
 
-    public void addOCTSelection(OCTSelection o) {
-        o.drawSelection(this.getGraphics());
-        octSelection = o;
+    public void addOCTSelections(List<OCTSelection> selectionList) {
+        this.selectionList = selectionList;
+        selectionList.stream().forEach((o) -> {
+            o.drawSelection(this.getGraphics());
+        });
     }
 
     public void removeOCTSelection() {
-        repaint(octSelection.getX_position(), octSelection.getY_position(), octSelection.getWidth()+OFFSET, octSelection.getHeight());
+        selectionList.stream().forEach((o) -> {
+            repaint(o.getX_position(), o.getY_position(), o.getWidth() + OFFSET, o.getHeight());
+        });
     }
 }
