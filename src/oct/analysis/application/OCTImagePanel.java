@@ -22,7 +22,7 @@ public class OCTImagePanel extends JPanel {
 
     private BufferedImage oct = null;
     private final int OFFSET = 1;
-    private List<OCTSelection> selectionList;
+    private List<OCTSelection> selectionList = null;
 
     public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -66,8 +66,15 @@ public class OCTImagePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
+        //TODO center the image within the panel, make sure the selection draw method takes this into account
         //draw OCT to the JPanel
         grphcs.drawImage(oct, 0, 0, null);
+        //draw the selections to the panel if available
+        if (selectionList != null) {
+            selectionList.stream().forEach((o) -> {
+                o.drawSelection(grphcs);
+            });
+        }
     }
 
     public void addOCTSelections(List<OCTSelection> selectionList) {
@@ -78,9 +85,8 @@ public class OCTImagePanel extends JPanel {
     }
 
     public void removeOCTSelection() {
-        selectionList.stream().forEach((o) -> {
-            repaint(o.getX_position(), o.getY_position(), o.getWidth() + OFFSET, o.getHeight());
-        });
+        selectionList = null;
+        this.repaint();
     }
 
     public BufferedImage getOct() {

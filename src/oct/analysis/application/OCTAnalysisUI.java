@@ -23,6 +23,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import oct.analysis.application.calc.LRPUtil;
 import oct.analysis.application.calc.SelectionUtil;
 import oct.analysis.application.dat.OCTMetrics;
 import oct.io.TiffReader;
@@ -321,34 +322,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         System.out.println("Generating LRPs...");
         //get the lrps for each selection
         List<XYSeriesCollection> lrps = SelectionUtil.getLRPsFromSelections(octImagePanel.getSelectionList(), octImagePanel.getOct());
-        lrps.stream().forEach((lrpSeries) -> {
-            JPanel lrp = createLRPPanel(lrpSeries);
-            System.out.println("Adding lrp: " + ((ChartPanel) lrp).getChart().getTitle().getText());
-            SwingUtilities.invokeLater(() -> {
-                JFrame popup = new JFrame(((ChartPanel) lrp).getChart().getTitle().getText());
-                popup.add(lrp, BorderLayout.CENTER);
-                popup.setSize(400, 400);
-                popup.setLocationRelativeTo(this);
-                popup.setVisible(true);
-                System.out.println("Popping up " + popup.getTitle() + " window!");
-            });
-        });
+        //diplay the LRPs
+        LRPUtil.displayLRPs(lrps, this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
-
-    /**
-     * Creates a panel for the demo (used by SuperDemo.java).
-     *
-     * @param lrp
-     * @return A panel.
-     */
-    public static JPanel createLRPPanel(XYSeriesCollection lrp) {
-        JFreeChart chart = ChartFactory.createScatterPlot("LRP", "Avg. Pixel Intensity", "Pixel Height", lrp);
-        ChartPanel panel = new ChartPanel(chart);
-        panel.setPreferredSize(new Dimension(200, 200));
-        panel.setFillZoomRectangle(true);
-        panel.setMouseWheelEnabled(true);
-        return panel;
-    }
 
     private OCTMetrics promptForOCTMetrics() {
         //ask for the desired distance between selections

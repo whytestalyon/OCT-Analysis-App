@@ -30,7 +30,7 @@ public class OCTSelection {
 
     public void drawSelection(Graphics g) {
         g.setColor(Color.green);
-        g.drawRect(x_position, y_position, width, height);
+        g.drawRect(x_position, y_position, width, height-1);
     }
 
     public int getX_position() {
