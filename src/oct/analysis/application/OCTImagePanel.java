@@ -21,7 +21,6 @@ import javax.swing.JPanel;
 public class OCTImagePanel extends JPanel {
 
     private BufferedImage oct = null;
-    private OCTSelection octSelection;
     private final int OFFSET = 1;
     private List<OCTSelection> selectionList;
 
@@ -82,5 +81,13 @@ public class OCTImagePanel extends JPanel {
         selectionList.stream().forEach((o) -> {
             repaint(o.getX_position(), o.getY_position(), o.getWidth() + OFFSET, o.getHeight());
         });
+    }
+
+    public BufferedImage getOct() {
+        return oct;
+    }
+
+    public List<OCTSelection> getSelectionList() {
+        return selectionList;
     }
 }

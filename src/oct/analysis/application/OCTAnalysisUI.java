@@ -5,6 +5,7 @@
  */
 package oct.analysis.application;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -16,12 +17,20 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import oct.analysis.application.calc.SelectionUtil;
 import oct.analysis.application.dat.OCTMetrics;
 import oct.io.TiffReader;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.StandardChartTheme;
+import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -33,6 +42,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private double micronsBetweenSelections;
     private int selectionWidth;
     private OCTMetrics scale;
+
+    static {
+        // set a chart theme using the new shadow generator feature available in
+        // 1.0.14 - for backwards compatibility it is not enabled by default
+        ChartFactory.setChartTheme(new StandardChartTheme("JFree/Shadow",
+                true));
+    }
 
     /**
      * Creates new form OCTAnalysisUI
@@ -53,7 +69,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void initComponents() {
 
         openFileChooser = new javax.swing.JFileChooser();
-        lrpJScrollPane = new javax.swing.JScrollPane();
         octImagePanel = new oct.analysis.application.OCTImagePanel();
         jPanel1 = new javax.swing.JPanel();
         selectionWidthSliderPanel = new javax.swing.JPanel();
@@ -63,9 +78,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        analysisMenu = new javax.swing.JMenu();
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         pixelDistRatioMenuItem = new javax.swing.JMenuItem();
+        lrpMenuItem = new javax.swing.JMenuItem();
 
         openFileChooser.setDialogTitle("Select OCT...");
         openFileChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -81,8 +97,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 formWindowClosed(evt);
             }
         });
-
-        lrpJScrollPane.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
 
         octImagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -148,9 +162,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 1, Short.MAX_VALUE))
+            .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
         jMenu1.setText("File");
@@ -173,10 +185,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         jMenuBar1.add(jMenu1);
 
-        jMenu2.setText("Analysis");
-        jMenu2.addActionListener(new java.awt.event.ActionListener() {
+        analysisMenu.setText("Analysis");
+        analysisMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenu2ActionPerformed(evt);
+                analysisMenuActionPerformed(evt);
             }
         });
 
@@ -186,7 +198,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 foveaSelectMenuItemActionPerformed(evt);
             }
         });
-        jMenu2.add(foveaSelectMenuItem);
+        analysisMenu.add(foveaSelectMenuItem);
 
         pixelDistRatioMenuItem.setText("Set Pixel/Distance Ratio");
         pixelDistRatioMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -194,9 +206,17 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 pixelDistRatioMenuItemActionPerformed(evt);
             }
         });
-        jMenu2.add(pixelDistRatioMenuItem);
+        analysisMenu.add(pixelDistRatioMenuItem);
 
-        jMenuBar1.add(jMenu2);
+        lrpMenuItem.setText("Generate LRPs");
+        lrpMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lrpMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(lrpMenuItem);
+
+        jMenuBar1.add(analysisMenu);
 
         setJMenuBar(jMenuBar1);
 
@@ -204,7 +224,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lrpJScrollPane)
             .addComponent(octImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -213,9 +232,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(octImagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lrpJScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 143, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
@@ -234,7 +252,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 //display the selected image in the display
                 octImagePanel.setOct(tiffBI);
                 octImagePanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
-                octImagePanel.repaint();
+//                octImagePanel.repaint();
                 validate();
                 pack();
                 //get the scale for the image
@@ -272,9 +290,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 case MouseEvent.BUTTON1:
                     OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), 0, selectionWidth, octImagePanel.getHeight());
                     System.out.println("Got foveal selection!");
-                    int pixelsBetweenSelections = (int) (micronsBetweenSelections * (1D/scale.getScale()));
-                    List<OCTSelection> selections = SelectionUtil.getSelectionsFromFoveaSelection(fovealSel, octImagePanel.getWidth(), pixelsBetweenSelections);
-                    System.out.println("Got selections: "+selections.size());
+                    int pixelsBetweenSelections = (int) (micronsBetweenSelections * (1D / scale.getScale()));
+                    List<OCTSelection> selections = SelectionUtil.getSelectionsFromFoveaSelection(fovealSel, octImagePanel.getOct().getWidth(), pixelsBetweenSelections);
+                    System.out.println("Got selections: " + selections.size());
                     octImagePanel.addOCTSelections(selections);
                     break;
                 case MouseEvent.BUTTON3:
@@ -295,9 +313,42 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_pixelDistRatioMenuItemActionPerformed
 
-    private void jMenu2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenu2ActionPerformed
+    private void analysisMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analysisMenuActionPerformed
 
-    }//GEN-LAST:event_jMenu2ActionPerformed
+    }//GEN-LAST:event_analysisMenuActionPerformed
+
+    private void lrpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lrpMenuItemActionPerformed
+        System.out.println("Generating LRPs...");
+        //get the lrps for each selection
+        List<XYSeriesCollection> lrps = SelectionUtil.getLRPsFromSelections(octImagePanel.getSelectionList(), octImagePanel.getOct());
+        lrps.stream().forEach((lrpSeries) -> {
+            JPanel lrp = createLRPPanel(lrpSeries);
+            System.out.println("Adding lrp: " + ((ChartPanel) lrp).getChart().getTitle().getText());
+            SwingUtilities.invokeLater(() -> {
+                JFrame popup = new JFrame(((ChartPanel) lrp).getChart().getTitle().getText());
+                popup.add(lrp, BorderLayout.CENTER);
+                popup.setSize(400, 400);
+                popup.setLocationRelativeTo(this);
+                popup.setVisible(true);
+                System.out.println("Popping up " + popup.getTitle() + " window!");
+            });
+        });
+    }//GEN-LAST:event_lrpMenuItemActionPerformed
+
+    /**
+     * Creates a panel for the demo (used by SuperDemo.java).
+     *
+     * @param lrp
+     * @return A panel.
+     */
+    public static JPanel createLRPPanel(XYSeriesCollection lrp) {
+        JFreeChart chart = ChartFactory.createScatterPlot("LRP", "Avg. Pixel Intensity", "Pixel Height", lrp);
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setPreferredSize(new Dimension(200, 200));
+        panel.setFillZoomRectangle(true);
+        panel.setMouseWheelEnabled(true);
+        return panel;
+    }
 
     private OCTMetrics promptForOCTMetrics() {
         //ask for the desired distance between selections
@@ -366,14 +417,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Exit;
+    private javax.swing.JMenu analysisMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane lrpJScrollPane;
+    private javax.swing.JMenuItem lrpMenuItem;
     private oct.analysis.application.OCTImagePanel octImagePanel;
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JMenuItem pixelDistRatioMenuItem;

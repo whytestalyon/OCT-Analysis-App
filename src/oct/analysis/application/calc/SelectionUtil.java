@@ -5,10 +5,14 @@
  */
 package oct.analysis.application.calc;
 
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import oct.analysis.application.OCTSelection;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -44,4 +48,30 @@ public class SelectionUtil {
         return selections;
     }
 
+    /**
+     * Based on the supplied list of @code{OCTSelection}s create a collection of
+     * series of cartesian coordinates that represent the LRPs for the different
+     * selections.
+     *
+     * @param selections the list of selections on the OCT image that need LRPs
+     * generated
+     * @param oct the OCT image under analysis
+     * @return an @code{List} of @code{XYSeriesCollection}s containing one LRP
+     * per @code{XYSeriesCollection} for output display in a graph
+     */
+    public static List<XYSeriesCollection> getLRPsFromSelections(List<OCTSelection> selections, BufferedImage oct) {
+        ArrayList<XYSeriesCollection> lrpSeries = new ArrayList<>(selections.size());
+        ListIterator<OCTSelection> lrpSelIter = selections.listIterator();
+        while (lrpSelIter.hasNext()) {
+            XYSeriesCollection lrps = new XYSeriesCollection();
+            XYSeries s = lrpSelIter.next().getLrpSeriesFromOCT(oct);
+            if (s == null) {
+                continue;
+            }
+            s.setKey("LRP-" + lrpSelIter.previousIndex());
+            lrps.addSeries(s);
+            lrpSeries.add(lrps);
+        }
+        return lrpSeries;
+    }
 }
