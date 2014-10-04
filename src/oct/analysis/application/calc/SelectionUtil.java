@@ -39,11 +39,11 @@ public class SelectionUtil {
         selections.add(foveaSelection);
         //build selection list to the right of center
         for (int selX = foveaSelection.getX_position() + dbs; (selX + foveaSelection.getWidth()) <= windowWidth; selX += dbs) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight()));
+            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION));
         }
         //build selection list to the left of the center
         for (int selX = foveaSelection.getX_position() - dbs; selX >= 0; selX -= dbs) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight()));
+            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION));
         }
         return selections;
     }

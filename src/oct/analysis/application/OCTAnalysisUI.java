@@ -5,31 +5,22 @@
  */
 package oct.analysis.application;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import oct.analysis.application.calc.LRPUtil;
 import oct.analysis.application.calc.SelectionUtil;
+import oct.analysis.application.dat.OCTAnalysisMetrics;
 import oct.analysis.application.dat.OCTMetrics;
 import oct.io.TiffReader;
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.StandardChartTheme;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -43,6 +34,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private double micronsBetweenSelections;
     private int selectionWidth;
     private OCTMetrics scale;
+    private OCTAnalysisMetrics analysisMetrics = OCTAnalysisMetrics.getInstance();
 
     static {
         // set a chart theme using the new shadow generator feature available in
@@ -289,12 +281,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         if (selectFoveaMode) {
             switch (evt.getButton()) {
                 case MouseEvent.BUTTON1:
-                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), 0, selectionWidth, octImagePanel.getHeight());
+                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), 0, selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION);
+                    analysisMetrics.setFoveaSelection(fovealSel);
                     System.out.println("Got foveal selection!");
                     int pixelsBetweenSelections = (int) (micronsBetweenSelections * (1D / scale.getScale()));
-                    List<OCTSelection> selections = SelectionUtil.getSelectionsFromFoveaSelection(fovealSel, octImagePanel.getOct().getWidth(), pixelsBetweenSelections);
-                    System.out.println("Got selections: " + selections.size());
-                    octImagePanel.addOCTSelections(selections);
+                    analysisMetrics.setDistanceBetweenSelections(pixelsBetweenSelections);
+                    octImagePanel.addOCTSelectionsToPanel();
                     break;
                 case MouseEvent.BUTTON3:
                     System.out.println("Right mouse button clicked!");
@@ -307,7 +299,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_octImagePanelMouseClicked
 
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
+        //set the selection width
         selectionWidth = ((JSlider) evt.getSource()).getValue();
+        //redraw the selections based on the new selection width
+        OCTSelection oldFoveaSelection = analysisMetrics.getFoveaSelection();
+        OCTSelection fovealSel = new OCTSelection(oldFoveaSelection.getX_position(), oldFoveaSelection.getY_position(), selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION);
+        analysisMetrics.setFoveaSelection(fovealSel);
+        System.out.println("Updated foveal selection width!");
+        octImagePanel.updateOCTSelections();
+        //recalculate the LRPs if already displayed
     }//GEN-LAST:event_widthSliderStateChanged
 
     private void pixelDistRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelDistRatioMenuItemActionPerformed

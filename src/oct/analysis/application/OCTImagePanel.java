@@ -13,6 +13,8 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import oct.analysis.application.calc.SelectionUtil;
+import oct.analysis.application.dat.OCTAnalysisMetrics;
 
 /**
  *
@@ -23,6 +25,7 @@ public class OCTImagePanel extends JPanel {
     private BufferedImage oct = null;
     private final int OFFSET = 1;
     private List<OCTSelection> selectionList = null;
+    private OCTAnalysisMetrics analysisMetrics = OCTAnalysisMetrics.getInstance();
 
     public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -77,11 +80,9 @@ public class OCTImagePanel extends JPanel {
         }
     }
 
-    public void addOCTSelections(List<OCTSelection> selectionList) {
-        this.selectionList = selectionList;
-        selectionList.stream().forEach((o) -> {
-            o.drawSelection(this.getGraphics());
-        });
+    public void addOCTSelectionsToPanel() {
+        selectionList = SelectionUtil.getSelectionsFromFoveaSelection(analysisMetrics.getFoveaSelection(), oct.getWidth(), analysisMetrics.getDistanceBetweenSelections());
+        this.repaint();
     }
 
     public void removeOCTSelection() {
@@ -91,6 +92,11 @@ public class OCTImagePanel extends JPanel {
 
     public BufferedImage getOct() {
         return oct;
+    }
+
+    public void updateOCTSelections() {
+        removeOCTSelection();
+        addOCTSelectionsToPanel();
     }
 
     public List<OCTSelection> getSelectionList() {

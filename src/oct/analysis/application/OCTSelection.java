@@ -15,17 +15,20 @@ import org.jfree.data.xy.XYSeries;
  * @author Brandon
  */
 public class OCTSelection {
-
+    public static final int FOVEAL_SELECTION = 0;
+    public static final int PERIPHERAL_SELECTION = 1;
+    private final int selectionType;
     private final int x_position;
     private final int y_position;
     private final int width;
     private final int height;
 
-    public OCTSelection(int x_position, int y_position, int width, int height) {
+    public OCTSelection(int x_position, int y_position, int width, int height, int selectionType) {
         this.x_position = x_position;
         this.y_position = y_position;
         this.width = width;
         this.height = height;
+        this.selectionType = selectionType;
     }
 
     public void drawSelection(Graphics g) {
@@ -49,6 +52,10 @@ public class OCTSelection {
         return height;
     }
 
+    public int getSelectionType() {
+        return selectionType;
+    }
+
     public XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
         if (x_position + width > oct.getWidth()) {
             return null;
@@ -70,4 +77,5 @@ public class OCTSelection {
 
         return lrp;
     }
+    
 }
