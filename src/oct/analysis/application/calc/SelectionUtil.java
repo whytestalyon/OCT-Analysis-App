@@ -38,12 +38,12 @@ public class SelectionUtil {
         //add foveal selction to list of selections
         selections.add(foveaSelection);
         //build selection list to the right of center
-        for (int selX = foveaSelection.getX_position() + dbs; (selX + foveaSelection.getWidth()) <= windowWidth; selX += dbs) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION));
+        for (int selX = foveaSelection.getX_position() + dbs, selCnt = 1; (selX + foveaSelection.getWidth()) <= windowWidth; selX += dbs, selCnt++) {
+            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "L" + selCnt));
         }
         //build selection list to the left of the center
-        for (int selX = foveaSelection.getX_position() - dbs; selX >= 0; selX -= dbs) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION));
+        for (int selX = foveaSelection.getX_position() - dbs, selCnt = 1; selX >= 0; selX -= dbs, selCnt++) {
+            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "R" + selCnt));
         }
         return selections;
     }
@@ -64,11 +64,12 @@ public class SelectionUtil {
         ListIterator<OCTSelection> lrpSelIter = selections.listIterator();
         while (lrpSelIter.hasNext()) {
             XYSeriesCollection lrps = new XYSeriesCollection();
-            XYSeries s = lrpSelIter.next().getLrpSeriesFromOCT(oct);
+            OCTSelection selection = lrpSelIter.next();
+            XYSeries s = selection.getLrpSeriesFromOCT(oct);
             if (s == null) {
                 continue;
             }
-            s.setKey("LRP-" + lrpSelIter.previousIndex());
+            s.setKey(selection.getSelectionName());
             lrps.addSeries(s);
             lrpSeries.add(lrps);
         }

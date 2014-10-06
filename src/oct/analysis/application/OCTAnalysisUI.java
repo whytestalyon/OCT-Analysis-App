@@ -281,7 +281,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         if (selectFoveaMode) {
             switch (evt.getButton()) {
                 case MouseEvent.BUTTON1:
-                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), 0, selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION);
+                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), 0, selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
                     analysisMetrics.setFoveaSelection(fovealSel);
                     System.out.println("Got foveal selection!");
                     int pixelsBetweenSelections = (int) (micronsBetweenSelections * (1D / scale.getScale()));
@@ -303,7 +303,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidth = ((JSlider) evt.getSource()).getValue();
         //redraw the selections based on the new selection width
         OCTSelection oldFoveaSelection = analysisMetrics.getFoveaSelection();
-        OCTSelection fovealSel = new OCTSelection(oldFoveaSelection.getX_position(), oldFoveaSelection.getY_position(), selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION);
+        int foveaSelectionCenter = oldFoveaSelection.getX_position() + (oldFoveaSelection.getWidth()/2);
+        OCTSelection fovealSel = new OCTSelection(foveaSelectionCenter - (selectionWidth / 2), oldFoveaSelection.getY_position(), selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         analysisMetrics.setFoveaSelection(fovealSel);
         System.out.println("Updated foveal selection width!");
         octImagePanel.updateOCTSelections();
