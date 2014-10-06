@@ -18,6 +18,7 @@ public class OCTSelection {
 
     public static final int FOVEAL_SELECTION = 0;
     public static final int PERIPHERAL_SELECTION = 1;
+    public static final int SMOOTHING_FACTOR = 5; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
     private final String selectionName;
     private final int selectionType;
     private final int x_position;
@@ -68,21 +69,45 @@ public class OCTSelection {
             return null;
         }
         XYSeries lrp = new XYSeries(selectionName + " LRP");
+        int value = Integer.MAX_VALUE;
         //iterate over each row of pixels in the selection area and calculate average pixel intensity
         for (int y = height - 1; y >= 0; y--) {
-            double sum = 0;
+            int sum = 0;
 
             for (int xindex = x_position + 1; xindex < x_position + 1 + width; xindex++) {
-                sum += (double) oct.getRGB(xindex, y);
+                sum += calculateGrayScaleValue(oct.getRGB(xindex, y));
             }
             //calculate average pixel intensity
-            double avg = sum / (double) width;
-//            System.out.println("Avg: " + avg + "; y: " + y);
+            int avg = sum / width;
+            //smooth the LRP to provide a higher quality LRP signal
+            if (value == Integer.MAX_VALUE) {
+                //initialize the first value for the smoothing filter
+                value = avg;
+            } else {
+                //smooth the LRP signal
+                value += ((avg - value) / SMOOTHING_FACTOR);
+                avg = value;
+            }
             //add LRP value to return series
-            lrp.add(avg, (double) y);
+            lrp.add(y, avg);
         }
 
         return lrp;
+    }
+
+    /**
+     * Determine the gray scale value of a pixel based on its RGB value.
+     *
+     * @param rgb
+     * @return
+     */
+    private int calculateGrayScaleValue(int rgb) {
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8) & 0xFF;
+        int b = (rgb & 0xFF);
+
+        int grayLevel = (r + g + b) / 3;
+        return grayLevel;
     }
 
 }
