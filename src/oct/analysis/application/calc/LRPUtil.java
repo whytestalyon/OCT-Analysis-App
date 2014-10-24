@@ -18,6 +18,9 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeriesCollection;
 
 /**
@@ -32,11 +35,12 @@ public class LRPUtil {
      * @param lrp
      * @return A panel.
      */
-    public static JPanel createLRPPanel(XYSeriesCollection lrp) {
+    public static JPanel createLRPPanel(XYDataset lrp) {
         JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Avg. Pixel Intensity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
-        XYPlot plot = (XYPlot) chart.getPlot();
+        XYPlot plot = chart.getXYPlot();
         plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
         plot.getDomainAxis().setInverted(true);
+        plot.setRenderer(new XYLineAndShapeRenderer(true,false));
         ChartPanel panel = new ChartPanel(chart);
         panel.setPreferredSize(new Dimension(200, 200));
         panel.setFillZoomRectangle(true);
