@@ -23,9 +23,10 @@ import oct.analysis.application.dat.OCTAnalysisMetrics;
 public class OCTImagePanel extends JPanel {
 
     private BufferedImage oct = null;
-    private final int OFFSET = 1;
     private List<OCTSelection> selectionList = null;
-    private OCTAnalysisMetrics analysisMetrics = OCTAnalysisMetrics.getInstance();
+    private final OCTAnalysisMetrics analysisMetrics = OCTAnalysisMetrics.getInstance();
+    private int imageOffsetY = 0;
+    private int imageOffsetX = 0;
 
     public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -69,19 +70,39 @@ public class OCTImagePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
-        //TODO center the image within the panel, make sure the selection draw method takes this into account
-        //draw OCT to the JPanel
-        grphcs.drawImage(oct, 0, 0, null);
-        //draw the selections to the panel if available
-        if (selectionList != null) {
-            selectionList.stream().forEach((o) -> {
-                o.drawSelection(grphcs);
-            });
+        if (oct != null) {
+            //collect previous offsets
+            int oldXoffset = imageOffsetX;
+            int oldYoffset = imageOffsetY;
+            //center the image within the panel, make sure the selection draw method takes this into account
+            int imageWidth = oct.getWidth();
+            int panelWidth = this.getWidth();
+            imageOffsetX = 0;
+            if (panelWidth > imageWidth) {
+                imageOffsetX = panelWidth / 2 - imageWidth / 2;
+            }
+            int imageHeight = oct.getHeight();
+            int panelHeight = this.getHeight();
+            imageOffsetY = 0;
+            if (panelHeight > imageHeight) {
+                imageOffsetY = panelHeight / 2 - imageHeight / 2;
+            }
+            //draw OCT to the JPanel
+            grphcs.drawImage(oct, imageOffsetX, imageOffsetY, null);
+            //draw the selections to the panel if available
+            if (selectionList != null) {
+                selectionList.stream().forEach((selection) -> {
+                    //update selection to new offset
+                    selection.setX_position(selection.getX_position() - oldXoffset + imageOffsetX);
+                    selection.setY_position(selection.getY_position() - oldYoffset + imageOffsetY);
+                    selection.drawSelection(grphcs);
+                });
+            }
         }
     }
 
     public void addOCTSelectionsToPanel() {
-        selectionList = SelectionUtil.getSelectionsFromFoveaSelection(analysisMetrics.getFoveaSelection(), oct.getWidth(), analysisMetrics.getDistanceBetweenSelections());
+        selectionList = SelectionUtil.getSelectionsFromFoveaSelection(analysisMetrics.getFoveaSelection(), oct.getWidth(), analysisMetrics.getDistanceBetweenSelections(), imageOffsetX, imageOffsetY);
         this.repaint();
     }
 
@@ -101,5 +122,23 @@ public class OCTImagePanel extends JPanel {
 
     public List<OCTSelection> getSelectionList() {
         return selectionList;
+    }
+
+    /**
+     * Determine if the supplied coordinate overlaps with the area of this panel
+     * that displays the OCT image
+     *
+     * @param x
+     * @param y
+     * @return true if the coordinate is within the bounds of the displayed OCT,
+     * false if it isn't or if the OCT image isn't displayed already
+     */
+    public boolean coordinateOverlapsOCT(int x, int y) {
+        if (oct == null) {
+            return false;
+        }
+        boolean withinX = ((imageOffsetX + oct.getWidth()) - x) * (x - imageOffsetX) > -1;
+        boolean withinY = ((imageOffsetY + oct.getHeight()) - y) * (y - imageOffsetY) > -1;
+        return withinX && withinY;
     }
 }

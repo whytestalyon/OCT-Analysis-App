@@ -62,7 +62,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void initComponents() {
 
         openFileChooser = new javax.swing.JFileChooser();
-        octImagePanel = new oct.analysis.application.OCTImagePanel();
+        octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         jPanel1 = new javax.swing.JPanel();
         selectionWidthSliderPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -91,21 +91,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
 
-        octImagePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+        octAnalysisPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                octImagePanelMouseClicked(evt);
+                octAnalysisPanelMouseClicked(evt);
             }
         });
 
-        javax.swing.GroupLayout octImagePanelLayout = new javax.swing.GroupLayout(octImagePanel);
-        octImagePanel.setLayout(octImagePanelLayout);
-        octImagePanelLayout.setHorizontalGroup(
-            octImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout octAnalysisPanelLayout = new javax.swing.GroupLayout(octAnalysisPanel);
+        octAnalysisPanel.setLayout(octAnalysisPanelLayout);
+        octAnalysisPanelLayout.setHorizontalGroup(
+            octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGap(0, 0, Short.MAX_VALUE)
         );
-        octImagePanelLayout.setVerticalGroup(
-            octImagePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 358, Short.MAX_VALUE)
+        octAnalysisPanelLayout.setVerticalGroup(
+            octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 364, Short.MAX_VALUE)
         );
 
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
@@ -132,7 +132,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
             .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
@@ -216,16 +216,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octImagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(octImagePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -242,8 +241,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
                 System.out.println("Read in tiff image!");
                 //display the selected image in the display
-                octImagePanel.setOct(tiffBI);
-                octImagePanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
+                octAnalysisPanel.setOct(tiffBI);
+                octAnalysisPanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
 //                octImagePanel.repaint();
                 validate();
                 pack();
@@ -276,37 +275,44 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectFoveaMode = !selectFoveaMode;
     }//GEN-LAST:event_foveaSelectMenuItemActionPerformed
 
-    private void octImagePanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_octImagePanelMouseClicked
-        if (selectFoveaMode) {
+    private void octAnalysisPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_octAnalysisPanelMouseClicked
+        //only perform actions when mouse click occurs over image area
+        if (selectFoveaMode && octAnalysisPanel.coordinateOverlapsOCT(evt.getX(), evt.getY())) {
             switch (evt.getButton()) {
                 case MouseEvent.BUTTON1:
-                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), 0, selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+                    int imageHeight = octAnalysisPanel.getOct().getHeight();
+                    int panelHeight = octAnalysisPanel.getHeight();
+                    int imageOffsetY = 0;
+                    if (panelHeight > imageHeight) {
+                        imageOffsetY = panelHeight / 2 - imageHeight / 2;
+                    }
+                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), imageOffsetY, selectionWidth, octAnalysisPanel.getOct().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
                     analysisMetrics.setFoveaSelection(fovealSel);
                     System.out.println("Got foveal selection!");
                     int pixelsBetweenSelections = (int) (micronsBetweenSelections * (1D / scale.getScale()));
                     analysisMetrics.setDistanceBetweenSelections(pixelsBetweenSelections);
-                    octImagePanel.addOCTSelectionsToPanel();
+                    octAnalysisPanel.addOCTSelectionsToPanel();
                     break;
                 case MouseEvent.BUTTON3:
                     System.out.println("Right mouse button clicked!");
-                    octImagePanel.removeOCTSelection();
+                    octAnalysisPanel.removeOCTSelection();
                     break;
                 default:
                     break;
             }
         }
-    }//GEN-LAST:event_octImagePanelMouseClicked
+    }//GEN-LAST:event_octAnalysisPanelMouseClicked
 
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
         //set the selection width
         selectionWidth = ((JSlider) evt.getSource()).getValue();
         //redraw the selections based on the new selection width
         OCTSelection oldFoveaSelection = analysisMetrics.getFoveaSelection();
-        int foveaSelectionCenter = oldFoveaSelection.getX_position() + (oldFoveaSelection.getWidth()/2);
-        OCTSelection fovealSel = new OCTSelection(foveaSelectionCenter - (selectionWidth / 2), oldFoveaSelection.getY_position(), selectionWidth, octImagePanel.getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+        int foveaSelectionCenter = oldFoveaSelection.getX_position() + (oldFoveaSelection.getWidth() / 2);
+        OCTSelection fovealSel = new OCTSelection(foveaSelectionCenter - (selectionWidth / 2), oldFoveaSelection.getY_position(), selectionWidth, oldFoveaSelection.getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         analysisMetrics.setFoveaSelection(fovealSel);
         System.out.println("Updated foveal selection width!");
-        octImagePanel.updateOCTSelections();
+        octAnalysisPanel.updateOCTSelections();
         //recalculate the LRPs if already displayed
     }//GEN-LAST:event_widthSliderStateChanged
 
@@ -321,7 +327,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void lrpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lrpMenuItemActionPerformed
         System.out.println("Generating LRPs...");
         //get the lrps for each selection
-        List<XYSeriesCollection> lrps = SelectionUtil.getLRPsFromSelections(octImagePanel.getSelectionList(), octImagePanel.getOct());
+        List<XYSeriesCollection> lrps = SelectionUtil.getLRPsFromSelections(octAnalysisPanel.getSelectionList(), octAnalysisPanel.getOct());
         //diplay the LRPs
         LRPUtil.displayLRPs(lrps, this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
@@ -348,7 +354,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             case JOptionPane.NO_OPTION:
                 double nominalScanWidth = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT nominal scan length(millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 double axialLength = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT scale (millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCTMetrics(axialLength, nominalScanWidth, octImagePanel.getWidth());
+                return new OCTMetrics(axialLength, nominalScanWidth, octAnalysisPanel.getWidth());
             default:
                 break;
         }
@@ -401,7 +407,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JMenuItem lrpMenuItem;
-    private oct.analysis.application.OCTImagePanel octImagePanel;
+    private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JMenuItem pixelDistRatioMenuItem;
     private javax.swing.JPanel selectionWidthSliderPanel;

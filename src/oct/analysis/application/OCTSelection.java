@@ -21,8 +21,8 @@ public class OCTSelection {
     public static final int SMOOTHING_FACTOR = 5; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
     private final String selectionName;
     private final int selectionType;
-    private final int x_position;
-    private final int y_position;
+    private int x_position;
+    private int y_position;
     private final int width;
     private final int height;
 
@@ -37,6 +37,7 @@ public class OCTSelection {
 
     public void drawSelection(Graphics g) {
         g.setColor(Color.green);
+        System.out.println("Drawing selection at x: " + x_position + ", y: " + y_position + ", w: " + width + ", h: " + (height - 1));
         g.drawRect(x_position, y_position, width, height - 1);
     }
 
@@ -46,6 +47,14 @@ public class OCTSelection {
 
     public int getY_position() {
         return y_position;
+    }
+
+    public void setX_position(int x_position) {
+        this.x_position = x_position;
+    }
+
+    public void setY_position(int y_position) {
+        this.y_position = y_position;
     }
 
     public int getWidth() {

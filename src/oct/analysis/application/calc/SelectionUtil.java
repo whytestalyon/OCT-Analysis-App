@@ -28,22 +28,26 @@ public class SelectionUtil {
      * direction.
      *
      * @param foveaSelection initial selection denoting the fovea on the OCT
-     * @param windowWidth width (in pixels) of the OCT image
+     * @param octWidth width (in pixels) of the OCT image
      * @param dbs distance (in pixels) between OCT selections
+     * @param octOffsetX the distance between the OCT image and the left side of
+     * the containing panel
+     * @param octOffsetY the distance between the OCT image and the top of the
+     * containing panel
      * @return list containing all of the OCT image selections based on the
      * foveal selection and the desired distance between selections
      */
-    public static List<OCTSelection> getSelectionsFromFoveaSelection(OCTSelection foveaSelection, int windowWidth, int dbs) {
+    public static List<OCTSelection> getSelectionsFromFoveaSelection(OCTSelection foveaSelection, int octWidth, int dbs, int octOffsetX, int octOffsetY) {
         LinkedList<OCTSelection> selections = new LinkedList<>();
         //add foveal selction to list of selections
         selections.add(foveaSelection);
         //build selection list to the right of center
-        for (int selX = foveaSelection.getX_position() + dbs, selCnt = 1; (selX + foveaSelection.getWidth()) <= windowWidth; selX += dbs, selCnt++) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "R" + selCnt));
+        for (int selX = foveaSelection.getX_position() + dbs, selCnt = 1; (selX + foveaSelection.getWidth()) <= octWidth + octOffsetX; selX += dbs, selCnt++) {
+            selections.add(new OCTSelection(selX, octOffsetY, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "R" + selCnt));
         }
         //build selection list to the left of the center
-        for (int selX = foveaSelection.getX_position() - dbs, selCnt = 1; selX >= 0; selX -= dbs, selCnt++) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "L" + selCnt));
+        for (int selX = foveaSelection.getX_position() - dbs, selCnt = 1; selX >= octOffsetX; selX -= dbs, selCnt++) {
+            selections.add(new OCTSelection(selX, octOffsetY, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "L" + selCnt));
         }
         return selections;
     }

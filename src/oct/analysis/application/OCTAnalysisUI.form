@@ -99,25 +99,24 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="octImagePanel" alignment="0" max="-2" attributes="0"/>
           <Component id="jPanel1" alignment="0" max="32767" attributes="0"/>
+          <Component id="octAnalysisPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="octImagePanel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="octAnalysisPanel" max="32767" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Container class="oct.analysis.application.OCTImagePanel" name="octImagePanel">
+    <Container class="oct.analysis.application.OCTImagePanel" name="octAnalysisPanel">
       <Events>
-        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="octImagePanelMouseClicked"/>
+        <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="octAnalysisPanelMouseClicked"/>
       </Events>
 
       <Layout>
@@ -128,7 +127,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="358" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="364" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -164,7 +163,7 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jLabel2" alignment="1" max="32767" attributes="0"/>
+                  <Component id="jLabel2" alignment="1" pref="240" max="32767" attributes="0"/>
                   <Component id="widthSlider" alignment="0" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
