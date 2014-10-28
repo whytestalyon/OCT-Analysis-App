@@ -17,8 +17,8 @@ import javax.swing.JSlider;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import oct.analysis.application.calc.LRPUtil;
 import oct.analysis.application.calc.SelectionUtil;
-import oct.analysis.application.dat.OCTAnalysisMetrics;
-import oct.analysis.application.dat.OCTMetrics;
+import oct.analysis.application.dat.OCTAnalysisDAO;
+import oct.analysis.application.dat.OCT;
 import oct.io.TiffReader;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
@@ -33,8 +33,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private boolean selectFoveaMode = false;
     private double micronsBetweenSelections;
     private int selectionWidth;
-    private OCTMetrics scale;
-    private OCTAnalysisMetrics analysisMetrics = OCTAnalysisMetrics.getInstance();
+    private OCT scale;
+    private OCTAnalysisDAO analysisMetrics = OCTAnalysisDAO.getInstance();
 
     static {
         // set a chart theme using the new shadow generator feature available in
@@ -332,7 +332,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         LRPUtil.displayLRPs(lrps, this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
-    private OCTMetrics promptForOCTMetrics() {
+    private OCT promptForOCTMetrics() {
         //ask for the desired distance between selections
         micronsBetweenSelections = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
         //ask how the user would like to convey the scale (microns per pixel)
@@ -350,11 +350,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         switch (n) {
             case JOptionPane.YES_OPTION:
                 double scale = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT scale (microns per pixel):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCTMetrics(scale);
+                return new OCT(scale);
             case JOptionPane.NO_OPTION:
                 double nominalScanWidth = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT nominal scan length(millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 double axialLength = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT scale (millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCTMetrics(axialLength, nominalScanWidth, octAnalysisPanel.getWidth());
+                return new OCT(axialLength, nominalScanWidth, octAnalysisPanel.getWidth());
             default:
                 break;
         }

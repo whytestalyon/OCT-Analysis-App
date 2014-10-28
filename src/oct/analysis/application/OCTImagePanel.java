@@ -14,7 +14,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import oct.analysis.application.calc.SelectionUtil;
-import oct.analysis.application.dat.OCTAnalysisMetrics;
+import oct.analysis.application.dat.OCTAnalysisDAO;
 
 /**
  *
@@ -24,7 +24,7 @@ public class OCTImagePanel extends JPanel {
 
     private BufferedImage oct = null;
     private List<OCTSelection> selectionList = null;
-    private final OCTAnalysisMetrics analysisMetrics = OCTAnalysisMetrics.getInstance();
+    private final OCTAnalysisDAO analysisMetrics = OCTAnalysisDAO.getInstance();
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
 

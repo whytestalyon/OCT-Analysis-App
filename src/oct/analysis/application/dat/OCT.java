@@ -5,36 +5,33 @@
  */
 package oct.analysis.application.dat;
 
+import java.awt.image.BufferedImage;
+
 /**
  *
  * @author Brandon
  */
-public class OCTMetrics {
+public class OCT {
 
-    private double axialLength = -1;
     private final double scale;
-    private double nominalScanWidth = -1;
+    private final BufferedImage octImage;
 
-    public OCTMetrics(double scale) {
+    public OCT(double scale, BufferedImage octImage) {
         this.scale = scale;
+        this.octImage = octImage;
     }
 
-    public OCTMetrics(double axialLength, double nominalScanWidth, int octWidth) {
-        this.axialLength = axialLength;
-        this.nominalScanWidth = nominalScanWidth;
+    public OCT(double axialLength, double nominalScanWidth, int octWidth, BufferedImage octImage) {
         double scanLength = (nominalScanWidth * axialLength) / 24D;
         scale = ((scanLength * 1000D) / (double) octWidth);
-    }
-
-    public double getAxialLength() {
-        return axialLength;
+        this.octImage = octImage;
     }
 
     public double getScale() {
         return scale;
     }
 
-    public double getNominalScanLength() {
-        return nominalScanWidth;
+    public BufferedImage getOctImage() {
+        return octImage;
     }
 }
