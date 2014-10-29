@@ -63,11 +63,11 @@ public class SelectionUtil {
         //add foveal selction to list of selections
         selections.add(foveaSelection);
         //build selection list to the right of center
-        for (int selX = foveaSelection.getX_position() + analysisMetrics.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisMetrics.getOct().getOctImage().getWidth() + octOffsetX; selX += analysisMetrics.getDistanceBetweenSelections(), selCnt++) {
+        for (int selX = foveaSelection.getPanel_x_position() + analysisMetrics.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisMetrics.getOct().getOctImage().getWidth() + octOffsetX; selX += analysisMetrics.getDistanceBetweenSelections(), selCnt++) {
             selections.add(new OCTSelection(selX, octOffsetY, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "R" + selCnt));
         }
         //build selection list to the left of the center
-        for (int selX = foveaSelection.getX_position() - analysisMetrics.getDistanceBetweenSelections(), selCnt = 1; selX >= octOffsetX; selX -= analysisMetrics.getDistanceBetweenSelections(), selCnt++) {
+        for (int selX = foveaSelection.getPanel_x_position() - analysisMetrics.getDistanceBetweenSelections(), selCnt = 1; selX >= octOffsetX; selX -= analysisMetrics.getDistanceBetweenSelections(), selCnt++) {
             selections.add(new OCTSelection(selX, octOffsetY, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "L" + selCnt));
         }
 

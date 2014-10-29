@@ -93,8 +93,8 @@ public class OCTImagePanel extends JPanel {
             if (selectionList != null) {
                 selectionList.stream().forEach((selection) -> {
                     //update selection to new offset
-                    selection.setX_position(selection.getX_position() - oldXoffset + imageOffsetX);
-                    selection.setY_position(selection.getY_position() - oldYoffset + imageOffsetY);
+                    selection.setPanel_x_position(selection.getPanel_x_position() - oldXoffset + imageOffsetX);
+                    selection.setPanel_y_position(selection.getPanel_y_position() - oldYoffset + imageOffsetY);
                     selection.drawSelection(grphcs);
                 });
             }

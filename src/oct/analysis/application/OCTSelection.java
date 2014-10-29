@@ -6,9 +6,21 @@
 package oct.analysis.application;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import javax.swing.JPanel;
+import oct.analysis.application.dat.OCTAnalysisDAO;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.AxisLocation;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -21,14 +33,16 @@ public class OCTSelection {
     public static final int SMOOTHING_FACTOR = 5; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
     private final String selectionName;
     private final int selectionType;
-    private int x_position;
-    private int y_position;
+    private int panel_x_position;
+    private int panel_y_position;
+    private int oct_x_position;
+    private int oct_y_position;
     private final int width;
     private final int height;
 
-    public OCTSelection(int x_position, int y_position, int width, int height, int selectionType, String selectionName) {
-        this.x_position = x_position;
-        this.y_position = y_position;
+    public OCTSelection(int panel_x_position, int panel_y_position, int width, int height, int selectionType, String selectionName, int oct_x_position, int oct_y_position) {
+        this.panel_x_position = panel_x_position;
+        this.panel_y_position = panel_y_position;
         this.width = width;
         this.height = height;
         this.selectionType = selectionType;
@@ -37,24 +51,40 @@ public class OCTSelection {
 
     public void drawSelection(Graphics g) {
         g.setColor(Color.green);
-        System.out.println("Drawing selection at x: " + x_position + ", y: " + y_position + ", w: " + width + ", h: " + (height - 1));
-        g.drawRect(x_position, y_position, width, height - 1);
+        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
+        g.drawRect(panel_x_position, panel_y_position, width, height - 1);
     }
 
-    public int getX_position() {
-        return x_position;
+    public int getPanel_x_position() {
+        return panel_x_position;
     }
 
-    public int getY_position() {
-        return y_position;
+    public int getPanel_y_position() {
+        return panel_y_position;
     }
 
-    public void setX_position(int x_position) {
-        this.x_position = x_position;
+    public void setPanel_x_position(int panel_x_position) {
+        this.panel_x_position = panel_x_position;
     }
 
-    public void setY_position(int y_position) {
-        this.y_position = y_position;
+    public void setPanel_y_position(int panel_y_position) {
+        this.panel_y_position = panel_y_position;
+    }
+
+    public int getOct_x_position() {
+        return oct_x_position;
+    }
+
+    public void setOct_x_position(int oct_x_position) {
+        this.oct_x_position = oct_x_position;
+    }
+
+    public int getOct_y_position() {
+        return oct_y_position;
+    }
+
+    public void setOct_y_position(int oct_y_position) {
+        this.oct_y_position = oct_y_position;
     }
 
     public int getWidth() {
@@ -72,18 +102,33 @@ public class OCTSelection {
     public String getSelectionName() {
         return selectionName;
     }
-
+    
+    public JPanel createLRPPanel() {
+        //create the series collection from the LRP data
+        XYSeriesCollection lrp = new XYSeriesCollection();
+            lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisDAO.getInstance().getOct().getOctImage()));
+        //create chart panel for LRP
+        JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Avg. Pixel Intensity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
+        XYPlot plot = chart.getXYPlot();
+        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
+        plot.getDomainAxis().setInverted(true);
+        plot.setRenderer(new XYLineAndShapeRenderer(true,false));
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setPreferredSize(new Dimension(200, 200));
+        panel.setFillZoomRectangle(true);
+        panel.setMouseWheelEnabled(true);
+        return panel;
+    }
+    
     public XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
-        if (x_position + width > oct.getWidth()) {
-            return null;
-        }
         XYSeries lrp = new XYSeries(selectionName + " LRP");
+        lrp.setKey(selectionName);
         int value = Integer.MAX_VALUE;
         //iterate over each row of pixels in the selection area and calculate average pixel intensity
         for (int y = height - 1; y >= 0; y--) {
             int sum = 0;
 
-            for (int xindex = x_position + 1; xindex < x_position + 1 + width; xindex++) {
+            for (int xindex = oct_x_position + 1; xindex < oct_x_position + 1 + width; xindex++) {
                 sum += calculateGrayScaleValue(oct.getRGB(xindex, y));
             }
             //calculate average pixel intensity
@@ -95,10 +140,9 @@ public class OCTSelection {
             } else {
                 //smooth the LRP signal
                 value += ((avg - value) / SMOOTHING_FACTOR);
-                avg = value;
             }
             //add LRP value to return series
-            lrp.add(y, avg);
+            lrp.add(y, value);
         }
 
         return lrp;

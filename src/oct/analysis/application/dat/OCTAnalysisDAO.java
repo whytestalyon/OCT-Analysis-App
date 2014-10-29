@@ -22,7 +22,6 @@ public class OCTAnalysisDAO {
     private OCT oct = null;
     private List<OCTSelection> octSelections = null;
     private int selectionWidth = 5;
-    private OCTImagePanel octip = null;
     private int foveaCenterXPosition = 0;
     private static final String PROP_OCTSELECTIONS = "octSelections";
     private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
@@ -92,15 +91,6 @@ public class OCTAnalysisDAO {
     public int getFoveaCenterXPosition() {
         return foveaCenterXPosition;
     }
-
-    public OCTImagePanel getOctip() {
-        return octip;
-    }
-
-    public void setOctip(OCTImagePanel octip) {
-        this.octip = octip;
-    }
-
     
     /**
      * Add PropertyChangeListener.
