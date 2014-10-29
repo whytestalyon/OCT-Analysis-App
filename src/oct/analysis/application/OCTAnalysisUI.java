@@ -305,15 +305,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
         //set the selection width
-        selectionWidth = ((JSlider) evt.getSource()).getValue();
-        //redraw the selections based on the new selection width
-        OCTSelection oldFoveaSelection = analysisMetrics.getFoveaSelection();
-        int foveaSelectionCenter = oldFoveaSelection.getX_position() + (oldFoveaSelection.getWidth() / 2);
-        OCTSelection fovealSel = new OCTSelection(foveaSelectionCenter - (selectionWidth / 2), oldFoveaSelection.getY_position(), selectionWidth, oldFoveaSelection.getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
-        analysisMetrics.setFoveaSelection(fovealSel);
-        System.out.println("Updated foveal selection width!");
-        octAnalysisPanel.updateOCTSelections();
-        //recalculate the LRPs if already displayed
+        analysisMetrics.setSelectionWidth(((JSlider) evt.getSource()).getValue());
     }//GEN-LAST:event_widthSliderStateChanged
 
     private void pixelDistRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelDistRatioMenuItemActionPerformed

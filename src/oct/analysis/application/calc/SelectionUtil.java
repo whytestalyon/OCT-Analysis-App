@@ -39,7 +39,7 @@ public class SelectionUtil {
      * foveal selection and the desired distance between selections
      */
     public static List<OCTSelection> getSelections(int foveaXPosition, int octOffsetX, int octOffsetY) {
-        OCTSelection fovealSel = new OCTSelection(foveaXPosition - (analysisMetrics.getSelectionWidth() / 2), octOffsetY, analysisMetrics.getSelectionWidth(), analysisMetrics.getOCT().getOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+        OCTSelection fovealSel = new OCTSelection(foveaXPosition - (analysisMetrics.getSelectionWidth() / 2), octOffsetY, analysisMetrics.getSelectionWidth(), analysisMetrics.getOct().getOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         return getSelectionsFromFoveaSelection(fovealSel, octOffsetX, octOffsetY);
     }
 
@@ -63,7 +63,7 @@ public class SelectionUtil {
         //add foveal selction to list of selections
         selections.add(foveaSelection);
         //build selection list to the right of center
-        for (int selX = foveaSelection.getX_position() + analysisMetrics.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisMetrics.getOCT().getOctImage().getWidth() + octOffsetX; selX += analysisMetrics.getDistanceBetweenSelections(), selCnt++) {
+        for (int selX = foveaSelection.getX_position() + analysisMetrics.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisMetrics.getOct().getOctImage().getWidth() + octOffsetX; selX += analysisMetrics.getDistanceBetweenSelections(), selCnt++) {
             selections.add(new OCTSelection(selX, octOffsetY, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "R" + selCnt));
         }
         //build selection list to the left of the center

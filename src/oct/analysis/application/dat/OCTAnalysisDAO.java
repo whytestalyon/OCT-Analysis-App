@@ -8,6 +8,7 @@ package oct.analysis.application.dat;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
+import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.calc.SelectionUtil;
 
@@ -21,7 +22,8 @@ public class OCTAnalysisDAO {
     private OCT oct = null;
     private List<OCTSelection> octSelections = null;
     private int selectionWidth = 5;
-    private static final String PROP_SELECTIONWIDTH = "selectionWidth";
+    private OCTImagePanel octip = null;
+    private int foveaCenterXPosition = 0;
     private static final String PROP_OCTSELECTIONS = "octSelections";
     private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
@@ -49,15 +51,16 @@ public class OCTAnalysisDAO {
         this.micronsBetweenSelections = micronsBetweenSelections;
     }
 
-    public OCT getOCT() {
+    public OCT getOct() {
         return oct;
     }
 
-    public void setOCT(OCT oct) {
+    public void setOct(OCT oct) {
         this.oct = oct;
     }
 
     public void setOctSelections(int foveaXPosition, int octOffsetX, int octOffsetY) {
+        foveaCenterXPosition = foveaXPosition;
         List<OCTSelection> oldSelections = this.octSelections;
         this.octSelections = SelectionUtil.getSelections(foveaXPosition, octOffsetX, octOffsetY);
         propertyChangeSupport.firePropertyChange(PROP_OCTSELECTIONS, oldSelections, octSelections);
@@ -82,11 +85,23 @@ public class OCTAnalysisDAO {
      * @param selectionWidth new value of selectionWidth
      */
     public void setSelectionWidth(int selectionWidth) {
-        int oldSelectionWidth = this.selectionWidth;
         this.selectionWidth = selectionWidth;
-        propertyChangeSupport.firePropertyChange(PROP_SELECTIONWIDTH, oldSelectionWidth, selectionWidth);
+        setOctSelections(foveaCenterXPosition, octip.getImageOffsetX(), octip.getImageOffsetY());
     }
 
+    public int getFoveaCenterXPosition() {
+        return foveaCenterXPosition;
+    }
+
+    public OCTImagePanel getOctip() {
+        return octip;
+    }
+
+    public void setOctip(OCTImagePanel octip) {
+        this.octip = octip;
+    }
+
+    
     /**
      * Add PropertyChangeListener.
      *
