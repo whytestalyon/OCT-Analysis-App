@@ -10,19 +10,16 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import oct.analysis.application.calc.LRPUtil;
-import oct.analysis.application.calc.SelectionUtil;
-import oct.analysis.application.dat.OCTAnalysisDAO;
+import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCT;
+import oct.analysis.application.dat.SelectionLRPManager;
 import oct.io.TiffReader;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
-import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -31,10 +28,8 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class OCTAnalysisUI extends javax.swing.JFrame {
 
     private boolean selectFoveaMode = false;
-    private double micronsBetweenSelections;
-    private int selectionWidth;
-    private OCT scale;
-    private OCTAnalysisDAO analysisMetrics = OCTAnalysisDAO.getInstance();
+    private final OCTAnalysisManager analysisMetrics = OCTAnalysisManager.getInstance();
+    private final SelectionLRPManager selectionLRPManager = SelectionLRPManager.getInstance();
 
     static {
         // set a chart theme using the new shadow generator feature available in
@@ -49,7 +44,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     public OCTAnalysisUI() {
         initComponents();
         //get current selection width setting
-        selectionWidth = widthSlider.getValue();
+        selectionLRPManager.setSelectionWidth(widthSlider.getValue());
     }
 
     /**
@@ -240,14 +235,17 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 //read in image and keep track of the image for later use
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
                 System.out.println("Read in tiff image!");
+                OCT oct = getOCT(tiffBI);
+                if (oct == null) {
+                    throw new IOException("OCT information missing, couldn't load OCT for analysis.");
+                }
+                //add the OCT to the analysis manager, it will take care of making it available to the OCT image panel for drawing
+                analysisMetrics.setOct(oct);
                 //display the selected image in the display
-                octAnalysisPanel.setOct(tiffBI);
                 octAnalysisPanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
-//                octImagePanel.repaint();
+                octAnalysisPanel.repaint();
                 validate();
                 pack();
-                //get the scale for the image
-                scale = promptForOCTMetrics();
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Image loading failed for " + tiffFile.getAbsolutePath()
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
@@ -277,25 +275,19 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     private void octAnalysisPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_octAnalysisPanelMouseClicked
         //only perform actions when mouse click occurs over image area
-        if (selectFoveaMode && octAnalysisPanel.coordinateOverlapsOCT(evt.getX(), evt.getY())) {
+        if (selectFoveaMode && analysisMetrics.getOct() != null && analysisMetrics.getOct().coordinateOverlapsOCT(evt.getX(), evt.getY())) {
             switch (evt.getButton()) {
                 case MouseEvent.BUTTON1:
-                    int imageHeight = octAnalysisPanel.getOct().getHeight();
-                    int panelHeight = octAnalysisPanel.getHeight();
-                    int imageOffsetY = 0;
-                    if (panelHeight > imageHeight) {
-                        imageOffsetY = panelHeight / 2 - imageHeight / 2;
-                    }
-                    OCTSelection fovealSel = new OCTSelection(evt.getX() - (selectionWidth / 2), imageOffsetY, selectionWidth, octAnalysisPanel.getOct().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
-                    analysisMetrics.setFoveaSelection(fovealSel);
-                    System.out.println("Got foveal selection!");
-                    int pixelsBetweenSelections = (int) (micronsBetweenSelections * (1D / scale.getScale()));
-                    analysisMetrics.setDistanceBetweenSelections(pixelsBetweenSelections);
-                    octAnalysisPanel.addOCTSelectionsToPanel();
+                    //clear out any current analysis information
+                    selectionLRPManager.removeSelections(true);
+                    octAnalysisPanel.repaint();
+                    //add new selections and redraw panel
+                    selectionLRPManager.addSelections(evt.getX());
+                    octAnalysisPanel.repaint();
                     break;
                 case MouseEvent.BUTTON3:
-                    System.out.println("Right mouse button clicked!");
-                    octAnalysisPanel.removeOCTSelection();
+                    selectionLRPManager.removeSelections(true);
+                    octAnalysisPanel.repaint();
                     break;
                 default:
                     break;
@@ -304,8 +296,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_octAnalysisPanelMouseClicked
 
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
-        //set the selection width
-        analysisMetrics.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+        //update the selection width
+        selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+        //clear out the current set of analysis selections, but leave any open LRPs up for update from new selections
+        selectionLRPManager.removeSelections(false);
+        octAnalysisPanel.repaint();
+        //update to new selections and redraw panel and update LRPs
+        selectionLRPManager.addSelections(selectionLRPManager.getFoveaCenterXPosition());
+        octAnalysisPanel.repaint();
     }//GEN-LAST:event_widthSliderStateChanged
 
     private void pixelDistRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelDistRatioMenuItemActionPerformed
@@ -317,16 +315,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_analysisMenuActionPerformed
 
     private void lrpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lrpMenuItemActionPerformed
-        System.out.println("Generating LRPs...");
-        //get the lrps for each selection
-        List<XYSeriesCollection> lrps = SelectionUtil.getLRPsFromSelections(octAnalysisPanel.getSelectionList(), octAnalysisPanel.getOct());
-        //diplay the LRPs
-        LRPUtil.displayLRPs(lrps, this);
+        System.out.println("Displaying LRPs...");
+        selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
-    private OCT promptForOCTMetrics() {
+    private OCT getOCT(BufferedImage octImage) {
         //ask for the desired distance between selections
-        micronsBetweenSelections = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
+        double micronsBetweenSelections = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
+        analysisMetrics.setMicronsBetweenSelections((int) micronsBetweenSelections);
         //ask how the user would like to convey the scale (microns per pixel)
         //for the image
         Object[] options = {"I have the scale!",
@@ -342,11 +338,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         switch (n) {
             case JOptionPane.YES_OPTION:
                 double scale = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT scale (microns per pixel):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCT(scale);
+                return new OCT(scale, octImage);
             case JOptionPane.NO_OPTION:
                 double nominalScanWidth = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT nominal scan length(millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 double axialLength = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter OCT scale (millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCT(axialLength, nominalScanWidth, octAnalysisPanel.getWidth());
+                return new OCT(axialLength, nominalScanWidth, octAnalysisPanel.getWidth(), octImage);
             default:
                 break;
         }

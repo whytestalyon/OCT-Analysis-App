@@ -13,8 +13,9 @@ import java.awt.image.BufferedImage;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import oct.analysis.application.calc.SelectionUtil;
-import oct.analysis.application.dat.OCTAnalysisDAO;
+import oct.analysis.application.dat.OCT;
+import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.SelectionLRPManager;
 
 /**
  *
@@ -22,131 +23,68 @@ import oct.analysis.application.dat.OCTAnalysisDAO;
  */
 public class OCTImagePanel extends JPanel {
 
-    private BufferedImage oct = null;
-    private List<OCTSelection> selectionList = null;
-    private final OCTAnalysisDAO analysisMetrics = OCTAnalysisDAO.getInstance();
-    private int imageOffsetY = 0;
-    private int imageOffsetX = 0;
+    private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
+    private final SelectionLRPManager selectionLrpMngr = SelectionLRPManager.getInstance();
 
-    public OCTImagePanel(BufferedImage oct, LayoutManager lm, boolean bln) {
+    public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
         setBorder(BorderFactory.createLineBorder(Color.black));
-        this.oct = oct;
     }
 
-    public OCTImagePanel(BufferedImage oct, LayoutManager lm) {
+    public OCTImagePanel(LayoutManager lm) {
         super(lm);
         setBorder(BorderFactory.createLineBorder(Color.black));
-        this.oct = oct;
     }
 
-    public OCTImagePanel(BufferedImage oct, boolean bln) {
+    public OCTImagePanel(boolean bln) {
         super(bln);
         setBorder(BorderFactory.createLineBorder(Color.black));
-        this.oct = oct;
-    }
-
-    public OCTImagePanel(BufferedImage oct) {
-        setBorder(BorderFactory.createLineBorder(Color.black));
-        this.oct = oct;
     }
 
     public OCTImagePanel() {
-    }
-
-    public void setOct(BufferedImage oct) {
-        this.oct = oct;
+        setBorder(BorderFactory.createLineBorder(Color.black));
     }
 
     @Override
     public Dimension getPreferredSize() {
-        if (oct == null) {
+        if (analysisData.getOct().getOctImage() == null) {
             return super.getPreferredSize(); //To change body of generated methods, choose Tools | Templates.
         } else {
-            return new Dimension(oct.getWidth(), oct.getHeight());
+            return new Dimension(analysisData.getOct().getOctImage().getWidth(), analysisData.getOct().getOctImage().getHeight());
         }
     }
 
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
-        if (oct != null) {
+        OCT oct = analysisData.getOct();
+        if (oct != null && oct.getOctImage() != null) {
             //collect previous offsets
-            int oldXoffset = imageOffsetX;
-            int oldYoffset = imageOffsetY;
+            int oldXoffset = oct.getImageOffsetX();
+            int oldYoffset = oct.getImageOffsetY();
             //center the image within the panel, make sure the selection draw method takes this into account
-            int imageWidth = oct.getWidth();
+            int imageWidth = analysisData.getOct().getOctImage().getWidth();
             int panelWidth = this.getWidth();
-            imageOffsetX = 0;
+            int imageOffsetX = 0;
             if (panelWidth > imageWidth) {
                 imageOffsetX = panelWidth / 2 - imageWidth / 2;
             }
-            int imageHeight = oct.getHeight();
+            oct.setImageOffsetX(imageOffsetX);
+            int imageHeight = analysisData.getOct().getOctImage().getHeight();
             int panelHeight = this.getHeight();
-            imageOffsetY = 0;
+            int imageOffsetY = 0;
             if (panelHeight > imageHeight) {
                 imageOffsetY = panelHeight / 2 - imageHeight / 2;
             }
+            oct.setImageOffsetY(imageOffsetY);
             //draw OCT to the JPanel
-            grphcs.drawImage(oct, imageOffsetX, imageOffsetY, null);
+            grphcs.drawImage(analysisData.getOct().getOctImage(), imageOffsetX, imageOffsetY, null);
+            //update selection to new offset
+            selectionLrpMngr.updateSelectionOffsets(oldXoffset, oldYoffset);
             //draw the selections to the panel if available
-            if (selectionList != null) {
-                selectionList.stream().forEach((selection) -> {
-                    //update selection to new offset
-                    selection.setPanel_x_position(selection.getPanel_x_position() - oldXoffset + imageOffsetX);
-                    selection.setPanel_y_position(selection.getPanel_y_position() - oldYoffset + imageOffsetY);
-                    selection.drawSelection(grphcs);
-                });
-            }
+            selectionLrpMngr.getSelections().stream().forEach((selection) -> {
+                selection.drawSelection(grphcs);
+            });
         }
-    }
-
-    public void addOCTSelectionsToPanel() {
-        selectionList = SelectionUtil.getSelectionsFromFoveaSelection(analysisMetrics.getFoveaSelection(), oct.getWidth(), analysisMetrics.getDistanceBetweenSelections(), imageOffsetX, imageOffsetY);
-        this.repaint();
-    }
-
-    public void removeOCTSelection() {
-        selectionList = null;
-        this.repaint();
-    }
-
-    public BufferedImage getOct() {
-        return oct;
-    }
-
-    public void updateOCTSelections() {
-        removeOCTSelection();
-        addOCTSelectionsToPanel();
-    }
-
-    public List<OCTSelection> getSelectionList() {
-        return selectionList;
-    }
-
-    public int getImageOffsetY() {
-        return imageOffsetY;
-    }
-
-    public int getImageOffsetX() {
-        return imageOffsetX;
-    }
-
-    /**
-     * Determine if the supplied coordinate overlaps with the area of this panel
-     * that displays the OCT image
-     *
-     * @param x
-     * @param y
-     * @return true if the coordinate is within the bounds of the displayed OCT,
-     * false if it isn't or if the OCT image isn't displayed already
-     */
-    public boolean coordinateOverlapsOCT(int x, int y) {
-        if (oct == null) {
-            return false;
-        }
-        boolean withinX = ((imageOffsetX + oct.getWidth()) - x) * (x - imageOffsetX) > -1;
-        boolean withinY = ((imageOffsetY + oct.getHeight()) - y) * (y - imageOffsetY) > -1;
-        return withinX && withinY;
     }
 }

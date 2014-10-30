@@ -5,6 +5,7 @@
  */
 package oct.analysis.application;
 
+import java.awt.BorderLayout;
 import java.awt.HeadlessException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,19 +14,22 @@ import javax.swing.JPanel;
  *
  * @author Brandon
  */
-public class LRPFrame extends JFrame{
+public class LRPFrame extends JFrame {
+
     private JPanel lrpPanel;
 
     public LRPFrame(JPanel lrpPanel) throws HeadlessException {
         this.lrpPanel = lrpPanel;
+        add(lrpPanel, BorderLayout.CENTER);
     }
 
     public LRPFrame(JPanel lrpPanel, String title) throws HeadlessException {
         super(title);
+        add(lrpPanel, BorderLayout.CENTER);
         this.lrpPanel = lrpPanel;
     }
-    
-    public void updateLRP(JPanel newLRP){
+
+    public void updateLRP(JPanel newLRP) {
         this.remove(lrpPanel);
         this.add(newLRP);
         lrpPanel = newLRP;
