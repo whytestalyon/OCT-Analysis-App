@@ -68,6 +68,7 @@ public class SelectionLRPManager {
             selectionMap.put(selection.getSelectionName(), selection);
             if (lrpDispMap.containsKey(selection.getSelectionName())) {
                 //update the JFrame for the given selection with the new LRP
+                System.out.println("Updateing LRP for " + selection.getSelectionName());
                 LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
                 updateFrame.updateLRP(selection.createLRPPanel());
             } else {
@@ -102,15 +103,20 @@ public class SelectionLRPManager {
             selection.setPanel_y_position(selection.getPanel_y_position() - oldYoffset + analysisData.getOct().getImageOffsetY());
         });
     }
-    
+
     public void displayLRPs(Component relativeTo) {
+        //set intial relativity for frames
+        Component prev = null;
+        for (LRPFrame lrpFrame : lrpDispMap.values()) {
+            if (prev == null) {
+                prev = relativeTo;
+            }
+            lrpFrame.setRelativeTo(prev);
+            prev = lrpFrame;
+        }
+        //display frames
         lrpDispMap.forEach((lrpKey, lrpFrame) -> {
-            SwingUtilities.invokeLater(() -> {
-                lrpFrame.setSize(400, 400);
-                lrpFrame.setLocationRelativeTo(relativeTo);
-                lrpFrame.setVisible(true);
-                System.out.println("Popping up " + lrpFrame.getTitle() + " window!");
-            });
+            SwingUtilities.invokeLater(lrpFrame);
         });
     }
 

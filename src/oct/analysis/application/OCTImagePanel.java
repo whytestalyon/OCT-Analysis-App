@@ -47,7 +47,7 @@ public class OCTImagePanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        if (analysisData.getOct().getOctImage() == null) {
+        if (analysisData.getOct() == null) {
             return super.getPreferredSize(); //To change body of generated methods, choose Tools | Templates.
         } else {
             return new Dimension(analysisData.getOct().getOctImage().getWidth(), analysisData.getOct().getOctImage().getHeight());

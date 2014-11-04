@@ -103,9 +103,9 @@ public class XYLineChartExample extends JFrame {
             myFrame.setVisible(true);
         });
 
-        Thread.sleep(10000);
         System.out.println("Removeing old stuff...");
         myFrame.remove(myFrame.chartPanel);
+        Thread.sleep(10000);
         System.out.println("Adding new stuff...");
         myFrame.add(myFrame.createChartPanel(true));
         myFrame.invalidate();
