@@ -8,7 +8,11 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.image.BufferedImage;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -19,7 +23,7 @@ import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -90,12 +94,21 @@ public class OCTSelection {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();
         lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOct()));
+        lrp.addSeries(getLrpPeaks(lrp.getSeries(0)));
         //create chart panel for LRP
         JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Avg. Pixel Intensity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
         XYPlot plot = chart.getXYPlot();
         plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
         plot.getDomainAxis().setInverted(true);
-        plot.setRenderer(new XYLineAndShapeRenderer(true, false));
+        //set up rendering principles
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setSeriesLinesVisible(0, true);
+        renderer.setSeriesShapesVisible(0, false);
+        renderer.setSeriesLinesVisible(1, false);
+        renderer.setSeriesShapesVisible(1, true);
+        renderer.setSeriesShapesFilled(1, true);
+        plot.setRenderer(renderer);
+        //make panel
         ChartPanel panel = new ChartPanel(chart);
         panel.setPreferredSize(new Dimension(200, 200));
         panel.setFillZoomRectangle(true);
@@ -146,4 +159,45 @@ public class OCTSelection {
         return grayLevel;
     }
 
+    public XYSeries getLrpPeaks(XYSeries lrpSeries) {
+        XYSeries lrpMaxPoints = new XYSeries(selectionName + " LRP maximums");
+        XYDataItem leftPeakPoint = new XYDataItem(0, 0);
+        int leftPeakPointIndex = 0;
+        XYDataItem rightPeakPoint = new XYDataItem(0, 0);
+        boolean first = true;
+        int index = -1;
+        List<XYDataItem> pointList = (List<XYDataItem>) lrpSeries.getItems();
+        for (XYDataItem point : pointList) {
+            index++;
+            if (first) {
+                leftPeakPoint = point;
+                leftPeakPointIndex = index;
+                first = false;
+                continue;
+            }
+            if (leftPeakPoint.getYValue() < point.getYValue()) {
+                leftPeakPoint = point;
+                leftPeakPointIndex = index;
+                rightPeakPoint = point;
+            } else if (leftPeakPoint.getYValue() == point.getYValue()) {
+                rightPeakPoint = point;
+            } else {
+                //determine if we are coming down off of a peak by looking two points behind the current point
+                if (leftPeakPointIndex > 0) {
+                    XYDataItem prev = pointList.get(leftPeakPointIndex - 1);
+                    //if two points back has a Y value that is less than or equal to the left peak point
+                    //then we have found the end of the peak and we can process as such
+                    if (prev.getYValue() <= leftPeakPoint.getYValue()) {
+                        double peakx = rightPeakPoint.getXValue() - ((rightPeakPoint.getXValue() - leftPeakPoint.getXValue()) / 2D);
+                        lrpMaxPoints.add(peakx, leftPeakPoint.getY());
+                    }
+                }
+                leftPeakPoint = point;
+                leftPeakPointIndex = index;
+                rightPeakPoint = point;
+            }
+        }
+
+        return lrpMaxPoints;
+    }
 }
