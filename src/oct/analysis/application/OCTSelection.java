@@ -200,4 +200,101 @@ public class OCTSelection {
 
         return lrpMaxPoints;
     }
+
+    public List<XYSeries> getFWHMForLRPPeaks(XYSeries lrpPeaks, XYSeries lrpSeries) {
+        LinkedList<XYSeries> seriesList = new LinkedList<>();
+        List<XYDataItem> pointList = (List<XYDataItem>) lrpSeries.getItems();
+        List<XYDataItem> peakList = (List<XYDataItem>) lrpPeaks.getItems();
+        //iterate through the peaks, process FWHM for each peak
+        for (XYDataItem peak : peakList) {
+            //grab index of the closest point to the peak
+            int peakIndex = -1;
+            for (XYDataItem pnt : pointList) {
+                peakIndex++;
+                if (Math.abs(pnt.getXValue() - peak.getXValue()) < 0.6D) {
+                    break;
+                }
+            }
+            //calculate point with Y value of valley to the left of peak
+            XYDataItem leftValleyPoint = null;
+            ListIterator<XYDataItem> it = pointList.listIterator(peakIndex);
+            double prevY = peak.getYValue();
+            while (it.hasPrevious()) {
+                XYDataItem leftPoint = it.previous();
+                if (leftPoint.getYValue() <= prevY) {
+                    prevY = leftPoint.getYValue();
+                    leftValleyPoint = leftPoint;
+                } else {
+                    break;
+                }
+            }
+            //calculate point with Y value of valley to the right of peak
+            XYDataItem rightValleyPoint = null;
+            it = pointList.listIterator(peakIndex);
+            prevY = peak.getYValue();
+            while (it.hasNext()) {
+                XYDataItem rightPoint = it.next();
+                if (rightPoint.getYValue() <= prevY) {
+                    prevY = rightPoint.getYValue();
+                    rightValleyPoint = rightPoint;
+                } else {
+                    break;
+                }
+            }
+            //determine half max Y value
+            double halfMaxYValue;
+            if (rightValleyPoint.getYValue() == leftValleyPoint.getYValue()) {
+                halfMaxYValue = peak.getYValue() - ((peak.getYValue() - leftValleyPoint.getYValue()) / 2D);
+            } else if (rightValleyPoint.getYValue() > leftValleyPoint.getYValue()) {
+                halfMaxYValue = peak.getYValue() - ((peak.getYValue() - rightValleyPoint.getYValue()) / 2D);
+            } else {
+                halfMaxYValue = peak.getYValue() - ((peak.getYValue() - leftValleyPoint.getYValue()) / 2D);
+            }
+            //determine the X value on both sides of the peak that corresponds to the half max Y value
+            double leftX = pointList.get(0).getYValue(), rightX = pointList.get(pointList.size() - 1).getYValue();
+            XYDataItem prevPoint = pointList.get(peakIndex);
+            it = pointList.listIterator(peakIndex);
+            while (it.hasPrevious()) {
+                XYDataItem leftPoint = it.previous();
+                if (leftPoint.getYValue() == halfMaxYValue) {
+                    leftX = leftPoint.getXValue();
+                } else {
+                    if (leftPoint.getYValue() < halfMaxYValue) {
+                        leftX = calculateXFromYForLineWithTwoPoints(leftPoint, prevPoint, halfMaxYValue);
+                    } else {
+                        prevPoint = leftPoint;
+                    }
+                }
+            }
+            prevPoint = pointList.get(peakIndex);
+            it = pointList.listIterator(peakIndex);
+            while (it.hasNext()) {
+                XYDataItem rightPoint = it.next();
+                if (rightPoint.getYValue() == halfMaxYValue) {
+                    rightX = rightPoint.getXValue();
+                } else {
+                    if (rightPoint.getYValue() < halfMaxYValue) {
+                        rightX = calculateXFromYForLineWithTwoPoints(rightPoint, prevPoint, halfMaxYValue);
+                    } else {
+                        prevPoint = rightPoint;
+                    }
+                }
+            }
+            //store the two points for the half max full width line for this peak
+            XYSeries peakSeries = new XYSeries("(" + peak.getXValue() + "," + peak.getYValue() + ")FWHM");
+            peakSeries.add(leftX, halfMaxYValue);
+            peakSeries.add(rightX, halfMaxYValue);
+            seriesList.add(peakSeries);
+        }
+        return seriesList;
+    }
+
+    private double calculateXFromYForLineWithTwoPoints(XYDataItem pt1, XYDataItem pt2, double y) {
+        //calculate slope 
+        double slope = (pt1.getYValue() - pt2.getYValue()) / (pt1.getXValue() - pt2.getXValue());
+        //calculate y value at y-intercept (aka b)
+        double yint = pt1.getYValue() - (slope * pt1.getXValue());
+        //return 
+        return (y - yint) / slope;
+    }
 }
