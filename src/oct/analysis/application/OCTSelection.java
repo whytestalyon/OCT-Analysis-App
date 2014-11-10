@@ -8,8 +8,6 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -94,7 +92,12 @@ public class OCTSelection {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();
         lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOct()));
+        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
         lrp.addSeries(getLrpPeaks(lrp.getSeries(0)));
+        List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
+        fwhm.forEach((fwhmSeries) -> {
+            lrp.addSeries(fwhmSeries);
+        });
         //create chart panel for LRP
         JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Avg. Pixel Intensity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
         XYPlot plot = chart.getXYPlot();
@@ -104,9 +107,16 @@ public class OCTSelection {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, true);
         renderer.setSeriesShapesVisible(0, false);
+        renderer.setSeriesPaint(0, Color.RED);
         renderer.setSeriesLinesVisible(1, false);
         renderer.setSeriesShapesVisible(1, true);
         renderer.setSeriesShapesFilled(1, true);
+        renderer.setSeriesPaint(1, Color.BLUE);
+        for (int i = 2; i < fwhm.size() + 2; i++) {
+            renderer.setSeriesLinesVisible(i, true);
+            renderer.setSeriesShapesVisible(i, false);
+            renderer.setSeriesPaint(i, Color.BLACK);
+        }
         plot.setRenderer(renderer);
         //make panel
         ChartPanel panel = new ChartPanel(chart);
@@ -251,16 +261,20 @@ public class OCTSelection {
                 halfMaxYValue = peak.getYValue() - ((peak.getYValue() - leftValleyPoint.getYValue()) / 2D);
             }
             //determine the X value on both sides of the peak that corresponds to the half max Y value
-            double leftX = pointList.get(0).getYValue(), rightX = pointList.get(pointList.size() - 1).getYValue();
+            double leftX = pointList.get(0).getXValue(), rightX = pointList.get(pointList.size() - 1).getXValue();
             XYDataItem prevPoint = pointList.get(peakIndex);
             it = pointList.listIterator(peakIndex);
             while (it.hasPrevious()) {
                 XYDataItem leftPoint = it.previous();
                 if (leftPoint.getYValue() == halfMaxYValue) {
                     leftX = leftPoint.getXValue();
+                    break;
                 } else {
                     if (leftPoint.getYValue() < halfMaxYValue) {
+//                        System.out.println("Left X for peak (" + peak.getXValue() + "," + peak.getYValue() + "): ");
                         leftX = calculateXFromYForLineWithTwoPoints(leftPoint, prevPoint, halfMaxYValue);
+//                        System.out.println("    Left X: (" + leftX + "," + halfMaxYValue + "): ");
+                        break;
                     } else {
                         prevPoint = leftPoint;
                     }
@@ -272,9 +286,13 @@ public class OCTSelection {
                 XYDataItem rightPoint = it.next();
                 if (rightPoint.getYValue() == halfMaxYValue) {
                     rightX = rightPoint.getXValue();
+                    break;
                 } else {
                     if (rightPoint.getYValue() < halfMaxYValue) {
+//                        System.out.println("Right X for peak (" + peak.getXValue() + "," + peak.getYValue() + "): ");
                         rightX = calculateXFromYForLineWithTwoPoints(rightPoint, prevPoint, halfMaxYValue);
+//                        System.out.println("    Right X: (" + leftX + "," + halfMaxYValue + "): ");
+                        break;
                     } else {
                         prevPoint = rightPoint;
                     }
@@ -290,10 +308,14 @@ public class OCTSelection {
     }
 
     private double calculateXFromYForLineWithTwoPoints(XYDataItem pt1, XYDataItem pt2, double y) {
+//        System.out.println("    P1: (" + pt1.getXValue() + "," + pt1.getYValue() + ")");
+//        System.out.println("    P2: (" + pt2.getXValue() + "," + pt2.getYValue() + ")");
         //calculate slope 
         double slope = (pt1.getYValue() - pt2.getYValue()) / (pt1.getXValue() - pt2.getXValue());
+//        System.out.println("    Slope: " + slope);
         //calculate y value at y-intercept (aka b)
         double yint = pt1.getYValue() - (slope * pt1.getXValue());
+//        System.out.println("    Y-int: " + yint);
         //return 
         return (y - yint) / slope;
     }
