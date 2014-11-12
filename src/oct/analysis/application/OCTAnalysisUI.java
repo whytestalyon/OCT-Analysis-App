@@ -10,7 +10,12 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.Hashtable;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -30,6 +35,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private boolean selectFoveaMode = false;
     private final OCTAnalysisManager analysisMetrics = OCTAnalysisManager.getInstance();
     private final SelectionLRPManager selectionLRPManager = SelectionLRPManager.getInstance();
+    private DecimalFormat df = new DecimalFormat("#.00");
 
     static {
         // set a chart theme using the new shadow generator feature available in
@@ -57,10 +63,17 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void initComponents() {
 
         openFileChooser = new javax.swing.JFileChooser();
+        lrpButtonGroup = new javax.swing.ButtonGroup();
+        selModeButtonGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
-        jPanel1 = new javax.swing.JPanel();
+        modesPanels = new javax.swing.JPanel();
+        lrpModePanel = new javax.swing.JPanel();
+        linearLRPModeButton = new javax.swing.JRadioButton();
+        logModeLRPButton = new javax.swing.JRadioButton();
+        selectionWidthModePanel = new javax.swing.JPanel();
+        pixelModeButton = new javax.swing.JRadioButton();
+        micronModeButton = new javax.swing.JRadioButton();
         selectionWidthSliderPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
         widthSlider = new javax.swing.JSlider();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
@@ -100,14 +113,83 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
         octAnalysisPanelLayout.setVerticalGroup(
             octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 364, Short.MAX_VALUE)
+            .addGap(0, 412, Short.MAX_VALUE)
         );
 
-        jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 2, true));
+        modesPanels.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
-        jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel2.setText("OCT Selection Width (pixels)");
+        lrpModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("LRP Mode"));
+
+        lrpButtonGroup.add(linearLRPModeButton);
+        linearLRPModeButton.setSelected(true);
+        linearLRPModeButton.setText("Linear LRP");
+
+        lrpButtonGroup.add(logModeLRPButton);
+        logModeLRPButton.setText("Logrithmic LRP");
+        logModeLRPButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logModeLRPButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout lrpModePanelLayout = new javax.swing.GroupLayout(lrpModePanel);
+        lrpModePanel.setLayout(lrpModePanelLayout);
+        lrpModePanelLayout.setHorizontalGroup(
+            lrpModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(lrpModePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(lrpModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(linearLRPModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(logModeLRPButton, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        lrpModePanelLayout.setVerticalGroup(
+            lrpModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(lrpModePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(linearLRPModeButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(logModeLRPButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Selection Width Mode"));
+
+        selModeButtonGroup.add(pixelModeButton);
+        pixelModeButton.setSelected(true);
+        pixelModeButton.setText("Pixels");
+        pixelModeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pixelModeButtonActionPerformed(evt);
+            }
+        });
+
+        selModeButtonGroup.add(micronModeButton);
+        micronModeButton.setText("Microns");
+        micronModeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                micronModeButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout selectionWidthModePanelLayout = new javax.swing.GroupLayout(selectionWidthModePanel);
+        selectionWidthModePanel.setLayout(selectionWidthModePanelLayout);
+        selectionWidthModePanelLayout.setHorizontalGroup(
+            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pixelModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(micronModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+        );
+        selectionWidthModePanelLayout.setVerticalGroup(
+            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pixelModeButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(micronModeButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        selectionWidthSliderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Selection Width"));
 
         widthSlider.setMajorTickSpacing(2);
         widthSlider.setMaximum(15);
@@ -127,29 +209,31 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 556, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(selectionWidthSliderPanelLayout.createSequentialGroup()
-                .addComponent(jLabel2)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, selectionWidthSliderPanelLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(widthSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+        javax.swing.GroupLayout modesPanelsLayout = new javax.swing.GroupLayout(modesPanels);
+        modesPanels.setLayout(modesPanelsLayout);
+        modesPanelsLayout.setHorizontalGroup(
+            modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(modesPanelsLayout.createSequentialGroup()
+                .addComponent(lrpModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+        modesPanelsLayout.setVerticalGroup(
+            modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(lrpModePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         jMenu1.setText("File");
@@ -211,15 +295,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(modesPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(modesPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
@@ -319,6 +403,24 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
+    private void logModeLRPButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeLRPButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_logModeLRPButtonActionPerformed
+
+    private void pixelModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelModeButtonActionPerformed
+        widthSlider.setLabelTable(widthSlider.createStandardLabels(2));
+    }//GEN-LAST:event_pixelModeButtonActionPerformed
+
+    private void micronModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micronModeButtonActionPerformed
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        for (int i = 1; i < 16; i++) {
+            if (i % 2 == 1) {
+                labelTable.put(i, new JLabel(df.format((double) i * analysisMetrics.getOct().getScale())));
+            }
+        }
+        widthSlider.setLabelTable(labelTable);
+    }//GEN-LAST:event_micronModeButtonActionPerformed
+
     private OCT getOCT(BufferedImage octImage) {
         //ask for the desired distance between selections
         double micronsBetweenSelections = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
@@ -390,14 +492,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu analysisMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JRadioButton linearLRPModeButton;
+    private javax.swing.JRadioButton logModeLRPButton;
+    private javax.swing.ButtonGroup lrpButtonGroup;
     private javax.swing.JMenuItem lrpMenuItem;
+    private javax.swing.JPanel lrpModePanel;
+    private javax.swing.JRadioButton micronModeButton;
+    private javax.swing.JPanel modesPanels;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JMenuItem pixelDistRatioMenuItem;
+    private javax.swing.JRadioButton pixelModeButton;
+    private javax.swing.ButtonGroup selModeButtonGroup;
+    private javax.swing.JPanel selectionWidthModePanel;
     private javax.swing.JPanel selectionWidthSliderPanel;
     private javax.swing.JSlider widthSlider;
     // End of variables declaration//GEN-END:variables
