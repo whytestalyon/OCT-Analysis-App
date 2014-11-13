@@ -33,7 +33,7 @@ public class OCTSelection {
 
     public static final int FOVEAL_SELECTION = 0;
     public static final int PERIPHERAL_SELECTION = 1;
-    public static final int SMOOTHING_FACTOR = 5; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
+    public static final int SMOOTHING_FACTOR = 10; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
     private final String selectionName;
     private final int selectionType;
     private int panel_x_position;
@@ -129,18 +129,18 @@ public class OCTSelection {
     public XYSeries getLrpSeriesFromOCT(OCT oct) {
         XYSeries lrp = new XYSeries(selectionName + " LRP");
         lrp.setKey(selectionName);
-        int value = Integer.MAX_VALUE;
+        double value = -1;
         //iterate over each row of pixels in the selection area and calculate average pixel intensity
         for (int y = height - 1; y >= 0; y--) {
-            int sum = 0;
+            double sum = 0;
 
             for (int xindex = panel_x_position - oct.getImageOffsetX() + 1; xindex < panel_x_position - oct.getImageOffsetX() + 1 + width; xindex++) {
                 sum += calculateGrayScaleValue(oct.getOctImage().getRGB(xindex, y));
             }
             //calculate average pixel intensity
-            int avg = sum / width;
+            double avg = sum / (double)width;
             //smooth the LRP to provide a higher quality LRP signal
-            if (value == Integer.MAX_VALUE) {
+            if (value < -1) {
                 //initialize the first value for the smoothing filter
                 value = avg;
             } else {
