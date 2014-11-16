@@ -14,6 +14,7 @@ import java.util.ListIterator;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.SelectionLRPManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -33,7 +34,7 @@ public class OCTSelection {
 
     public static final int FOVEAL_SELECTION = 0;
     public static final int PERIPHERAL_SELECTION = 1;
-    public static final int SMOOTHING_FACTOR = 10; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
+    private static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
     private final String selectionName;
     private final int selectionType;
     private int panel_x_position;
@@ -145,7 +146,7 @@ public class OCTSelection {
                 value = avg;
             } else {
                 //smooth the LRP signal
-                value += ((avg - value) / SMOOTHING_FACTOR);
+                value += ((avg - value) / selMngr.getLrpSmoothingFactor());
             }
             //add LRP value to return series
             lrp.add(y, value);

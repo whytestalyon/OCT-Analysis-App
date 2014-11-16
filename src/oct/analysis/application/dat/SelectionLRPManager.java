@@ -29,12 +29,21 @@ public class SelectionLRPManager {
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
     private int foveaCenterXPosition;
     private int selectionWidth;
+    private int lrpSmoothingFactor = 10;
 
     private SelectionLRPManager() {
     }
 
     public static SelectionLRPManager getInstance() {
         return SelectionLRPManagerHolder.INSTANCE;
+    }
+
+    public int getLrpSmoothingFactor() {
+        return lrpSmoothingFactor;
+    }
+
+    public void setLrpSmoothingFactor(int lrpSmoothingFactor) {
+        this.lrpSmoothingFactor = lrpSmoothingFactor;
     }
 
     public int getFoveaCenterXPosition() {
