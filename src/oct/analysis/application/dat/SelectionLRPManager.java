@@ -27,9 +27,10 @@ public class SelectionLRPManager {
     private final HashMap<String, OCTSelection> selectionMap = new HashMap<>(50);//key is selection name
     private final HashMap<String, LRPFrame> lrpDispMap = new HashMap<>(50);//key is name of selection that backs lrp
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
-    private int foveaCenterXPosition;
+    private String selectedSelectionName = "";
+    private int foveaCenterXPosition = -1;
     private int selectionWidth;
-    private int lrpSmoothingFactor = 10;
+    private int lrpSmoothingFactor = 5;
 
     private SelectionLRPManager() {
     }
@@ -62,6 +63,10 @@ public class SelectionLRPManager {
         this.selectionWidth = selectionWidth;
     }
 
+    public void setSelectedSelection(OCTSelection sel){
+        selectedSelectionName = sel.getSelectionName();
+    }
+    
     private static class SelectionLRPManagerHolder {
 
         private static final SelectionLRPManager INSTANCE = new SelectionLRPManager();
@@ -69,23 +74,27 @@ public class SelectionLRPManager {
 
     public void addSelections(int foveaXPosition) {
         foveaCenterXPosition = foveaXPosition;
-        updateSelections(getSelections(foveaXPosition));
+        addOrUpdateSelections(getSelections(foveaXPosition));
     }
 
-    public void updateSelections(List<OCTSelection> selections) {
+    public void addOrUpdateSelections(List<OCTSelection> selections) {
         selections.stream().forEach((selection) -> {
-            selectionMap.put(selection.getSelectionName(), selection);
-            if (lrpDispMap.containsKey(selection.getSelectionName())) {
-                //update the JFrame for the given selection with the new LRP
-                System.out.println("Updateing LRP for " + selection.getSelectionName());
-                LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
-                updateFrame.updateLRP(selection.createLRPPanel());
-            } else {
-                //add new LRP frame for never before added selection
-                LRPFrame newFrame = new LRPFrame(selection.createLRPPanel());
-                lrpDispMap.put(selection.getSelectionName(), newFrame);
-            }
+            addOrUpdateSelection(selection);
         });
+    }
+
+    public void addOrUpdateSelection(OCTSelection selection) {
+        selectionMap.put(selection.getSelectionName(), selection);
+        if (lrpDispMap.containsKey(selection.getSelectionName())) {
+            //update the JFrame for the given selection with the new LRP
+            System.out.println("Updating LRP for " + selection.getSelectionName());
+            LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
+            updateFrame.updateLRP(selection.createLRPPanel());
+        } else {
+            //add new LRP frame for never before added selection
+            LRPFrame newFrame = new LRPFrame(selection.createLRPPanel());
+            lrpDispMap.put(selection.getSelectionName(), newFrame);
+        }
     }
 
     public void removeSelections(boolean removeLRPs) {
@@ -99,6 +108,18 @@ public class SelectionLRPManager {
         }
         //remove all of the selections
         selectionMap.clear();
+    }
+    
+    public void removeSelection(OCTSelection s,boolean removeLRP) {
+        if (removeLRP) {
+            if(lrpDispMap.containsKey(s.getSelectionName())){
+                lrpDispMap.get(s.getSelectionName()).dispose();
+            }
+            //remove the lrp from the tracking map
+            lrpDispMap.remove(s.getSelectionName());
+        }
+        //remove given selection from selection map
+        selectionMap.remove(s.getSelectionName());
     }
 
     public List<OCTSelection> getSelections() {
@@ -163,6 +184,31 @@ public class SelectionLRPManager {
     }
 
     /**
+     * Given an X coordinate return a selection centered around the supplied
+     * position.
+     *
+     * @param position the X position corresponding to the center of the desired
+     * selection
+     * @param selectionName
+     * @return a selection centered around the supplied position
+     */
+    public OCTSelection getSelection(int position, String selectionName) {
+        return new OCTSelection(position - (selectionWidth / 2), analysisData.getOct().getImageOffsetY(), selectionWidth, analysisData.getOct().getOctImage().getHeight(), OCTSelection.PERIPHERAL_SELECTION, selectionName);
+    }
+
+    /**
+     * Given an X coordinate of the fovea return single selection centered
+     * around the supplied position.
+     *
+     * @param position the X position corresponding to the center of the fovea
+     * @return fovea selection
+     */
+    public OCTSelection getFoveaSelection(int position) {
+        foveaCenterXPosition = position;
+        return new OCTSelection(position - (selectionWidth / 2), analysisData.getOct().getImageOffsetY(), selectionWidth, analysisData.getOct().getOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+    }
+
+    /**
      * Build out the OCT selections to the right and the left of the Foveal
      * Selection. This method will place a selection ever
      * @code{analysisMetrics.getDistanceBetweenSelections()} pixels (center to
@@ -187,5 +233,51 @@ public class SelectionLRPManager {
         }
 
         return selections;
+    }
+
+    /**
+     * Get the selection (excluding the fovea selection) that overlaps the give
+     * X coordinate.
+     *
+     * @param xpos
+     * @return the selection that overlaps the give X coordinate, or null if
+     * none is found
+     */
+    public OCTSelection getOverlappingSelection(int xpos) {
+        for (OCTSelection selection : selectionMap.values()) {
+            if (selection.getSelectionType() == OCTSelection.PERIPHERAL_SELECTION && selection.positionOverlapsSelection(xpos)) {
+                return selection;
+            }
+        }
+        return null;
+    }
+    
+    public void unselectSelections(){
+        selectionMap.forEach((selKey, selection) -> {
+            selection.setHighlighted(false);
+        });
+        selectedSelectionName = "";
+    }
+    
+    public void moveSelectedSelectionRight(){
+        moveSelectedSelection(1);
+    }
+    
+    public void moveSelectedSelectionLeft(){
+        moveSelectedSelection(-1);
+    }
+    
+    private void moveSelectedSelection(int pixelsToMoveBy){
+        OCTSelection selection = null;
+        if(!selectedSelectionName.isEmpty() 
+                && (selection = selectionMap.get(selectedSelectionName)) != null
+                && (selection.getPanel_x_position() + pixelsToMoveBy) > analysisData.getOct().getImageOffsetX()
+                && ((selection.getPanel_x_position() + pixelsToMoveBy + selectionWidth) < analysisData.getOct().getImageOffsetX() + analysisData.getOct().getOctImage().getWidth())){
+            selection.setPanel_x_position(selection.getPanel_x_position() + pixelsToMoveBy);
+        }
+    }
+    
+    public OCTSelection getSelectedSelection(){
+        return selectionMap.get(selectedSelectionName);
     }
 }

@@ -41,6 +41,7 @@ public class OCTSelection {
     private int panel_y_position;
     private final int width;
     private final int height;
+    private boolean highlighted = false;
 
     public OCTSelection(int panel_x_position, int panel_y_position, int width, int height, int selectionType, String selectionName) {
         this.panel_x_position = panel_x_position;
@@ -52,9 +53,25 @@ public class OCTSelection {
     }
 
     public void drawSelection(Graphics g) {
-        g.setColor(Color.green);
+        if (highlighted) {
+            g.setColor(Color.pink);
+        } else {
+            g.setColor(Color.green);
+        }
         System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
         g.drawRect(panel_x_position, panel_y_position, width, height - 1);
+    }
+    
+    public void clearSelectionDraw(Graphics g){
+        g.clearRect(panel_x_position, panel_y_position, width, height - 1);
+    }
+
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
     }
 
     public int getPanel_x_position() {
@@ -139,7 +156,7 @@ public class OCTSelection {
                 sum += calculateGrayScaleValue(oct.getOctImage().getRGB(xindex, y));
             }
             //calculate average pixel intensity
-            double avg = sum / (double)width;
+            double avg = sum / (double) width;
             //smooth the LRP to provide a higher quality LRP signal
             if (value < -1) {
                 //initialize the first value for the smoothing filter
@@ -319,5 +336,9 @@ public class OCTSelection {
 //        System.out.println("    Y-int: " + yint);
         //return 
         return (y - yint) / slope;
+    }
+
+    public boolean positionOverlapsSelection(int xpos) {
+        return xpos <= panel_x_position + width && xpos >= panel_x_position;
     }
 }
