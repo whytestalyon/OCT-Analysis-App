@@ -409,7 +409,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             try {
                 //read in image and keep track of the image for later use
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
-                System.out.println("Read in tiff image!");
+//                System.out.println("Read in tiff image!");
                 OCT oct = Util.getOCT(tiffBI, this, octAnalysisPanel);
                 if (oct == null) {
                     throw new IOException("OCT information missing, couldn't load OCT for analysis.");
@@ -427,7 +427,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 );
             }
         } else {
-            System.out.println("File access cancelled by user.");
+//            System.out.println("File access cancelled by user.");
         }
     }//GEN-LAST:event_fileOpenMenuItemActionPerformed
 
@@ -550,7 +550,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_toolsMenuActionPerformed
 
     private void lrpMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_lrpMenuItemActionPerformed
-        System.out.println("Displaying LRPs...");
+//        System.out.println("Displaying LRPs...");
         selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
@@ -618,18 +618,24 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_singleSelectMenuItemActionPerformed
 
     private void octAnalysisPanelKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_octAnalysisPanelKeyPressed
-        selectionLRPManager.getSelectedSelection().clearSelectionDraw(octAnalysisPanel.getGraphics());
+        OCTSelection sel = null;
+        //determine direction to move the selection
         switch (evt.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
-                selectionLRPManager.moveSelectedSelectionRight();
+                sel = selectionLRPManager.getSelectedSelection();
+                selectionLRPManager.moveSelectionRight(sel);
                 break;
             case KeyEvent.VK_LEFT:
-                selectionLRPManager.moveSelectedSelectionLeft();
+                sel = selectionLRPManager.getSelectedSelection();
+                selectionLRPManager.moveSelectionLeft(sel);
                 break;
             default:
                 break;
         }
-        selectionLRPManager.getSelectedSelection().drawSelection(octAnalysisPanel.getGraphics());
+        //refresh the OCT analysis panel with the updated selection information
+        octAnalysisPanel.repaint();
+        //refresh the LRP
+        selectionLRPManager.addOrUpdateSelection(sel);
     }//GEN-LAST:event_octAnalysisPanelKeyPressed
 
     public void enableAnalysisTools() {

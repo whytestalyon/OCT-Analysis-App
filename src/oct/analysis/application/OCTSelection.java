@@ -8,6 +8,7 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -42,6 +43,7 @@ public class OCTSelection {
     private final int width;
     private final int height;
     private boolean highlighted = false;
+    private boolean drawn = false;
 
     public OCTSelection(int panel_x_position, int panel_y_position, int width, int height, int selectionType, String selectionName) {
         this.panel_x_position = panel_x_position;
@@ -58,12 +60,9 @@ public class OCTSelection {
         } else {
             g.setColor(Color.green);
         }
-        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
+//        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
         g.drawRect(panel_x_position, panel_y_position, width, height - 1);
-    }
-    
-    public void clearSelectionDraw(Graphics g){
-        g.clearRect(panel_x_position, panel_y_position, width, height - 1);
+        drawn = true;
     }
 
     public boolean isHighlighted() {
@@ -98,6 +97,14 @@ public class OCTSelection {
         return height;
     }
 
+    public boolean isDrawn() {
+        return drawn;
+    }
+
+    public void setDrawn(boolean drawn) {
+        this.drawn = drawn;
+    }
+
     public int getSelectionType() {
         return selectionType;
     }
@@ -110,7 +117,7 @@ public class OCTSelection {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();
         lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOct()));
-        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
+//        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
         lrp.addSeries(getLrpPeaks(lrp.getSeries(0)));
         List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
         fwhm.forEach((fwhmSeries) -> {

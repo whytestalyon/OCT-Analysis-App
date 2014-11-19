@@ -82,6 +82,7 @@ public class OCTImagePanel extends JPanel {
             //draw the selections to the panel if available
             selectionLrpMngr.getSelections().stream().forEach((selection) -> {
                 selection.drawSelection(grphcs);
+                selection.setDrawn(true);
             });
         }
     }
