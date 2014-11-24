@@ -64,6 +64,9 @@ public class SelectionLRPManager {
 
     public void setSelectionWidth(int selectionWidth) {
         this.selectionWidth = selectionWidth;
+        selectionMap.forEachValue(1000, (selection) -> {
+            selection.setWidth(selectionWidth);
+        });
     }
 
     public void setSelectedSelection(OCTSelection sel) {
@@ -75,9 +78,9 @@ public class SelectionLRPManager {
         private static final SelectionLRPManager INSTANCE = new SelectionLRPManager();
     }
 
-    public void addSelections(int foveaXPosition) {
+    public void addOrUpdateSpatialSelections(int foveaXPosition) {
         foveaCenterXPosition = foveaXPosition;
-        addOrUpdateSelections(getSelections(foveaXPosition));
+        addOrUpdateSelections(getSpatialSelections(foveaXPosition));
     }
 
     public void addOrUpdateSelections(List<OCTSelection> selections) {
@@ -91,15 +94,27 @@ public class SelectionLRPManager {
         SwingUtilities.invokeLater(() -> {
             if (lrpDispMap.containsKey(selection.getSelectionName())) {
                 //update the JFrame for the given selection with the new LRP
-//            System.out.println("Updating LRP for " + selection.getSelectionName());
-                LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
-                updateFrame.updateLRP(selection.createLRPPanel());
+                updateLRP(selection);
             } else {
                 //add new LRP frame for never before added selection
                 LRPFrame newFrame = new LRPFrame(selection.createLRPPanel());
                 lrpDispMap.put(selection.getSelectionName(), newFrame);
             }
         });
+    }
+
+    public void updateLRPs() {
+        SwingUtilities.invokeLater(() -> {
+            selectionMap.values().forEach((selection) -> {
+                //update the JFrame for the given selection with the new LRP
+                updateLRP(selection);
+            });
+        });
+    }
+
+    private void updateLRP(OCTSelection selection) {
+        LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
+        updateFrame.updateLRP(selection.createLRPPanel());
     }
 
     public void removeSelections(boolean removeLRPs) {
@@ -183,7 +198,7 @@ public class SelectionLRPManager {
      * @return list containing all of the OCT image selections based on the
      * foveal selection and the desired distance between selections
      */
-    private List<OCTSelection> getSelections(int foveaXPosition) {
+    private List<OCTSelection> getSpatialSelections(int foveaXPosition) {
         OCTSelection fovealSel = new OCTSelection(foveaXPosition - (selectionWidth / 2), analysisData.getOct().getImageOffsetY(), selectionWidth, analysisData.getOct().getOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         return getSelectionsFromFoveaSelection(fovealSel);
     }

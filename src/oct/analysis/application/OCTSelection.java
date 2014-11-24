@@ -40,7 +40,7 @@ public class OCTSelection {
     private final int selectionType;
     private int panel_x_position;
     private int panel_y_position;
-    private final int width;
+    private int width;
     private final int height;
     private boolean highlighted = false;
     private boolean drawn = false;
@@ -87,6 +87,10 @@ public class OCTSelection {
 
     public void setPanel_y_position(int panel_y_position) {
         this.panel_y_position = panel_y_position;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
     }
 
     public int getWidth() {
