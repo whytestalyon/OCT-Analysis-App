@@ -13,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 
 /**
@@ -52,6 +53,25 @@ public class OCTImagePanel extends JPanel {
         }
     }
 
+    /**
+     * Changes the mode with which the OCT should be rendered. Calling this
+     * method will cause the panel to redraw the OCT and any analysis artifacts
+     * using the new mode setting.
+     *
+     * @param mode th mode to change the display of the OCT image
+     */
+    public void setOCTMode(OCTMode mode) {
+        switch (mode) {
+            case LINEAR:
+                analysisData.getOct().transformOCTToLinear();
+                break;
+            case LOG:
+                analysisData.getOct().transformOCTToLogrithmic();
+                break;
+        }
+        this.repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
@@ -61,14 +81,14 @@ public class OCTImagePanel extends JPanel {
             int oldXoffset = oct.getImageOffsetX();
             int oldYoffset = oct.getImageOffsetY();
             //center the image within the panel, make sure the selection draw method takes this into account
-            int imageWidth = analysisData.getOct().getOctImage().getWidth();
+            int imageWidth = oct.getOctImage().getWidth();
             int panelWidth = this.getWidth();
             int imageOffsetX = 0;
             if (panelWidth > imageWidth) {
                 imageOffsetX = panelWidth / 2 - imageWidth / 2;
             }
             oct.setImageOffsetX(imageOffsetX);
-            int imageHeight = analysisData.getOct().getOctImage().getHeight();
+            int imageHeight = oct.getOctImage().getHeight();
             int panelHeight = this.getHeight();
             int imageOffsetY = 0;
             if (panelHeight > imageHeight) {
@@ -76,7 +96,7 @@ public class OCTImagePanel extends JPanel {
             }
             oct.setImageOffsetY(imageOffsetY);
             //draw OCT to the JPanel
-            grphcs.drawImage(analysisData.getOct().getOctImage(), imageOffsetX, imageOffsetY, null);
+            grphcs.drawImage(oct.getOctImage(), imageOffsetX, imageOffsetY, null);
             //update selection to new offset
             selectionLrpMngr.updateSelectionOffsets(oldXoffset, oldYoffset);
             //draw the selections to the panel if available

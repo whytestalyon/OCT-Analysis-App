@@ -22,6 +22,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCT;
+import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.ToolMode;
 import oct.io.TiffReader;
@@ -71,9 +72,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         modesPanels = new javax.swing.JPanel();
-        lrpModePanel = new javax.swing.JPanel();
-        linearLRPModeButton = new javax.swing.JRadioButton();
-        logModeLRPButton = new javax.swing.JRadioButton();
+        octModePanel = new javax.swing.JPanel();
+        linearOCTModeButton = new javax.swing.JRadioButton();
+        logModeOCTButton = new javax.swing.JRadioButton();
         selectionWidthModePanel = new javax.swing.JPanel();
         pixelModeButton = new javax.swing.JRadioButton();
         micronModeButton = new javax.swing.JRadioButton();
@@ -144,38 +145,43 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         modesPanels.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        lrpModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("LRP Mode"));
+        octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Mode"));
 
-        lrpButtonGroup.add(linearLRPModeButton);
-        linearLRPModeButton.setSelected(true);
-        linearLRPModeButton.setText("Linear LRP");
-
-        lrpButtonGroup.add(logModeLRPButton);
-        logModeLRPButton.setText("Logrithmic LRP");
-        logModeLRPButton.addActionListener(new java.awt.event.ActionListener() {
+        lrpButtonGroup.add(linearOCTModeButton);
+        linearOCTModeButton.setText("Linear OCT");
+        linearOCTModeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logModeLRPButtonActionPerformed(evt);
+                linearOCTModeButtonActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout lrpModePanelLayout = new javax.swing.GroupLayout(lrpModePanel);
-        lrpModePanel.setLayout(lrpModePanelLayout);
-        lrpModePanelLayout.setHorizontalGroup(
-            lrpModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(lrpModePanelLayout.createSequentialGroup()
+        lrpButtonGroup.add(logModeOCTButton);
+        logModeOCTButton.setSelected(true);
+        logModeOCTButton.setText("Logrithmic OCT");
+        logModeOCTButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logModeOCTButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout octModePanelLayout = new javax.swing.GroupLayout(octModePanel);
+        octModePanel.setLayout(octModePanelLayout);
+        octModePanelLayout.setHorizontalGroup(
+            octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(octModePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(lrpModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(linearLRPModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(logModeLRPButton, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
+                .addGroup(octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(linearOCTModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(logModeOCTButton, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
                 .addContainerGap())
         );
-        lrpModePanelLayout.setVerticalGroup(
-            lrpModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(lrpModePanelLayout.createSequentialGroup()
+        octModePanelLayout.setVerticalGroup(
+            octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(octModePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(linearLRPModeButton)
+                .addComponent(linearOCTModeButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(logModeLRPButton)
+                .addComponent(logModeOCTButton)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -275,7 +281,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         modesPanelsLayout.setHorizontalGroup(
             modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(modesPanelsLayout.createSequentialGroup()
-                .addComponent(lrpModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(octModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -289,7 +295,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(smoothingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(lrpModePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(octModePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
@@ -671,9 +677,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
-    private void logModeLRPButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeLRPButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_logModeLRPButtonActionPerformed
+    private void logModeOCTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeOCTButtonActionPerformed
+        octAnalysisPanel.setOCTMode(OCTMode.LOG);
+    }//GEN-LAST:event_logModeOCTButtonActionPerformed
 
     private void pixelModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelModeButtonActionPerformed
         widthSlider.setLabelTable(widthSlider.createStandardLabels(2));
@@ -769,6 +775,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         setAnalysisMode(AnalysisMode.SPATIAL);
     }//GEN-LAST:event_spatialAnalysisToggleButtonActionPerformed
 
+    private void linearOCTModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearOCTModeButtonActionPerformed
+        octAnalysisPanel.setOCTMode(OCTMode.LINEAR);
+    }//GEN-LAST:event_linearOCTModeButtonActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -783,7 +793,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         smoothingSlider.setValue(5);
         widthSlider.setValue(5);
         pixelModeButton.setSelected(true);
-        linearLRPModeButton.setSelected(true);
+        linearOCTModeButton.setSelected(true);
         selectionLRPManager.setFoveaCenterXPosition(-1);
     }
 
@@ -856,16 +866,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton jToggleButton7;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToolBar jToolBar2;
-    private javax.swing.JRadioButton linearLRPModeButton;
-    private javax.swing.JRadioButton logModeLRPButton;
+    private javax.swing.JRadioButton linearOCTModeButton;
+    private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
     private javax.swing.JMenuItem lrpMenuItem;
-    private javax.swing.JPanel lrpModePanel;
     private javax.swing.JRadioButton micronModeButton;
     private javax.swing.JMenuItem mirrorAnalysisMenuItem;
     private javax.swing.JToggleButton mirrorAnalysisToggleButton;
     private javax.swing.JPanel modesPanels;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
+    private javax.swing.JPanel octModePanel;
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JRadioButton pixelModeButton;
     private javax.swing.ButtonGroup selModeButtonGroup;

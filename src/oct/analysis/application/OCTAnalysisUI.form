@@ -214,7 +214,7 @@
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" attributes="0">
-                  <Component id="lrpModePanel" min="-2" max="-2" attributes="0"/>
+                  <Component id="octModePanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="selectionWidthModePanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -230,7 +230,7 @@
                   <Component id="smoothingPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="lrpModePanel" alignment="1" max="32767" attributes="0"/>
+                      <Component id="octModePanel" alignment="1" max="32767" attributes="0"/>
                       <Component id="selectionWidthModePanel" alignment="1" max="32767" attributes="0"/>
                       <Component id="selectionWidthSliderPanel" alignment="1" max="32767" attributes="0"/>
                   </Group>
@@ -239,11 +239,11 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Container class="javax.swing.JPanel" name="lrpModePanel">
+        <Container class="javax.swing.JPanel" name="octModePanel">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                <TitledBorder title="LRP Mode"/>
+                <TitledBorder title="OCT Mode"/>
               </Border>
             </Property>
           </Properties>
@@ -254,8 +254,8 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="linearLRPModeButton" max="32767" attributes="0"/>
-                          <Component id="logModeLRPButton" pref="102" max="32767" attributes="0"/>
+                          <Component id="linearOCTModeButton" max="32767" attributes="0"/>
+                          <Component id="logModeOCTButton" pref="102" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -265,33 +265,36 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="linearLRPModeButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="linearOCTModeButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="logModeLRPButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="logModeOCTButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JRadioButton" name="linearLRPModeButton">
+            <Component class="javax.swing.JRadioButton" name="linearOCTModeButton">
+              <Properties>
+                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
+                  <ComponentRef name="lrpButtonGroup"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Linear OCT"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="linearOCTModeButtonActionPerformed"/>
+              </Events>
+            </Component>
+            <Component class="javax.swing.JRadioButton" name="logModeOCTButton">
               <Properties>
                 <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
                   <ComponentRef name="lrpButtonGroup"/>
                 </Property>
                 <Property name="selected" type="boolean" value="true"/>
-                <Property name="text" type="java.lang.String" value="Linear LRP"/>
-              </Properties>
-            </Component>
-            <Component class="javax.swing.JRadioButton" name="logModeLRPButton">
-              <Properties>
-                <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
-                  <ComponentRef name="lrpButtonGroup"/>
-                </Property>
-                <Property name="text" type="java.lang.String" value="Logrithmic LRP"/>
+                <Property name="text" type="java.lang.String" value="Logrithmic OCT"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logModeLRPButtonActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logModeOCTButtonActionPerformed"/>
               </Events>
             </Component>
           </SubComponents>

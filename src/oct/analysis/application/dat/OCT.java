@@ -5,6 +5,7 @@
  */
 package oct.analysis.application.dat;
 
+import ij.process.ColorProcessor;
 import java.awt.image.BufferedImage;
 
 /**
@@ -14,19 +15,19 @@ import java.awt.image.BufferedImage;
 public class OCT {
 
     private final double scale;
-    private final BufferedImage octImage;
+    private final ColorProcessor octImage;
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
 
     public OCT(double scale, BufferedImage octImage) {
         this.scale = scale;
-        this.octImage = octImage;
+        this.octImage = new ColorProcessor(octImage);
     }
 
     public OCT(double axialLength, double nominalScanWidth, int octWidth, BufferedImage octImage) {
         double scanLength = (nominalScanWidth * axialLength) / 24D;
         scale = ((scanLength * 1000D) / (double) octWidth);
-        this.octImage = octImage;
+        this.octImage = new ColorProcessor(octImage);
     }
 
     public double getScale() {
@@ -34,7 +35,7 @@ public class OCT {
     }
 
     public BufferedImage getOctImage() {
-        return octImage;
+        return octImage.getBufferedImage();
     }
 
     public int getImageOffsetY() {
@@ -51,6 +52,14 @@ public class OCT {
 
     public void setImageOffsetX(int imageOffsetX) {
         this.imageOffsetX = imageOffsetX;
+    }
+    
+    public void transformOCTToLinear(){
+        octImage.exp();
+    }
+    
+    public void transformOCTToLogrithmic(){
+        octImage.ln();
     }
     
     /**
