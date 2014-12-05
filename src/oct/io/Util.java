@@ -3,10 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package oct.io;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import javax.swing.JOptionPane;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTImagePanel;
@@ -17,12 +18,11 @@ import oct.analysis.application.dat.OCT;
  * @author Brandon
  */
 public class Util {
-    
-    
-    public static double parseNumberFromInput(String in){
-        if(in.matches("[0-9]+(\\.[0-9]+)*")){
+
+    public static double parseNumberFromInput(String in) {
+        if (in.matches("[0-9]+(\\.[0-9]+)*")) {
             return Double.parseDouble(in);
-        }else{
+        } else {
             return -1;
         }
     }
@@ -42,5 +42,12 @@ public class Util {
                 break;
         }
         return null;
+    }
+
+    public static BufferedImage deepCopyBufferedImage(BufferedImage bi) {
+        ColorModel cm = bi.getColorModel();
+        boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+        WritableRaster raster = bi.copyData(null);
+        return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 }
