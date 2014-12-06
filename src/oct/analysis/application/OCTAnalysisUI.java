@@ -72,6 +72,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpButtonGroup = new javax.swing.ButtonGroup();
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
+        toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         modesPanels = new javax.swing.JPanel();
         octModePanel = new javax.swing.JPanel();
@@ -89,23 +90,23 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         spatialAnalysisToggleButton = new javax.swing.JToggleButton();
         mirrorAnalysisToggleButton = new javax.swing.JToggleButton();
         singleLRPAnalysisToggleButton = new javax.swing.JToggleButton();
-        jToolBar2 = new javax.swing.JToolBar();
-        jToggleButton5 = new javax.swing.JToggleButton();
-        jToggleButton6 = new javax.swing.JToggleButton();
+        analysisToolsToolBar = new javax.swing.JToolBar();
+        foveaSelectButton = new javax.swing.JToggleButton();
+        singleSelectButton = new javax.swing.JToggleButton();
         screenSelectButton = new javax.swing.JToggleButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
-        toolsMenu = new javax.swing.JMenu();
-        foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
-        singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
-        lrpMenuItem = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
         spatialAnalysisMenuItem = new javax.swing.JMenuItem();
         ezAnalysisMenuItem = new javax.swing.JMenuItem();
         singleLRPAnalysisMenuItem = new javax.swing.JMenuItem();
         mirrorAnalysisMenuItem = new javax.swing.JMenuItem();
+        toolsMenu = new javax.swing.JMenu();
+        foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
+        singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
+        lrpMenuItem = new javax.swing.JMenuItem();
 
         openFileChooser.setDialogTitle("Select OCT...");
         openFileChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -145,7 +146,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
         octAnalysisPanelLayout.setVerticalGroup(
             octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 440, Short.MAX_VALUE)
+            .addGap(0, 442, Short.MAX_VALUE)
         );
 
         modesPanels.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -246,7 +247,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -358,31 +359,44 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         singleLRPAnalysisToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(singleLRPAnalysisToggleButton);
 
-        jToolBar2.setRollover(true);
+        analysisToolsToolBar.setRollover(true);
 
-        jToggleButton5.setAction(foveaSelectMenuItem.getAction());
-        jToggleButton5.setText("FV");
-        jToggleButton5.setToolTipText("Fovea Selection Selector Tool");
-        jToggleButton5.setFocusable(false);
-        jToggleButton5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jToggleButton5.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar2.add(jToggleButton5);
-
-        jToggleButton6.setAction(singleSelectMenuItem.getAction());
-        jToggleButton6.setText("SS");
-        jToggleButton6.setToolTipText("Selection Selector Tool");
-        jToggleButton6.setFocusable(false);
-        jToggleButton6.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jToggleButton6.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToggleButton6.addActionListener(new java.awt.event.ActionListener() {
+        foveaSelectButton.setAction(foveaSelectMenuItem.getAction());
+        toolsToolBarBtnGroup.add(foveaSelectButton);
+        foveaSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/FVselect.png"))); // NOI18N
+        foveaSelectButton.setToolTipText("Fovea Selection Selector Tool");
+        foveaSelectButton.setEnabled(false);
+        foveaSelectButton.setFocusable(false);
+        foveaSelectButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        foveaSelectButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/FVselectSelected.png"))); // NOI18N
+        foveaSelectButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        foveaSelectButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jToggleButton6ActionPerformed(evt);
+                foveaSelectButtonActionPerformed(evt);
             }
         });
-        jToolBar2.add(jToggleButton6);
+        analysisToolsToolBar.add(foveaSelectButton);
 
+        singleSelectButton.setAction(singleSelectMenuItem.getAction());
+        toolsToolBarBtnGroup.add(singleSelectButton);
+        singleSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/SingleSelectIcon.png"))); // NOI18N
+        singleSelectButton.setToolTipText("Selection Selector Tool");
+        singleSelectButton.setEnabled(false);
+        singleSelectButton.setFocusable(false);
+        singleSelectButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        singleSelectButton.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/SingleSelectSelectedIcon.png"))); // NOI18N
+        singleSelectButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        singleSelectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleSelectButtonActionPerformed(evt);
+            }
+        });
+        analysisToolsToolBar.add(singleSelectButton);
+
+        toolsToolBarBtnGroup.add(screenSelectButton);
         screenSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/mouse-pointer-th_19x25.png"))); // NOI18N
         screenSelectButton.setToolTipText("Selection Pointer Tool");
+        screenSelectButton.setEnabled(false);
         screenSelectButton.setFocusable(false);
         screenSelectButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         screenSelectButton.setName(""); // NOI18N
@@ -392,7 +406,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 screenSelectButtonActionPerformed(evt);
             }
         });
-        jToolBar2.add(screenSelectButton);
+        analysisToolsToolBar.add(screenSelectButton);
 
         fileMenu.setText("File");
 
@@ -413,42 +427,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         fileMenu.add(Exit);
 
         jMenuBar1.add(fileMenu);
-
-        toolsMenu.setText("Tools");
-        toolsMenu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toolsMenuActionPerformed(evt);
-            }
-        });
-
-        foveaSelectMenuItem.setText("Select Fovea");
-        foveaSelectMenuItem.setEnabled(false);
-        foveaSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                foveaSelectMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(foveaSelectMenuItem);
-
-        singleSelectMenuItem.setText("Select Single");
-        singleSelectMenuItem.setEnabled(false);
-        singleSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                singleSelectMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(singleSelectMenuItem);
-
-        lrpMenuItem.setText("Generate LRPs");
-        lrpMenuItem.setEnabled(false);
-        lrpMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lrpMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(lrpMenuItem);
-
-        jMenuBar1.add(toolsMenu);
 
         analysisMenu.setText("Analysis");
         analysisMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -491,6 +469,42 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         jMenuBar1.add(analysisMenu);
 
+        toolsMenu.setText("Tools");
+        toolsMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolsMenuActionPerformed(evt);
+            }
+        });
+
+        foveaSelectMenuItem.setText("Select Fovea");
+        foveaSelectMenuItem.setEnabled(false);
+        foveaSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                foveaSelectMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(foveaSelectMenuItem);
+
+        singleSelectMenuItem.setText("Select Single");
+        singleSelectMenuItem.setEnabled(false);
+        singleSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleSelectMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(singleSelectMenuItem);
+
+        lrpMenuItem.setText("Generate LRPs");
+        lrpMenuItem.setEnabled(false);
+        lrpMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lrpMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(lrpMenuItem);
+
+        jMenuBar1.add(toolsMenu);
+
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -498,17 +512,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(modesPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToolBar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jToolBar2, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
+                    .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
                     .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -771,9 +786,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_mirrorAnalysisToggleButtonActionPerformed
 
-    private void jToggleButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jToggleButton6ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jToggleButton6ActionPerformed
+    private void singleSelectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleSelectButtonActionPerformed
+        singleSelectMenuItem.setSelected(true);
+        singleSelectMenuItemActionPerformed(evt);
+    }//GEN-LAST:event_singleSelectButtonActionPerformed
 
     private void ezAnalysisToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ezAnalysisToggleButtonActionPerformed
         ezAnalysisMenuItemActionPerformed(evt);
@@ -801,8 +817,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_screenSelectButtonActionPerformed
 
+    private void foveaSelectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_foveaSelectButtonActionPerformed
+        foveaSelectMenuItem.setSelected(true);
+        foveaSelectMenuItemActionPerformed(evt);
+    }//GEN-LAST:event_foveaSelectButtonActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
+            c.setEnabled(true);
+        }
+        for (Component c : analysisToolsToolBar.getComponents()) {
             c.setEnabled(true);
         }
     }
@@ -900,16 +924,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem Exit;
     private javax.swing.JMenu analysisMenu;
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
+    private javax.swing.JToolBar analysisToolsToolBar;
     private javax.swing.JMenuItem ezAnalysisMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
+    private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JToggleButton jToggleButton5;
-    private javax.swing.JToggleButton jToggleButton6;
     private javax.swing.JToolBar jToolBar1;
-    private javax.swing.JToolBar jToolBar2;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
@@ -928,12 +951,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel selectionWidthSliderPanel;
     private javax.swing.JMenuItem singleLRPAnalysisMenuItem;
     private javax.swing.JToggleButton singleLRPAnalysisToggleButton;
+    private javax.swing.JToggleButton singleSelectButton;
     private javax.swing.JCheckBoxMenuItem singleSelectMenuItem;
     private javax.swing.JPanel smoothingPanel;
     private javax.swing.JSlider smoothingSlider;
     private javax.swing.JMenuItem spatialAnalysisMenuItem;
     private javax.swing.JToggleButton spatialAnalysisToggleButton;
     private javax.swing.JMenu toolsMenu;
+    private javax.swing.ButtonGroup toolsToolBarBtnGroup;
     private javax.swing.JSlider widthSlider;
     // End of variables declaration//GEN-END:variables
 }
