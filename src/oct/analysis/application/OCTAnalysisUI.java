@@ -130,13 +130,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             public void keyPressed(java.awt.event.KeyEvent evt) {
                 octAnalysisPanelKeyPressed(evt);
             }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                octAnalysisPanelKeyTyped(evt);
+            }
         });
 
         javax.swing.GroupLayout octAnalysisPanelLayout = new javax.swing.GroupLayout(octAnalysisPanel);
         octAnalysisPanel.setLayout(octAnalysisPanelLayout);
         octAnalysisPanelLayout.setHorizontalGroup(
             octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 763, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         octAnalysisPanelLayout.setVerticalGroup(
             octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -487,12 +490,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(modesPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jToolBar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -501,7 +504,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                     .addComponent(jToolBar2, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
                     .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(modesPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -778,6 +781,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void linearOCTModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearOCTModeButtonActionPerformed
         octAnalysisPanel.setOCTMode(OCTMode.LINEAR);
     }//GEN-LAST:event_linearOCTModeButtonActionPerformed
+
+    private void octAnalysisPanelKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_octAnalysisPanelKeyTyped
+        // TODO add your handling code here:
+    }//GEN-LAST:event_octAnalysisPanelKeyTyped
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
