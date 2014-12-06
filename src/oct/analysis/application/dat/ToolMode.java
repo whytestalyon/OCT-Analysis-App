@@ -12,5 +12,6 @@ package oct.analysis.application.dat;
 public enum ToolMode {
     SELECT_FOVEA,
     SELECT_SINGLE,
+    SCREEN_SELECT,
     NONE;
 }

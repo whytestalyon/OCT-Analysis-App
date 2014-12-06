@@ -14,10 +14,12 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JSlider;
+import javax.swing.MenuElement;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -90,7 +92,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jToolBar2 = new javax.swing.JToolBar();
         jToggleButton5 = new javax.swing.JToggleButton();
         jToggleButton6 = new javax.swing.JToggleButton();
-        jToggleButton7 = new javax.swing.JToggleButton();
+        screenSelectButton = new javax.swing.JToggleButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
@@ -379,13 +381,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         jToolBar2.add(jToggleButton6);
 
-        jToggleButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/mouse-pointer-th_19x25.png"))); // NOI18N
-        jToggleButton7.setToolTipText("Selection Pointer Tool");
-        jToggleButton7.setFocusable(false);
-        jToggleButton7.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jToggleButton7.setName(""); // NOI18N
-        jToggleButton7.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar2.add(jToggleButton7);
+        screenSelectButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/mouse-pointer-th_19x25.png"))); // NOI18N
+        screenSelectButton.setToolTipText("Selection Pointer Tool");
+        screenSelectButton.setFocusable(false);
+        screenSelectButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        screenSelectButton.setName(""); // NOI18N
+        screenSelectButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        screenSelectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                screenSelectButtonActionPerformed(evt);
+            }
+        });
+        jToolBar2.add(screenSelectButton);
 
         fileMenu.setText("File");
 
@@ -571,13 +578,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 case MouseEvent.BUTTON1:
                     switch (analysisMode) {
                         case SINGLE:
-                            if (toolMode == ToolMode.SELECT_SINGLE) {
-                                //clear out any current analysis selection
-                                selectionLRPManager.removeSelections(false);
-                                octAnalysisPanel.repaint();
-                                //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(evt.getX(), "Selection"));
-                                octAnalysisPanel.repaint();
+                            switch (toolMode) {
+                                case SELECT_SINGLE:
+                                    //clear out any current analysis selection
+                                    selectionLRPManager.removeSelections(false);
+                                    octAnalysisPanel.repaint();
+                                    //add new selections and redraw panel
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(evt.getX(), "Selection"));
+                                    octAnalysisPanel.repaint();
+                                    break;
+                                case SCREEN_SELECT:
+                                    if(selectSelection(evt.getX()) != null){
+                                        octAnalysisPanel.repaint();
+                                    }
+                                    break;
                             }
                             break;
                         case MIRROR:
@@ -600,17 +614,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     //set fovea selection
                                     selection = selectionLRPManager.getFoveaSelection(evt.getX());
                                     break;
-                                default:
-                                    //clear the currently selected OCT selection (if there even is one)
-                                    selectionLRPManager.unselectSelections();
-                                    octAnalysisPanel.repaint();
-                                    //determine if click was over one of the EZ selections
-                                    selection = selectionLRPManager.getOverlappingSelection(evt.getX());
-                                    if (selection != null) {
-                                        //high light the selection and allow the user to move the selection with the arrow keys
-                                        selection.setHighlighted(true);
-                                        selectionLRPManager.setSelectedSelection(selection);
-                                    }
+                                case SCREEN_SELECT:
+                                    selection = selectSelection(evt.getX());
                                     break;
                             }
                             if (selection != null) {
@@ -786,6 +791,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_octAnalysisPanelKeyTyped
 
+    private void screenSelectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_screenSelectButtonActionPerformed
+        toolMode = (toolMode == ToolMode.SCREEN_SELECT) ? ToolMode.NONE : ToolMode.SCREEN_SELECT;
+        for (MenuElement elm : toolsMenu.getSubElements()) {
+            if (elm instanceof JCheckBoxMenuItem) {
+                JCheckBoxMenuItem menuItem = (JCheckBoxMenuItem) elm;
+                menuItem.setSelected(false);
+            }
+        }
+    }//GEN-LAST:event_screenSelectButtonActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -800,7 +815,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         smoothingSlider.setValue(5);
         widthSlider.setValue(5);
         pixelModeButton.setSelected(true);
-        linearOCTModeButton.setSelected(true);
+        logModeOCTButton.setSelected(true);
         selectionLRPManager.setFoveaCenterXPosition(-1);
     }
 
@@ -820,6 +835,29 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             default:
                 break;
         }
+    }
+
+    /**
+     * Highlight an OCT selection on the screen if there is one that overlaps the
+     * supplied X position (assumed to be the X position of a left mouse button
+     * click). If the supplied X position does not overlap any selections all
+     * currently selected selections will be unselected.
+     *
+     * @param clickXPosition
+     * @return
+     */
+    public OCTSelection selectSelection(int clickXPosition) {
+        //clear the currently selected OCT selection (if there even is one)
+        selectionLRPManager.unselectSelections();
+        octAnalysisPanel.repaint();
+        //determine if click was over one of the EZ selections
+        OCTSelection selection = selectionLRPManager.getOverlappingSelection(clickXPosition);
+        if (selection != null) {
+            //high light the selection and allow the user to move the selection with the arrow keys
+            selection.setHighlighted(true);
+            selectionLRPManager.setSelectedSelection(selection);
+        }
+        return selection;
     }
 
     /**
@@ -870,7 +908,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JToggleButton jToggleButton5;
     private javax.swing.JToggleButton jToggleButton6;
-    private javax.swing.JToggleButton jToggleButton7;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JToolBar jToolBar2;
     private javax.swing.JRadioButton linearOCTModeButton;
@@ -885,6 +922,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel octModePanel;
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JRadioButton pixelModeButton;
+    private javax.swing.JToggleButton screenSelectButton;
     private javax.swing.ButtonGroup selModeButtonGroup;
     private javax.swing.JPanel selectionWidthModePanel;
     private javax.swing.JPanel selectionWidthSliderPanel;
