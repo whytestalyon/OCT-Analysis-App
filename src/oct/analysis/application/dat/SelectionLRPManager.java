@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.LRPFrame;
 import oct.analysis.application.OCTSelection;
@@ -24,17 +25,29 @@ public class SelectionLRPManager {
 
     public static final String PROP_SELECTIONS = "selections";
     private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final HashMap<String, OCTSelection> selectionMap = new HashMap<>(50);//key is selection name
-    private final HashMap<String, LRPFrame> lrpDispMap = new HashMap<>(50);//key is name of selection that backs lrp
+    private final ConcurrentHashMap<String, OCTSelection> selectionMap;
+    private final ConcurrentHashMap<String, LRPFrame> lrpDispMap;
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
-    private int foveaCenterXPosition;
+    private String selectedSelectionName = "";
+    private int foveaCenterXPosition = -1;
     private int selectionWidth;
+    private int lrpSmoothingFactor = 5;
 
     private SelectionLRPManager() {
+        this.selectionMap = new ConcurrentHashMap<>(50);
+        this.lrpDispMap = new ConcurrentHashMap<>(50);
     }
 
     public static SelectionLRPManager getInstance() {
         return SelectionLRPManagerHolder.INSTANCE;
+    }
+
+    public int getLrpSmoothingFactor() {
+        return lrpSmoothingFactor;
+    }
+
+    public void setLrpSmoothingFactor(int lrpSmoothingFactor) {
+        this.lrpSmoothingFactor = lrpSmoothingFactor;
     }
 
     public int getFoveaCenterXPosition() {
@@ -51,6 +64,13 @@ public class SelectionLRPManager {
 
     public void setSelectionWidth(int selectionWidth) {
         this.selectionWidth = selectionWidth;
+        selectionMap.forEachValue(1000, (selection) -> {
+            selection.setWidth(selectionWidth);
+        });
+    }
+
+    public void setSelectedSelection(OCTSelection sel) {
+        selectedSelectionName = sel.getSelectionName();
     }
 
     private static class SelectionLRPManagerHolder {
@@ -58,25 +78,43 @@ public class SelectionLRPManager {
         private static final SelectionLRPManager INSTANCE = new SelectionLRPManager();
     }
 
-    public void addSelections(int foveaXPosition) {
+    public void addOrUpdateSpatialSelections(int foveaXPosition) {
         foveaCenterXPosition = foveaXPosition;
-        updateSelections(getSelections(foveaXPosition));
+        addOrUpdateSelections(getSpatialSelections(foveaXPosition));
     }
 
-    public void updateSelections(List<OCTSelection> selections) {
+    public void addOrUpdateSelections(List<OCTSelection> selections) {
         selections.stream().forEach((selection) -> {
-            selectionMap.put(selection.getSelectionName(), selection);
+            addOrUpdateSelection(selection);
+        });
+    }
+
+    public void addOrUpdateSelection(OCTSelection selection) {
+        selectionMap.put(selection.getSelectionName(), selection);
+        SwingUtilities.invokeLater(() -> {
             if (lrpDispMap.containsKey(selection.getSelectionName())) {
                 //update the JFrame for the given selection with the new LRP
-                System.out.println("Updateing LRP for " + selection.getSelectionName());
-                LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
-                updateFrame.updateLRP(selection.createLRPPanel());
+                updateLRP(selection);
             } else {
                 //add new LRP frame for never before added selection
                 LRPFrame newFrame = new LRPFrame(selection.createLRPPanel());
                 lrpDispMap.put(selection.getSelectionName(), newFrame);
             }
         });
+    }
+
+    public void updateLRPs() {
+        SwingUtilities.invokeLater(() -> {
+            selectionMap.values().forEach((selection) -> {
+                //update the JFrame for the given selection with the new LRP
+                updateLRP(selection);
+            });
+        });
+    }
+
+    private void updateLRP(OCTSelection selection) {
+        LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
+        updateFrame.updateLRP(selection.createLRPPanel());
     }
 
     public void removeSelections(boolean removeLRPs) {
@@ -90,6 +128,18 @@ public class SelectionLRPManager {
         }
         //remove all of the selections
         selectionMap.clear();
+    }
+
+    public void removeSelection(OCTSelection s, boolean removeLRP) {
+        if (removeLRP) {
+            if (lrpDispMap.containsKey(s.getSelectionName())) {
+                lrpDispMap.get(s.getSelectionName()).dispose();
+            }
+            //remove the lrp from the tracking map
+            lrpDispMap.remove(s.getSelectionName());
+        }
+        //remove given selection from selection map
+        selectionMap.remove(s.getSelectionName());
     }
 
     public List<OCTSelection> getSelections() {
@@ -148,9 +198,34 @@ public class SelectionLRPManager {
      * @return list containing all of the OCT image selections based on the
      * foveal selection and the desired distance between selections
      */
-    private List<OCTSelection> getSelections(int foveaXPosition) {
+    private List<OCTSelection> getSpatialSelections(int foveaXPosition) {
         OCTSelection fovealSel = new OCTSelection(foveaXPosition - (selectionWidth / 2), analysisData.getOct().getImageOffsetY(), selectionWidth, analysisData.getOct().getOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         return getSelectionsFromFoveaSelection(fovealSel);
+    }
+
+    /**
+     * Given an X coordinate return a selection centered around the supplied
+     * position.
+     *
+     * @param position the X position corresponding to the center of the desired
+     * selection
+     * @param selectionName
+     * @return a selection centered around the supplied position
+     */
+    public OCTSelection getSelection(int position, String selectionName) {
+        return new OCTSelection(position - (selectionWidth / 2), analysisData.getOct().getImageOffsetY(), selectionWidth, analysisData.getOct().getOctImage().getHeight(), OCTSelection.PERIPHERAL_SELECTION, selectionName);
+    }
+
+    /**
+     * Given an X coordinate of the fovea return single selection centered
+     * around the supplied position.
+     *
+     * @param position the X position corresponding to the center of the fovea
+     * @return fovea selection
+     */
+    public OCTSelection getFoveaSelection(int position) {
+        foveaCenterXPosition = position;
+        return new OCTSelection(position - (selectionWidth / 2), analysisData.getOct().getImageOffsetY(), selectionWidth, analysisData.getOct().getOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
     }
 
     /**
@@ -178,5 +253,51 @@ public class SelectionLRPManager {
         }
 
         return selections;
+    }
+
+    /**
+     * Get the selection (excluding the fovea selection) that overlaps the give
+     * X coordinate.
+     *
+     * @param xpos
+     * @return the selection that overlaps the give X coordinate, or null if
+     * none is found
+     */
+    public OCTSelection getOverlappingSelection(int xpos) {
+        for (OCTSelection selection : selectionMap.values()) {
+            if (selection.getSelectionType() == OCTSelection.PERIPHERAL_SELECTION && selection.positionOverlapsSelection(xpos)) {
+                return selection;
+            }
+        }
+        return null;
+    }
+
+    public void unselectSelections() {
+        selectionMap.forEach((selKey, selection) -> {
+            selection.setHighlighted(false);
+        });
+        selectedSelectionName = "";
+    }
+
+    public void moveSelectionRight(OCTSelection sel) {
+        moveSelection(sel, 1);
+    }
+
+    public void moveSelectionLeft(OCTSelection sel) {
+        moveSelection(sel, -1);
+    }
+
+    private void moveSelection(OCTSelection sel, int pixelsToMoveBy) {
+        OCTSelection selection = null;
+        if (!selectedSelectionName.isEmpty()
+                && (selection = selectionMap.get(selectedSelectionName)) != null
+                && (selection.getPanel_x_position() + pixelsToMoveBy) > analysisData.getOct().getImageOffsetX()
+                && ((selection.getPanel_x_position() + pixelsToMoveBy + selectionWidth) < analysisData.getOct().getImageOffsetX() + analysisData.getOct().getOctImage().getWidth())) {
+            selection.setPanel_x_position(selection.getPanel_x_position() + pixelsToMoveBy);
+        }
+    }
+
+    public OCTSelection getSelectedSelection() {
+        return selectionMap.get(selectedSelectionName);
     }
 }

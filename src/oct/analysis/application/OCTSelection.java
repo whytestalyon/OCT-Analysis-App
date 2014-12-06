@@ -8,12 +8,14 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.SelectionLRPManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -33,13 +35,15 @@ public class OCTSelection {
 
     public static final int FOVEAL_SELECTION = 0;
     public static final int PERIPHERAL_SELECTION = 1;
-    public static final int SMOOTHING_FACTOR = 10; // smoothing: the strength of the smoothing filter; 1=no change, larger values smoothes more
+    private static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
     private final String selectionName;
     private final int selectionType;
     private int panel_x_position;
     private int panel_y_position;
-    private final int width;
+    private int width;
     private final int height;
+    private boolean highlighted = false;
+    private boolean drawn = false;
 
     public OCTSelection(int panel_x_position, int panel_y_position, int width, int height, int selectionType, String selectionName) {
         this.panel_x_position = panel_x_position;
@@ -51,9 +55,22 @@ public class OCTSelection {
     }
 
     public void drawSelection(Graphics g) {
-        g.setColor(Color.green);
-        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
+        if (highlighted) {
+            g.setColor(Color.pink);
+        } else {
+            g.setColor(Color.green);
+        }
+//        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
         g.drawRect(panel_x_position, panel_y_position, width, height - 1);
+        drawn = true;
+    }
+
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
     }
 
     public int getPanel_x_position() {
@@ -72,12 +89,24 @@ public class OCTSelection {
         this.panel_y_position = panel_y_position;
     }
 
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
     public int getWidth() {
         return width;
     }
 
     public int getHeight() {
         return height;
+    }
+
+    public boolean isDrawn() {
+        return drawn;
+    }
+
+    public void setDrawn(boolean drawn) {
+        this.drawn = drawn;
     }
 
     public int getSelectionType() {
@@ -92,7 +121,7 @@ public class OCTSelection {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();
         lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOct()));
-        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
+//        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
         lrp.addSeries(getLrpPeaks(lrp.getSeries(0)));
         List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
         fwhm.forEach((fwhmSeries) -> {
@@ -138,14 +167,14 @@ public class OCTSelection {
                 sum += calculateGrayScaleValue(oct.getOctImage().getRGB(xindex, y));
             }
             //calculate average pixel intensity
-            double avg = sum / (double)width;
+            double avg = sum / (double) width;
             //smooth the LRP to provide a higher quality LRP signal
             if (value < -1) {
                 //initialize the first value for the smoothing filter
                 value = avg;
             } else {
                 //smooth the LRP signal
-                value += ((avg - value) / SMOOTHING_FACTOR);
+                value += ((avg - value) / selMngr.getLrpSmoothingFactor());
             }
             //add LRP value to return series
             lrp.add(y, value);
@@ -318,5 +347,9 @@ public class OCTSelection {
 //        System.out.println("    Y-int: " + yint);
         //return 
         return (y - yint) / slope;
+    }
+
+    public boolean positionOverlapsSelection(int xpos) {
+        return xpos <= panel_x_position + width && xpos >= panel_x_position;
     }
 }
