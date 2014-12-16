@@ -5,6 +5,7 @@
  */
 package oct.analysis.application.dat;
 
+import ij.process.ByteProcessor;
 import java.awt.image.BufferedImage;
 import oct.io.Util;
 
@@ -24,7 +25,9 @@ public class OCT {
 
     public OCT(double scale, BufferedImage octImage) {
         this.scale = scale;
-        logOctImage = octImage;
+        ByteProcessor bp = new ByteProcessor(octImage);
+        bp.blurGaussian(1.1);
+        logOctImage = bp.getBufferedImage();
         this.octImage = octImage;
         linearOctImage = getLinearOCT(logOctImage);
     }
@@ -32,7 +35,9 @@ public class OCT {
     public OCT(double axialLength, double nominalScanWidth, int octWidth, BufferedImage octImage) {
         double scanLength = (nominalScanWidth * axialLength) / 24D;
         scale = ((scanLength * 1000D) / (double) octWidth);
-        logOctImage = octImage;
+        ByteProcessor bp = new ByteProcessor(octImage);
+        bp.blurGaussian(1.1);
+        logOctImage = bp.getBufferedImage();
         this.octImage = octImage;
         linearOctImage = getLinearOCT(logOctImage);
     }

@@ -8,6 +8,7 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,15 +36,15 @@ public class OCTSelection {
 
     public static final int FOVEAL_SELECTION = 0;
     public static final int PERIPHERAL_SELECTION = 1;
-    private static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
-    private final String selectionName;
-    private final int selectionType;
-    private int panel_x_position;
-    private int panel_y_position;
-    private int width;
-    private final int height;
-    private boolean highlighted = false;
-    private boolean drawn = false;
+    protected static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+    protected final String selectionName;
+    protected final int selectionType;
+    protected int panel_x_position;
+    protected int panel_y_position;
+    protected int width;
+    protected final int height;
+    protected boolean highlighted = false;
+    protected boolean drawn = false;
 
     public OCTSelection(int panel_x_position, int panel_y_position, int width, int height, int selectionType, String selectionName) {
         this.panel_x_position = panel_x_position;

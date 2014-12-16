@@ -6,9 +6,11 @@
 package oct.analysis.application.dat;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -300,4 +302,12 @@ public class SelectionLRPManager {
     public OCTSelection getSelectedSelection() {
         return selectionMap.get(selectedSelectionName);
     }
+    
+    public OCTSelection getCenterOfFovea(){
+        //first segment the OCT and get the contour of the ILM
+        Collection<Point> retSeg = oct.io.Util.getSurfaceSegment(analysisData.getOct().getOctImage(), 1);
+        //
+        return null;
+    }
+    
 }
