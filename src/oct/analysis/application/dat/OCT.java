@@ -15,31 +15,33 @@ import oct.io.Util;
  */
 public class OCT {
 
-    private final double scale;
-    private BufferedImage octImage;
-    private final BufferedImage logOctImage;
-    private final BufferedImage linearOctImage;
+    private boolean logOct = true;
+    private double scale;
+    private BufferedImage logOctImage;
+    private BufferedImage linearOctImage;
+    private BufferedImage blurredLogOctImage;
+    private BufferedImage blurredLinearOctImage;
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
     private final double logScale = 255D / Math.log(255D);
+    private double blurFactor = 0;
 
     public OCT(double scale, BufferedImage octImage) {
-        this.scale = scale;
-        ByteProcessor bp = new ByteProcessor(octImage);
-        bp.blurGaussian(1.1);
-        logOctImage = bp.getBufferedImage();
-        this.octImage = octImage;
-        linearOctImage = getLinearOCT(logOctImage);
+        init(scale, octImage);
     }
 
     public OCT(double axialLength, double nominalScanWidth, int octWidth, BufferedImage octImage) {
         double scanLength = (nominalScanWidth * axialLength) / 24D;
-        scale = ((scanLength * 1000D) / (double) octWidth);
-        ByteProcessor bp = new ByteProcessor(octImage);
-        bp.blurGaussian(1.1);
-        logOctImage = bp.getBufferedImage();
-        this.octImage = octImage;
-        linearOctImage = getLinearOCT(logOctImage);
+        init(((scanLength * 1000D) / (double) octWidth), octImage);
+    }
+
+    private void init(double scale, BufferedImage octImage) {
+        this.scale = scale;
+        this.logOctImage = octImage;
+        //store liner scale version of OCT
+        linearOctImage = getLinearOCT(octImage);
+        //update the blurred images
+        updateBlurredImages();
     }
 
     public double getScale() {
@@ -47,7 +49,11 @@ public class OCT {
     }
 
     public BufferedImage getOctImage() {
-        return octImage;
+        if (blurFactor > 0) {
+            return (logOct) ? blurredLogOctImage : blurredLinearOctImage;
+        } else {
+            return (logOct) ? logOctImage : linearOctImage;
+        }
     }
 
     public int getImageOffsetY() {
@@ -67,11 +73,28 @@ public class OCT {
     }
 
     public void transformOCTToLinear() {
-        octImage = linearOctImage;
+        logOct = false;
     }
 
     public void transformOCTToLogrithmic() {
-        octImage = logOctImage;
+        logOct = true;
+    }
+
+    public boolean isLogOct() {
+        return logOct;
+    }
+
+    public boolean isLinearOct() {
+        return !logOct;
+    }
+
+    public double getBlurFactor() {
+        return blurFactor;
+    }
+
+    public void setBlurFactor(double blurFactor) {
+        this.blurFactor = blurFactor;
+        updateBlurredImages();
     }
 
     /**
@@ -119,5 +142,16 @@ public class OCT {
         int b = (rgb & 0xFF);
         int ret = (rgb & 0xFF000000) | (((int) (Math.log(r) * logScale)) << 16) | (((int) (Math.log(g) * logScale)) << 8) | ((int) (Math.log(b) * logScale));
         return ret;
+    }
+
+    private void updateBlurredImages() {
+        //store blurred version of Log OCT
+        ByteProcessor bp = new ByteProcessor(Util.deepCopyBufferedImage(logOctImage));
+        bp.blurGaussian(blurFactor);
+        blurredLogOctImage = bp.getBufferedImage();
+        //store blurred version of Linear OCT
+        bp = new ByteProcessor(Util.deepCopyBufferedImage(linearOctImage));
+        bp.blurGaussian(blurFactor);
+        blurredLinearOctImage = bp.getBufferedImage();
     }
 }

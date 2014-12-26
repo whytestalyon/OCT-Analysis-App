@@ -200,7 +200,7 @@
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
-              <EmptySpace min="0" pref="442" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="340" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
       </Layout>
@@ -224,14 +224,16 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="selectionWidthSliderPanel" max="32767" attributes="0"/>
               </Group>
-              <Component id="smoothingPanel" max="32767" attributes="0"/>
+              <Component id="octSmoothingPanel" alignment="0" max="32767" attributes="0"/>
+              <Component id="lrpSmoothingPanel" alignment="1" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
           <Group type="103" groupAlignment="0" attributes="0">
               <Group type="102" alignment="1" attributes="0">
-                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                  <Component id="smoothingPanel" min="-2" max="-2" attributes="0"/>
+                  <Component id="octSmoothingPanel" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="32767" attributes="0"/>
+                  <Component id="lrpSmoothingPanel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" max="-2" attributes="0">
                       <Component id="octModePanel" alignment="1" max="32767" attributes="0"/>
@@ -284,6 +286,7 @@
                   <ComponentRef name="lrpButtonGroup"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Linear OCT"/>
+                <Property name="toolTipText" type="java.lang.String" value="Display the OCT image as a Linear Image"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="linearOCTModeButtonActionPerformed"/>
@@ -296,6 +299,7 @@
                 </Property>
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Logrithmic OCT"/>
+                <Property name="toolTipText" type="java.lang.String" value="Display the OCT image as a Logrithmic Image"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="logModeOCTButtonActionPerformed"/>
@@ -339,6 +343,7 @@
                 </Property>
                 <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Pixels"/>
+                <Property name="toolTipText" type="java.lang.String" value="Display selection widths in terms of Pixels"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="pixelModeButtonActionPerformed"/>
@@ -350,6 +355,7 @@
                   <ComponentRef name="selModeButtonGroup"/>
                 </Property>
                 <Property name="text" type="java.lang.String" value="Microns"/>
+                <Property name="toolTipText" type="java.lang.String" value="Display selection width in terms of Microns"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="micronModeButtonActionPerformed"/>
@@ -391,6 +397,7 @@
                 <Property name="paintLabels" type="boolean" value="true"/>
                 <Property name="paintTicks" type="boolean" value="true"/>
                 <Property name="snapToTicks" type="boolean" value="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="Adjust the width of the OCT selections"/>
                 <Property name="value" type="int" value="5"/>
               </Properties>
               <Events>
@@ -399,7 +406,7 @@
             </Component>
           </SubComponents>
         </Container>
-        <Container class="javax.swing.JPanel" name="smoothingPanel">
+        <Container class="javax.swing.JPanel" name="lrpSmoothingPanel">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
@@ -411,17 +418,17 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="smoothingSlider" alignment="0" max="32767" attributes="0"/>
+                  <Component id="lrpSmoothingSlider" alignment="0" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="smoothingSlider" alignment="1" min="-2" pref="73" max="-2" attributes="0"/>
+                  <Component id="lrpSmoothingSlider" alignment="1" min="-2" pref="73" max="-2" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="javax.swing.JSlider" name="smoothingSlider">
+            <Component class="javax.swing.JSlider" name="lrpSmoothingSlider">
               <Properties>
                 <Property name="majorTickSpacing" type="int" value="5"/>
                 <Property name="maximum" type="int" value="50"/>
@@ -429,10 +436,50 @@
                 <Property name="paintLabels" type="boolean" value="true"/>
                 <Property name="paintTicks" type="boolean" value="true"/>
                 <Property name="snapToTicks" type="boolean" value="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="Adjust the smoothing applied to LRPs (values of 0 and 1 have the same effect)"/>
                 <Property name="value" type="int" value="5"/>
               </Properties>
               <Events>
-                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="smoothingSliderStateChanged"/>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="lrpSmoothingSliderStateChanged"/>
+              </Events>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Container class="javax.swing.JPanel" name="octSmoothingPanel">
+          <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                <TitledBorder title="OCT Smoothing Factor"/>
+              </Border>
+            </Property>
+          </Properties>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="octSmoothingSlider" alignment="0" max="32767" attributes="0"/>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="octSmoothingSlider" alignment="1" min="-2" pref="73" max="-2" attributes="0"/>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="javax.swing.JSlider" name="octSmoothingSlider">
+              <Properties>
+                <Property name="majorTickSpacing" type="int" value="5"/>
+                <Property name="maximum" type="int" value="50"/>
+                <Property name="minorTickSpacing" type="int" value="1"/>
+                <Property name="paintLabels" type="boolean" value="true"/>
+                <Property name="paintTicks" type="boolean" value="true"/>
+                <Property name="snapToTicks" type="boolean" value="true"/>
+                <Property name="toolTipText" type="java.lang.String" value="Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)"/>
+                <Property name="value" type="int" value="0"/>
+              </Properties>
+              <Events>
+                <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="octSmoothingSliderStateChanged"/>
               </Events>
             </Component>
           </SubComponents>
