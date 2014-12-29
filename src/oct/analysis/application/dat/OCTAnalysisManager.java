@@ -5,6 +5,8 @@
  */
 package oct.analysis.application.dat;
 
+import oct.util.Segmentation;
+
 /**
  *
  * @author Brandon
@@ -13,6 +15,7 @@ public class OCTAnalysisManager {
 
     private int micronsBetweenSelections = 0;
     private OCT oct = null;
+    private volatile Segmentation segmentation = null;
 
     private OCTAnalysisManager() {
     }
@@ -44,6 +47,13 @@ public class OCTAnalysisManager {
 
     public void setOct(OCT oct) {
         this.oct = oct;
+    }
+    
+    public Segmentation getSegmentation(){
+        if(segmentation == null){
+            segmentation = new Segmentation(oct.getOctImage(), 1);
+        }
+        return segmentation;
     }
     
 }

@@ -29,7 +29,7 @@ import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.ToolMode;
 import oct.io.TiffReader;
-import oct.io.Util;
+import oct.util.Util;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
 
@@ -780,6 +780,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
+        selectionLRPManager.getCenterOfFovea();
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
@@ -898,7 +899,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         switch (am) {
             case SPATIAL:
                 //ask for the desired distance between selections
-                double micronsBetweenSelections = oct.io.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
+                double micronsBetweenSelections = oct.util.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
                 analysisMetrics.setMicronsBetweenSelections((int) micronsBetweenSelections);
                 break;
             case EZ:

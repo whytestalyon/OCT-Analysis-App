@@ -7,7 +7,7 @@ package oct.analysis.application.dat;
 
 import ij.process.ByteProcessor;
 import java.awt.image.BufferedImage;
-import oct.io.Util;
+import oct.util.Util;
 
 /**
  *

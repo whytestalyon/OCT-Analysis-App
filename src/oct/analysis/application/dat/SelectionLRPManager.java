@@ -11,13 +11,16 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.LRPFrame;
 import oct.analysis.application.OCTSelection;
+import oct.util.Segmentation;
 
 /**
  *
@@ -302,12 +305,29 @@ public class SelectionLRPManager {
     public OCTSelection getSelectedSelection() {
         return selectionMap.get(selectedSelectionName);
     }
-    
-    public OCTSelection getCenterOfFovea(){
-        //first segment the OCT and get the contour of the ILM
-        Collection<Point> retSeg = oct.io.Util.getSurfaceSegment(analysisData.getOct().getOctImage(), 1);
-        //
+
+    public OCTSelection getCenterOfFovea() {
+        //get the contour of the ILM
+        LinkedList<Point> ilmSeg = new LinkedList<>(analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT));
+        //get the contour of the Brooks Membrane
+        LinkedList<Point> brmSeg = new LinkedList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT));
+        //sort the points by x position
+        ilmSeg.sort((Point p1, Point p2) -> {
+            return (p1.x == p2.x) ? 0 : (p1.x > p2.x) ? 1 : -1;
+        });
+        brmSeg.sort((Point p1, Point p2) -> {
+            return (p1.x == p2.x) ? 0 : (p1.x > p2.x) ? 1 : -1;
+        });
+        //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
+        ListIterator<Point> ilmIter = ilmSeg.listIterator();
+        ListIterator<Point> brmIter = brmSeg.listIterator();
+        
+        for (int i = 0; ilmIter.hasNext(); i++) {
+            Point ilmPoint = ilmIter.next();
+            Point brmPoint = brmIter.next();
+            
+        }
         return null;
     }
-    
+
 }

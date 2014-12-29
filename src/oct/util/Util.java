@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package oct.io;
+package oct.util;
 
 import chuiSegmentation.CSegImage;
 import java.awt.Point;
@@ -56,24 +56,6 @@ public class Util {
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 
-    /**
-     * Given an OCT image this function segments the ILM (Inner Limiting
-     * Membrane). It will return the segmentation as a collection of points with
-     * coordinates relative to the image.
-     *
-     * @param image
-     * @param distanceBetweenPoints
-     * @return
-     */
-    public static Collection<Point> getSurfaceSegment(BufferedImage image, int distanceBetweenPoints) {
-        // Only tested with BufferedImage.TYPE_BYPE_GRAY. 
-        // It might work with other types but no promises. 
-        CSegImage segImg = new CSegImage(image);
-        segImg.getFlatImage(false);
-        return segImg.getSegments()
-                .getCurve(0, distanceBetweenPoints)
-                .getPointCollection();
-    }
 
     /**
      * Get the local maximums from a collection of Points.
