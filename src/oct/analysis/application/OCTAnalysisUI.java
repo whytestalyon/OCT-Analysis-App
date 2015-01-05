@@ -88,6 +88,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpSmoothingSlider = new javax.swing.JSlider();
         octSmoothingPanel = new javax.swing.JPanel();
         octSmoothingSlider = new javax.swing.JSlider();
+        sharpRadiusPanel = new javax.swing.JPanel();
+        octSharpRadiusSlider = new javax.swing.JSlider();
+        octSharpWeightPanel = new javax.swing.JPanel();
+        octSharpWeightSlider = new javax.swing.JSlider();
         jToolBar1 = new javax.swing.JToolBar();
         ezAnalysisToggleButton = new javax.swing.JToggleButton();
         spatialAnalysisToggleButton = new javax.swing.JToggleButton();
@@ -149,7 +153,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
         octAnalysisPanelLayout.setVerticalGroup(
             octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 340, Short.MAX_VALUE)
+            .addGap(0, 361, Short.MAX_VALUE)
         );
 
         modesPanels.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -255,7 +259,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -284,7 +288,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpSmoothingPanel.setLayout(lrpSmoothingPanelLayout);
         lrpSmoothingPanelLayout.setHorizontalGroup(
             lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
         );
         lrpSmoothingPanelLayout.setVerticalGroup(
             lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -318,6 +322,58 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             .addComponent(octSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
+        sharpRadiusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Radius"));
+
+        octSharpRadiusSlider.setMajorTickSpacing(5);
+        octSharpRadiusSlider.setMaximum(50);
+        octSharpRadiusSlider.setMinorTickSpacing(1);
+        octSharpRadiusSlider.setPaintLabels(true);
+        octSharpRadiusSlider.setPaintTicks(true);
+        octSharpRadiusSlider.setSnapToTicks(true);
+        octSharpRadiusSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSharpRadiusSlider.setValue(0);
+        octSharpRadiusSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                octSharpRadiusSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout sharpRadiusPanelLayout = new javax.swing.GroupLayout(sharpRadiusPanel);
+        sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
+        sharpRadiusPanelLayout.setHorizontalGroup(
+            sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        sharpRadiusPanelLayout.setVerticalGroup(
+            sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        octSharpWeightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Weight Factor"));
+
+        octSharpWeightSlider.setMajorTickSpacing(10);
+        octSharpWeightSlider.setMinorTickSpacing(2);
+        octSharpWeightSlider.setPaintLabels(true);
+        octSharpWeightSlider.setPaintTicks(true);
+        octSharpWeightSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSharpWeightSlider.setValue(0);
+        octSharpWeightSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                octSharpWeightSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout octSharpWeightPanelLayout = new javax.swing.GroupLayout(octSharpWeightPanel);
+        octSharpWeightPanel.setLayout(octSharpWeightPanelLayout);
+        octSharpWeightPanelLayout.setHorizontalGroup(
+            octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        octSharpWeightPanelLayout.setVerticalGroup(
+            octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
         javax.swing.GroupLayout modesPanelsLayout = new javax.swing.GroupLayout(modesPanels);
         modesPanels.setLayout(modesPanelsLayout);
         modesPanelsLayout.setHorizontalGroup(
@@ -328,15 +384,25 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(octSmoothingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(modesPanelsLayout.createSequentialGroup()
+                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(octSmoothingPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sharpRadiusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(octSharpWeightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
         modesPanelsLayout.setVerticalGroup(
             modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, modesPanelsLayout.createSequentialGroup()
-                .addComponent(octSmoothingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(octSmoothingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(sharpRadiusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(octSharpWeightPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(octModePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -704,31 +770,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_octAnalysisPanelMouseClicked
 
-    private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
-        switch (analysisMode) {
-            case SINGLE:
-            case MIRROR:
-            case EZ:
-                //update the selection width
-                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-                //redraw current selections on the image panel
-                octAnalysisPanel.repaint();
-                //update the LRPs for all of the selections (if they are being presented)
-                selectionLRPManager.updateLRPs();
-                break;
-            case SPATIAL:
-                //update the selection width
-                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-                //recalculate all of the selections with new widths and update LRPs if present
-                selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition());
-                //repaint selections on OCT image panel
-                octAnalysisPanel.repaint();
-                break;
-            default:
-                break;
-        }
-    }//GEN-LAST:event_widthSliderStateChanged
-
     private void toolsMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toolsMenuActionPerformed
 
     }//GEN-LAST:event_toolsMenuActionPerformed
@@ -737,33 +778,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 //        System.out.println("Displaying LRPs...");
         selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
-
-    private void logModeOCTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeOCTButtonActionPerformed
-        octAnalysisPanel.setOCTMode(OCTMode.LOG);
-    }//GEN-LAST:event_logModeOCTButtonActionPerformed
-
-    private void pixelModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelModeButtonActionPerformed
-        widthSlider.setLabelTable(widthSlider.createStandardLabels(2));
-    }//GEN-LAST:event_pixelModeButtonActionPerformed
-
-    private void micronModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micronModeButtonActionPerformed
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
-        for (int i = 1; i < 16; i++) {
-            if (i % 2 == 1) {
-                labelTable.put(i, new JLabel(df.format((double) i * analysisMetrics.getOct().getScale())));
-            }
-        }
-        widthSlider.setLabelTable(labelTable);
-    }//GEN-LAST:event_micronModeButtonActionPerformed
-
-    private void lrpSmoothingSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_lrpSmoothingSliderStateChanged
-        //update smoothing factor for LRPs
-        int value = ((JSlider) evt.getSource()).getValue();
-        value = (value == 0) ? 1 : value; //can't have a value of zero for smoothing
-        selectionLRPManager.setLrpSmoothingFactor(value);
-        //update LRPs to use new smoothing factor
-        selectionLRPManager.updateLRPs();
-    }//GEN-LAST:event_lrpSmoothingSliderStateChanged
 
     private void spatialAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spatialAnalysisMenuItemActionPerformed
         restartAnalysis();
@@ -780,7 +794,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
-        selectionLRPManager.getCenterOfFovea();
+//        selectionLRPManager.getCenterOfFovea();
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
@@ -838,10 +852,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         setAnalysisMode(AnalysisMode.SPATIAL);
     }//GEN-LAST:event_spatialAnalysisToggleButtonActionPerformed
 
-    private void linearOCTModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearOCTModeButtonActionPerformed
-        octAnalysisPanel.setOCTMode(OCTMode.LINEAR);
-    }//GEN-LAST:event_linearOCTModeButtonActionPerformed
-
     private void octAnalysisPanelKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_octAnalysisPanelKeyTyped
         // TODO add your handling code here:
     }//GEN-LAST:event_octAnalysisPanelKeyTyped
@@ -861,6 +871,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         foveaSelectMenuItemActionPerformed(evt);
     }//GEN-LAST:event_foveaSelectButtonActionPerformed
 
+    private void octSharpRadiusSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_octSharpRadiusSliderStateChanged
+        SwingUtilities.invokeLater(() -> {
+            //update weight of sharpen filter for the OCT 
+            double value = (double)((JSlider) evt.getSource()).getValue() * 0.1d;
+            analysisMetrics.getOct().setSharpenSigma(value);
+            //redraw OCT use new sharpen weight
+            octAnalysisPanel.repaint();
+            //redraw LRPs to update with new information
+            selectionLRPManager.updateLRPs();
+        });
+    }//GEN-LAST:event_octSharpRadiusSliderStateChanged
+
     private void octSmoothingSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_octSmoothingSliderStateChanged
         SwingUtilities.invokeLater(() -> {
             //update smoothing factor for OCT
@@ -868,8 +890,78 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             analysisMetrics.getOct().setBlurFactor(value);
             //redraw OCT use new smoothing factor
             octAnalysisPanel.repaint();
+            //redraw LRPs to update with new information
+            selectionLRPManager.updateLRPs();
         });
     }//GEN-LAST:event_octSmoothingSliderStateChanged
+
+    private void lrpSmoothingSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_lrpSmoothingSliderStateChanged
+        //update smoothing factor for LRPs
+        int value = ((JSlider) evt.getSource()).getValue();
+        value = (value == 0) ? 1 : value; //can't have a value of zero for smoothing
+        selectionLRPManager.setLrpSmoothingFactor(value);
+        //update LRPs to use new smoothing factor
+        selectionLRPManager.updateLRPs();
+    }//GEN-LAST:event_lrpSmoothingSliderStateChanged
+
+    private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
+        switch (analysisMode) {
+            case SINGLE:
+            case MIRROR:
+            case EZ:
+            //update the selection width
+            selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+            //redraw current selections on the image panel
+            octAnalysisPanel.repaint();
+            //update the LRPs for all of the selections (if they are being presented)
+            selectionLRPManager.updateLRPs();
+            break;
+            case SPATIAL:
+            //update the selection width
+            selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+            //recalculate all of the selections with new widths and update LRPs if present
+            selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition());
+            //repaint selections on OCT image panel
+            octAnalysisPanel.repaint();
+            break;
+            default:
+            break;
+        }
+    }//GEN-LAST:event_widthSliderStateChanged
+
+    private void micronModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micronModeButtonActionPerformed
+        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
+        for (int i = 1; i < 16; i++) {
+            if (i % 2 == 1) {
+                labelTable.put(i, new JLabel(df.format((double) i * analysisMetrics.getOct().getScale())));
+            }
+        }
+        widthSlider.setLabelTable(labelTable);
+    }//GEN-LAST:event_micronModeButtonActionPerformed
+
+    private void pixelModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelModeButtonActionPerformed
+        widthSlider.setLabelTable(widthSlider.createStandardLabels(2));
+    }//GEN-LAST:event_pixelModeButtonActionPerformed
+
+    private void logModeOCTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeOCTButtonActionPerformed
+        octAnalysisPanel.setOCTMode(OCTMode.LOG);
+    }//GEN-LAST:event_logModeOCTButtonActionPerformed
+
+    private void linearOCTModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearOCTModeButtonActionPerformed
+        octAnalysisPanel.setOCTMode(OCTMode.LINEAR);
+    }//GEN-LAST:event_linearOCTModeButtonActionPerformed
+
+    private void octSharpWeightSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_octSharpWeightSliderStateChanged
+        SwingUtilities.invokeLater(() -> {
+            //update weight of sharpen filter for the OCT 
+            float value = ((JSlider) evt.getSource()).getValue() * 0.01f;
+            analysisMetrics.getOct().setSharpenWeight(value);
+            //redraw OCT use new sharpen weight
+            octAnalysisPanel.repaint();
+            //redraw LRPs to update with new information
+            selectionLRPManager.updateLRPs();
+        });
+    }//GEN-LAST:event_octSharpWeightSliderStateChanged
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
@@ -994,6 +1086,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel modesPanels;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JPanel octModePanel;
+    private javax.swing.JSlider octSharpRadiusSlider;
+    private javax.swing.JPanel octSharpWeightPanel;
+    private javax.swing.JSlider octSharpWeightSlider;
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JFileChooser openFileChooser;
@@ -1002,6 +1097,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup selModeButtonGroup;
     private javax.swing.JPanel selectionWidthModePanel;
     private javax.swing.JPanel selectionWidthSliderPanel;
+    private javax.swing.JPanel sharpRadiusPanel;
     private javax.swing.JMenuItem singleLRPAnalysisMenuItem;
     private javax.swing.JToggleButton singleLRPAnalysisToggleButton;
     private javax.swing.JToggleButton singleSelectButton;

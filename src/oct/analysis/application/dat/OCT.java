@@ -5,8 +5,15 @@
  */
 package oct.analysis.application.dat;
 
+import ij.plugin.filter.UnsharpMask;
 import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
+import ij.process.ImageProcessor;
+import java.awt.FlowLayout;
 import java.awt.image.BufferedImage;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import oct.util.Util;
 
 /**
@@ -19,12 +26,17 @@ public class OCT {
     private double scale;
     private BufferedImage logOctImage;
     private BufferedImage linearOctImage;
-    private BufferedImage blurredLogOctImage;
-    private BufferedImage blurredLinearOctImage;
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
     private final double logScale = 255D / Math.log(255D);
     private double blurFactor = 0;
+    private volatile boolean updateBlur = false;
+    private double sharpenSigma = 0; //"Radius (Sigma)" is the standard deviation (blur radius) of the Gaussian blur that is subtracted.
+    private float sharpenWeight = 0; //Mask Weight" determines the strength of filtering, where "Mask Weight"=1 would be an infinite weight of the high-pass filtered image that is added.
+    private volatile boolean updateSharpen = true;
+    private FloatProcessor logOctFP;
+    private FloatProcessor linearOctFP;
+    private final UnsharpMask sharpener = new UnsharpMask();
 
     public OCT(double scale, BufferedImage octImage) {
         init(scale, octImage);
@@ -40,8 +52,12 @@ public class OCT {
         this.logOctImage = octImage;
         //store liner scale version of OCT
         linearOctImage = getLinearOCT(octImage);
-        //update the blurred images
-        updateBlurredImages();
+        //store image processors for various filters
+        logOctFP = new ByteProcessor(logOctImage).convertToFloatProcessor();
+        linearOctFP = new ByteProcessor(linearOctImage).convertToFloatProcessor();
+        //initialize snapshots of the original images to reset to later
+        logOctFP.snapshot();
+        linearOctFP.snapshot();
     }
 
     public double getScale() {
@@ -49,11 +65,27 @@ public class OCT {
     }
 
     public BufferedImage getOctImage() {
-        if (blurFactor > 0) {
-            return (logOct) ? blurredLogOctImage : blurredLinearOctImage;
-        } else {
-            return (logOct) ? logOctImage : linearOctImage;
+        //determine if operations need be applied (or changed from previous values)
+        if (updateBlur || updateSharpen) {
+            updateBlur = updateSharpen = false;
+            logOctFP.reset();//return to original image
+            linearOctFP.reset();//return to original image
+            if (blurFactor > 0) {
+                logOctFP.blurGaussian(blurFactor);
+                linearOctFP.blurGaussian(blurFactor);
+            }
+            if (sharpenSigma > 0 && sharpenWeight > 0) {
+                sharpener.sharpenFloat(logOctFP, sharpenSigma, sharpenWeight);
+                sharpener.sharpenFloat(linearOctFP, sharpenSigma, sharpenWeight);
+//            JFrame frame = new JFrame();
+//            frame.getContentPane().setLayout(new FlowLayout());
+//            frame.getContentPane().add(new JLabel(new ImageIcon(bp.getBufferedImage())));
+//            frame.getContentPane().add(new JLabel(new ImageIcon(fp.getBufferedImage())));
+//            frame.pack();
+//            frame.setVisible(true);
+            }
         }
+        return (logOct) ? logOctFP.getBufferedImage() : linearOctFP.getBufferedImage();
     }
 
     public int getImageOffsetY() {
@@ -93,8 +125,27 @@ public class OCT {
     }
 
     public void setBlurFactor(double blurFactor) {
-        this.blurFactor = blurFactor;
-        updateBlurredImages();
+        if (blurFactor != this.blurFactor) {
+            this.blurFactor = blurFactor;
+            updateBlur = true;
+        }
+    }
+
+    public void setSharpenSigma(double sharpenSigma) {
+        if (this.sharpenSigma != sharpenSigma) {
+            this.sharpenSigma = sharpenSigma;
+            updateSharpen = true;
+        }
+    }
+
+    public void setSharpenWeight(float sharpenWeight) {
+        if (sharpenWeight < 0 || sharpenWeight > 1) {
+            throw new IllegalArgumentException("Illegal Sharpen weight of " + sharpenWeight + ", must be between 0 and 1.");
+        }
+        if (this.sharpenWeight != sharpenWeight) {
+            this.sharpenWeight = sharpenWeight;
+            updateSharpen = true;
+        }
     }
 
     /**
@@ -144,14 +195,4 @@ public class OCT {
         return ret;
     }
 
-    private void updateBlurredImages() {
-        //store blurred version of Log OCT
-        ByteProcessor bp = new ByteProcessor(Util.deepCopyBufferedImage(logOctImage));
-        bp.blurGaussian(blurFactor);
-        blurredLogOctImage = bp.getBufferedImage();
-        //store blurred version of Linear OCT
-        bp = new ByteProcessor(Util.deepCopyBufferedImage(linearOctImage));
-        bp.blurGaussian(blurFactor);
-        blurredLinearOctImage = bp.getBufferedImage();
-    }
 }
