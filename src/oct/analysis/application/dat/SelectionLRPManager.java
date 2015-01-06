@@ -10,6 +10,7 @@ import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -303,28 +304,32 @@ public class SelectionLRPManager {
         return selectionMap.get(selectedSelectionName);
     }
 
-    public OCTSelection getCenterOfFovea() {
+    /**
+     * Obtain the X coordinate (relative to the OCT image) of the center of the
+     * fovea.
+     *
+     * @return the X coordinate of the fovea relative to the OCT image supplied
+     */
+    public int getCenterOfFovea() {
         //get the contour of the ILM
-        LinkedList<Point> ilmSeg = new LinkedList<>(analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT));
+        ArrayList<Point> ilmSeg = (ArrayList<Point>) analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT);
         //get the contour of the Brooks Membrane
-        LinkedList<Point> brmSeg = new LinkedList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT));
-        //sort the points by x position
-        ilmSeg.sort((Point p1, Point p2) -> {
-            return (p1.x == p2.x) ? 0 : (p1.x > p2.x) ? 1 : -1;
-        });
-        brmSeg.sort((Point p1, Point p2) -> {
-            return (p1.x == p2.x) ? 0 : (p1.x > p2.x) ? 1 : -1;
-        });
+        ArrayList<Point> brmSeg = (ArrayList<Point>) analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT);
         //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
         ListIterator<Point> ilmIter = ilmSeg.listIterator();
         ListIterator<Point> brmIter = brmSeg.listIterator();
-        
-        for (int i = 0; ilmIter.hasNext(); i++) {
+        double[] diffs = new double[ilmSeg.size()];
+        Arrays.fill(diffs, 0);
+        for (int x = 0; ilmIter.hasNext(); x++) {
             Point ilmPoint = ilmIter.next();
             Point brmPoint = brmIter.next();
-            
+            diffs[x] = ilmPoint.distance(brmPoint);
         }
-        return null;
+        
+        //plot the differences
+        
+
+        return -1;
     }
 
 }

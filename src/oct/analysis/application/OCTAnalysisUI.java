@@ -794,7 +794,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
-//        selectionLRPManager.getCenterOfFovea();
+        selectionLRPManager.getCenterOfFovea();
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
