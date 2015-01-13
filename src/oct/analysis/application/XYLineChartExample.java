@@ -16,6 +16,13 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import oct.io.TiffReader;
 import oct.util.Segmentation;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -71,7 +78,7 @@ public class XYLineChartExample extends JFrame {
 
     public XYDataset createDataset(boolean addNewData) throws IOException {
         XYSeriesCollection dataset = new XYSeriesCollection();
-        XYSeries series1 = new XYSeries("Object 1");
+        XYSeries series1 = new XYSeries("Segment Diff.");
 
         BufferedImage img = TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif"));
 
@@ -82,18 +89,49 @@ public class XYLineChartExample extends JFrame {
         //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
         ListIterator<Point> ilmIter = ilmSeg.listIterator();
         ListIterator<Point> brmIter = brmSeg.listIterator();
-//        double[] diffs = new double[ilmSeg.size()];
-//        Arrays.fill(diffs, 0);
-        while(ilmIter.hasNext()) {
+        double[] x = new double[ilmSeg.size()];
+        double[] y = new double[ilmSeg.size()];
+        for (int i = 0; ilmIter.hasNext(); i++) {
             Point ilmPoint = ilmIter.next();
             Point brmPoint = brmIter.next();
             System.out.println(ilmPoint.toString() + "; " + brmPoint.toString() + "; diff: " + brmPoint.distance(ilmPoint));
-//            diffs[x] = ilmPoint.distance(brmPoint);
-            series1.add(ilmPoint.getX(), brmPoint.distance(ilmPoint));
-            
+            double xPos = ilmPoint.getX();
+            double yPos = brmPoint.distance(ilmPoint);
+            series1.add(xPos, yPos);
+            x[i] = xPos;
+            y[i] = yPos;
         }
-
         dataset.addSeries(series1);
+
+        //build spline function to help find derivaties of diff.
+//        UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);//good for identifying the true foveal center
+        UnivariateInterpolator interpolator = new LoessInterpolator();//good for removing and identifying relative vicinity of foveal center
+        UnivariateFunction function = interpolator.interpolate(x, y);
+
+        //get first and second derivative second derivative of the diff
+        FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);//use 8 point differences differentiator (that is it uses 8 points arround the point in question to derive the slope at the given point) 
+        UnivariateDifferentiableFunction difFunc = differ.differentiate(function);
+
+        //plot derivatives
+        XYSeries interpolated = new XYSeries("Interp.");
+        XYSeries fd = new XYSeries("F'");
+        XYSeries sd = new XYSeries("F''");
+        int params = 1;
+        int order = 2;
+        DerivativeStructure xd;
+        DerivativeStructure yd;
+
+        for (int xRealValue = 1; xRealValue <= x[x.length - 1] - 1; xRealValue++) {
+            //get first and second derivative at the given point
+            xd = new DerivativeStructure(params, order, 0, xRealValue);
+            yd = difFunc.value(xd);
+            interpolated.add(xRealValue, yd.getValue());//interpolated difference value
+            fd.add(xRealValue, yd.getPartialDerivative(1));//first derivative at point
+            sd.add(xRealValue, yd.getPartialDerivative(2));//second derivative at point
+        }
+        dataset.addSeries(interpolated);
+        dataset.addSeries(fd);
+        dataset.addSeries(sd);
 
         return dataset;
     }
