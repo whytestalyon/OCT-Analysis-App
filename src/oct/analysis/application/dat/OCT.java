@@ -148,6 +148,14 @@ public class OCT {
         }
     }
 
+    public BufferedImage getLogOctImage() {
+        return logOctImage;
+    }
+
+    public BufferedImage getLinearOctImage() {
+        return linearOctImage;
+    }
+
     /**
      * Determine if the supplied coordinate overlaps with the area of this panel
      * that displays the OCT image

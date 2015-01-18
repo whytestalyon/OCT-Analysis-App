@@ -10,7 +10,6 @@ import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
@@ -19,6 +18,12 @@ import javax.swing.SwingUtilities;
 import oct.analysis.application.LRPFrame;
 import oct.analysis.application.OCTSelection;
 import oct.util.Segmentation;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 
 /**
  *
@@ -311,25 +316,113 @@ public class SelectionLRPManager {
      * @return the X coordinate of the fovea relative to the OCT image supplied
      */
     public int getCenterOfFovea() {
+        //interpolator for denoising signals
+        UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
         //get the contour of the ILM
-        ArrayList<Point> ilmSeg = (ArrayList<Point>) analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT);
+        double[][] ilmSeg = getXYArrays(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT)));
+        //interpolate ILM contour
+        UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
         //get the contour of the Brooks Membrane
-        ArrayList<Point> brmSeg = (ArrayList<Point>) analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT);
-        //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
-        ListIterator<Point> ilmIter = ilmSeg.listIterator();
-        ListIterator<Point> brmIter = brmSeg.listIterator();
-        double[] diffs = new double[ilmSeg.size()];
-        Arrays.fill(diffs, 0);
-        for (int x = 0; ilmIter.hasNext(); x++) {
-            Point ilmPoint = ilmIter.next();
-            Point brmPoint = brmIter.next();
-            diffs[x] = ilmPoint.distance(brmPoint);
-        }
-        
-        //plot the differences
-        
+        double[][] brmSeg = getXYArrays(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT)));
+        UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
 
-        return -1;
+        //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
+        double[] x = new double[analysisData.getOct().getLinearOctImage().getWidth()];
+        double[] y = new double[analysisData.getOct().getLinearOctImage().getWidth()];
+        for (int xPos = 0; xPos < analysisData.getOct().getLinearOctImage().getWidth(); xPos++) {
+            double yPos = Math.abs(ilmInterp.value(xPos) - brmInterp.value(xPos));
+            x[xPos] = xPos;
+            y[xPos] = yPos;
+        }
+
+        //interpolate difference curve to function so we can find derivaties of diff.
+        UnivariateFunction diffInerp = interpolator.interpolate(x, y);
+
+        //create differentiator for the diff interpolation function
+        FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);//use 4 point differences differentiator (that is it uses 4 points arround the point in question to derive the slope at the given point) 
+        UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
+
+        /*
+         * search for closest local maxima or minima, nearest the center of the 
+         * image, in the second derivative of the difference
+         * i.e. find the root of the third derivative closest to center of image
+         */
+        int numFreeVariablesInFunction = 1;
+        int order = 3;
+        DerivativeStructure xd;
+        DerivativeStructure yd;
+        int imageCenter = analysisData.getOct().getLinearOctImage().getWidth() / 2;
+        xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter);
+        yd = difFunc.value(xd);
+        double thirdDeriv = yd.getPartialDerivative(3);
+        //find oppositely signed third derivative values to bracket the root search
+        int centerOfFovea;
+        if (thirdDeriv == 0D || thirdDeriv == -0D) {
+            //center of fovea is at center of image
+            centerOfFovea = imageCenter;
+        } else {
+            //find bracketing values
+            double firstBracket = thirdDeriv;
+            //determine direction to search for other bracketing value
+            xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter - 1);
+            yd = difFunc.value(xd);
+            thirdDeriv = yd.getPartialDerivative(3);
+            boolean bracketRight;
+            if (firstBracket < 0) {
+                bracketRight = !(thirdDeriv > firstBracket);
+            } else {
+                bracketRight = (thirdDeriv > firstBracket);
+            }
+            //search for sign change in desired direction
+            int xDiff = 0;
+            if (bracketRight) {
+                do {
+                    xDiff++;
+                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff);
+                    yd = difFunc.value(xd);
+                    thirdDeriv = yd.getPartialDerivative(3);
+                } while (Math.signum(thirdDeriv) == Math.signum(firstBracket) && thirdDeriv != 0D && thirdDeriv != -0D);
+                //now determine center of fovea
+                if (thirdDeriv == 0D || thirdDeriv == -0D) {
+                    //center of fovea is at center of image + calculated X difference
+                    centerOfFovea = imageCenter + xDiff;
+                } else {
+                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff - 1);
+                    yd = difFunc.value(xd);
+                    centerOfFovea = (Math.abs(thirdDeriv) < yd.getPartialDerivative(3)) ? imageCenter + xDiff : imageCenter + xDiff - 1;
+                }
+            } else {
+                do {
+                    xDiff--;
+                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff);
+                    yd = difFunc.value(xd);
+                    thirdDeriv = yd.getPartialDerivative(3);
+                } while (Math.signum(thirdDeriv) == Math.signum(firstBracket) && thirdDeriv != 0D && thirdDeriv != -0D);
+                //now determine center of fovea
+                if (thirdDeriv == 0D || thirdDeriv == -0D) {
+                    //center of fovea is at center of image + calculated X difference
+                    centerOfFovea = imageCenter + xDiff;
+                } else {
+                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff + 1);
+                    yd = difFunc.value(xd);
+                    centerOfFovea = (Math.abs(thirdDeriv) < yd.getPartialDerivative(3)) ? imageCenter + xDiff : imageCenter + xDiff + 1;
+                }
+            }
+        }
+
+        return centerOfFovea;
+    }
+
+    public double[][] getXYArrays(List<Point> points) {
+        double[] x = new double[points.size()];
+        double[] y = new double[points.size()];
+        ListIterator<Point> pi = points.listIterator();
+        for (int i = 0; pi.hasNext(); i++) {
+            Point p = pi.next();
+            x[i] = p.getX();
+            y[i] = p.getY();
+        }
+        return new double[][]{x, y};
     }
 
 }

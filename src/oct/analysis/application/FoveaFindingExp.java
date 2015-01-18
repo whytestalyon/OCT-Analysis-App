@@ -11,8 +11,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -29,6 +33,7 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.renderer.xy.XYSplineRenderer;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -73,51 +78,76 @@ public class FoveaFindingExp extends JFrame {
 
         //get the contour of the ILM
         ArrayList<Point> ilmSeg = new ArrayList<>(getSurfaceSegment(img, 1, Segmentation.ILM_SEGMENT));
-        XYSeries ilm = new XYSeries("ILM Segment");
+        final double[] xi = new double[ilmSeg.size()];
+        final double[] yi = new double[ilmSeg.size()];
+        final AtomicInteger index = new AtomicInteger(0);
         ilmSeg.forEach((p) -> {
-            ilm.add(p.getX(), 480 - p.getY());
+            int i = index.getAndIncrement();
+            xi[i] = p.getX();
+            yi[i] = p.getY();
         });
+        //interpolate ILM contour
+        UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
+        UnivariateFunction function = interpolator.interpolate(xi, yi);
+        //add ILM contour to graph series
+        XYSeries ilm = new XYSeries("ILM Segment");
+        for (int xPosition = 0; xPosition < img.getWidth(); xPosition++) {
+            ilm.add(xPosition, function.value(xPosition));
+        }
 //        dataset.addSeries(ilm);
         //get the contour of the Brooks Membrane
         ArrayList<Point> brmSeg = new ArrayList<>(getSurfaceSegment(img, 1, Segmentation.BrM_SEGMENT));
-        XYSeries brm = new XYSeries("BrM Segment");
+        final double[] xb = new double[brmSeg.size()];
+        final double[] yb = new double[brmSeg.size()];
+        index.set(0);
         brmSeg.forEach((p) -> {
-            brm.add(p.getX(), 480 - p.getY());
+            int i = index.getAndIncrement();
+            xb[i] = p.getX();
+            yb[i] = p.getY();
         });
+        //interpolate BrM contour
+        function = interpolator.interpolate(xb, yb);
+        //add BrM contour to graph series
+        XYSeries brm = new XYSeries("BrM Segment");
+        for (int xPosition = 0; xPosition < img.getWidth(); xPosition++) {
+            brm.add(xPosition, function.value(xPosition));
+        }
 //        dataset.addSeries(brm);
+
         //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
-        ListIterator<Point> ilmIter = ilmSeg.listIterator();
-        ListIterator<Point> brmIter = brmSeg.listIterator();
-        double[] x = new double[ilmSeg.size()];
-        double[] y = new double[ilmSeg.size()];
-        XYSeries series1 = new XYSeries("Segment Diff.");
+        ListIterator<XYDataItem> ilmIter = ((List<XYDataItem>) ilm.getItems()).listIterator();
+        ListIterator<XYDataItem> brmIter = ((List<XYDataItem>) brm.getItems()).listIterator();
+
+        XYSeries segDiff = new XYSeries("Segment Diff.");
+        double[] x = new double[brm.getItemCount()];
+        double[] y = new double[brm.getItemCount()];
         for (int i = 0; ilmIter.hasNext(); i++) {
-            Point ilmPoint = ilmIter.next();
-            Point brmPoint = brmIter.next();
-            System.out.println(ilmPoint.toString() + "; " + brmPoint.toString() + "; diff: " + brmPoint.distance(ilmPoint));
-            double xPos = ilmPoint.getX();
-            double yPos = brmPoint.distance(ilmPoint);
-            series1.add(xPos, yPos);
+            XYDataItem ilmPoint = ilmIter.next();
+            XYDataItem brmPoint = brmIter.next();
+            double xPos = ilmPoint.getXValue();
+            double yPos = Math.abs(brmPoint.getYValue() - ilmPoint.getYValue());
+            segDiff.add(xPos, yPos);
             x[i] = xPos;
             y[i] = yPos;
         }
-//        dataset.addSeries(series1);
+//        dataset.addSeries(segDiff);
 
         //build spline function to help find derivaties of diff.
-        UnivariateInterpolator interpolator = new LoessInterpolator(0.4, 0);//good for identifying the true foveal center
+//        interpolator = new LoessInterpolator(0.4, 0);//good for identifying the true foveal center
 //        UnivariateInterpolator interpolator = new LoessInterpolator(0.2, 0);//good for removing and identifying relative vicinity of foveal center
-        UnivariateFunction function = interpolator.interpolate(x, y);
+        function = interpolator.interpolate(x, y);
 
         //get first and second derivative second derivative of the diff
-        FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);//use 8 point differences differentiator (that is it uses 8 points arround the point in question to derive the slope at the given point) 
+        FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);//use 4 point differences differentiator (that is it uses 4 points arround the point in question to derive the slope at the given point) 
         UnivariateDifferentiableFunction difFunc = differ.differentiate(function);
 
         //plot derivatives
         XYSeries interpolated = new XYSeries("Interp.");
         XYSeries fd = new XYSeries("F'");
         XYSeries sd = new XYSeries("F''");
+        XYSeries td = new XYSeries("F'''");
         int params = 1;
-        int order = 2;
+        int order = 3;
         DerivativeStructure xd;
         DerivativeStructure yd;
 
@@ -128,10 +158,12 @@ public class FoveaFindingExp extends JFrame {
             interpolated.add(xRealValue, yd.getValue());//interpolated difference value
             fd.add(xRealValue, yd.getPartialDerivative(1));//first derivative at point
             sd.add(xRealValue, yd.getPartialDerivative(2));//second derivative at point
+            td.add(xRealValue, yd.getPartialDerivative(3));//third derivative at point
         }
 //        dataset.addSeries(interpolated);
 //        dataset.addSeries(fd);
         dataset.addSeries(sd);
+        dataset.addSeries(td);
 
         return dataset;
     }
@@ -173,4 +205,5 @@ public class FoveaFindingExp extends JFrame {
                 .getCurve(segNum, distanceBetweenPoints)
                 .getPointCollection();
     }
+
 }

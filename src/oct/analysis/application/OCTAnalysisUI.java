@@ -794,7 +794,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
-        selectionLRPManager.getCenterOfFovea();
+        int fv = selectionLRPManager.getCenterOfFovea();
+        selectionLRPManager.addOrUpdateSelection(new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV"));
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
@@ -874,7 +875,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void octSharpRadiusSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_octSharpRadiusSliderStateChanged
         SwingUtilities.invokeLater(() -> {
             //update weight of sharpen filter for the OCT 
-            double value = (double)((JSlider) evt.getSource()).getValue() * 0.1d;
+            double value = (double) ((JSlider) evt.getSource()).getValue() * 0.1d;
             analysisMetrics.getOct().setSharpenSigma(value);
             //redraw OCT use new sharpen weight
             octAnalysisPanel.repaint();
@@ -909,23 +910,23 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             case SINGLE:
             case MIRROR:
             case EZ:
-            //update the selection width
-            selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-            //redraw current selections on the image panel
-            octAnalysisPanel.repaint();
-            //update the LRPs for all of the selections (if they are being presented)
-            selectionLRPManager.updateLRPs();
-            break;
+                //update the selection width
+                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+                //redraw current selections on the image panel
+                octAnalysisPanel.repaint();
+                //update the LRPs for all of the selections (if they are being presented)
+                selectionLRPManager.updateLRPs();
+                break;
             case SPATIAL:
-            //update the selection width
-            selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-            //recalculate all of the selections with new widths and update LRPs if present
-            selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition());
-            //repaint selections on OCT image panel
-            octAnalysisPanel.repaint();
-            break;
+                //update the selection width
+                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+                //recalculate all of the selections with new widths and update LRPs if present
+                selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition());
+                //repaint selections on OCT image panel
+                octAnalysisPanel.repaint();
+                break;
             default:
-            break;
+                break;
         }
     }//GEN-LAST:event_widthSliderStateChanged
 

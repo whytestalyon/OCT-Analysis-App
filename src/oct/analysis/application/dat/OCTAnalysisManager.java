@@ -51,7 +51,7 @@ public class OCTAnalysisManager {
     
     public Segmentation getSegmentation(){
         if(segmentation == null){
-            segmentation = new Segmentation(oct.getOctImage(), 1);
+            segmentation = new Segmentation(oct.getLogOctImage(), 1);
         }
         return segmentation;
     }
