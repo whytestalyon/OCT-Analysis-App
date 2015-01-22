@@ -10,20 +10,27 @@ import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.IntStream;
 import javax.swing.SwingUtilities;
+import oct.analysis.application.FoveaFindingExp;
 import oct.analysis.application.LRPFrame;
 import oct.analysis.application.OCTSelection;
 import oct.util.Segmentation;
+import oct.util.Util;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
+import org.apache.commons.math3.exception.OutOfRangeException;
+import org.jfree.data.xy.XYDataItem;
 
 /**
  *
@@ -343,73 +350,49 @@ public class SelectionLRPManager {
         UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
 
         /*
-         * search for closest local maxima or minima, nearest the center of the 
-         * image, in the second derivative of the difference
-         * i.e. find the root of the third derivative closest to center of image
+         * collect the first derivative at each pixel in the image
          */
         int numFreeVariablesInFunction = 1;
-        int order = 3;
+        int order = 1;
         DerivativeStructure xd;
         DerivativeStructure yd;
-        int imageCenter = analysisData.getOct().getLinearOctImage().getWidth() / 2;
-        xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter);
-        yd = difFunc.value(xd);
-        double thirdDeriv = yd.getPartialDerivative(3);
-        //find oppositely signed third derivative values to bracket the root search
-        int centerOfFovea;
-        if (thirdDeriv == 0D || thirdDeriv == -0D) {
-            //center of fovea is at center of image
-            centerOfFovea = imageCenter;
-        } else {
-            //find bracketing values
-            double firstBracket = thirdDeriv;
-            //determine direction to search for other bracketing value
-            xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter - 1);
+        ArrayList<LinePoint> firstDeriv = new ArrayList<>(analysisData.getOct().getLinearOctImage().getWidth() - 1);
+        IntStream.range(0, analysisData.getOct().getLinearOctImage().getWidth() - 1)
+                .forEach((i) -> {
+                    firstDeriv.add(new LinePoint(0, 0));
+                });
+        for (int xRealValue = 1; xRealValue <= analysisData.getOct().getLinearOctImage().getWidth() - 2; xRealValue++) {
+            //get first derivative at the given point
+            xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, xRealValue);
             yd = difFunc.value(xd);
-            thirdDeriv = yd.getPartialDerivative(3);
-            boolean bracketRight;
-            if (firstBracket < 0) {
-                bracketRight = !(thirdDeriv > firstBracket);
-            } else {
-                bracketRight = (thirdDeriv > firstBracket);
-            }
-            //search for sign change in desired direction
-            int xDiff = 0;
-            if (bracketRight) {
-                do {
-                    xDiff++;
-                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff);
-                    yd = difFunc.value(xd);
-                    thirdDeriv = yd.getPartialDerivative(3);
-                } while (Math.signum(thirdDeriv) == Math.signum(firstBracket) && thirdDeriv != 0D && thirdDeriv != -0D);
-                //now determine center of fovea
-                if (thirdDeriv == 0D || thirdDeriv == -0D) {
-                    //center of fovea is at center of image + calculated X difference
-                    centerOfFovea = imageCenter + xDiff;
-                } else {
-                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff - 1);
-                    yd = difFunc.value(xd);
-                    centerOfFovea = (Math.abs(thirdDeriv) < yd.getPartialDerivative(3)) ? imageCenter + xDiff : imageCenter + xDiff - 1;
-                }
-            } else {
-                do {
-                    xDiff--;
-                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff);
-                    yd = difFunc.value(xd);
-                    thirdDeriv = yd.getPartialDerivative(3);
-                } while (Math.signum(thirdDeriv) == Math.signum(firstBracket) && thirdDeriv != 0D && thirdDeriv != -0D);
-                //now determine center of fovea
-                if (thirdDeriv == 0D || thirdDeriv == -0D) {
-                    //center of fovea is at center of image + calculated X difference
-                    centerOfFovea = imageCenter + xDiff;
-                } else {
-                    xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, imageCenter + xDiff + 1);
-                    yd = difFunc.value(xd);
-                    centerOfFovea = (Math.abs(thirdDeriv) < yd.getPartialDerivative(3)) ? imageCenter + xDiff : imageCenter + xDiff + 1;
-                }
-            }
+            firstDeriv.set(xRealValue, new LinePoint(xRealValue, yd.getPartialDerivative(1)));//first derivative at point
         }
 
+        /*
+         search for the local max and mins in the first derivative
+         */
+        List<LinePoint> peaks = Util.findMaxAndMins(firstDeriv);
+
+        /*
+         collect the difference in value between each point and its neighbors
+         */
+        LinePoint prevPeak = null;
+        LinkedList<Diff> diffs = new LinkedList<>();
+        for (LinePoint curPeak : peaks) {
+            if (prevPeak != null) {
+                diffs.add(new Diff(prevPeak, curPeak));
+            }
+            prevPeak = curPeak;
+        }
+        //search for diff with greatest change in slope between peaks
+        Diff maxDiff = diffs.stream().max(Comparator.comparingDouble(diff -> diff.getYDiff())).get();
+        //find where the sign changes along derivative
+        double sign = Math.signum(maxDiff.getLinePoint1().getX());
+        int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
+        for (; sign == Math.signum(firstDeriv.get(signChangeXPos).getY()); signChangeXPos++);
+        //find which point is closer to true zero arround sign change
+        int centerOfFovea = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
+        System.out.println("Fovea found at: " + centerOfFovea);
         return centerOfFovea;
     }
 
@@ -423,6 +406,29 @@ public class SelectionLRPManager {
             y[i] = p.getY();
         }
         return new double[][]{x, y};
+    }
+
+    private static class Diff {
+
+        private LinePoint linePoint1, linePoint2;
+
+        public Diff(LinePoint linePoint1, LinePoint linePoint2) {
+            this.linePoint1 = linePoint1;
+            this.linePoint2 = linePoint2;
+        }
+
+        public LinePoint getLinePoint1() {
+            return linePoint1;
+        }
+
+        public LinePoint getLinePoint2() {
+            return linePoint2;
+        }
+
+        public double getYDiff() {
+            return Math.abs(linePoint1.getY() - linePoint2.getY());
+        }
+
     }
 
 }

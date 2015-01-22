@@ -5,17 +5,20 @@
  */
 package oct.util;
 
-import chuiSegmentation.CSegImage;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTImagePanel;
+import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCT;
 
 /**
@@ -56,21 +59,20 @@ public class Util {
         return new BufferedImage(cm, raster, isAlphaPremultiplied, null);
     }
 
-
     /**
      * Get the local maximums from a collection of Points.
      *
-     * @param segmentLine
+     * @param line assumes that the line starts at X = 0
      * @return
      */
-    public static LinkedList<Point> getPeaks(Collection<Point> segmentLine) {
-        LinkedList<Point> maxPoints = new LinkedList<>();
-        ArrayList<Point> pointList = new ArrayList<>(segmentLine);
-        Point leftPeakPoint = new Point(0, 0);
+    public static LinkedList<LinePoint> getMaximums(List<LinePoint> line) {
+        LinkedList<LinePoint> maxPoints = new LinkedList<>();
+        ArrayList<LinePoint> pointList = new ArrayList<>(line);
+        LinePoint leftPeakPoint = new LinePoint(0, 0);
         int leftPeakPointIndex = 0;
-        Point rightPeakPoint = new Point(0, 0);
+        LinePoint rightPeakPoint = new LinePoint(0, 0);
         int index = -1;
-        for (Point point : pointList) {
+        for (LinePoint point : pointList) {
             index++;
             if (index == 0) {
                 leftPeakPoint = point;
@@ -86,14 +88,12 @@ public class Util {
             } else {
                 //determine if we are coming down off of a peak by looking two points behind the current point
                 if (leftPeakPointIndex > 0) {
-                    Point prev = pointList.get(leftPeakPointIndex - 1);
+                    LinePoint prev = pointList.get(leftPeakPointIndex - 1);
                     //if two points back has a Y value that is less than or equal to the left peak point
                     //then we have found the end of the peak and we can process as such
                     if (prev.getY() <= leftPeakPoint.getY()) {
-                        double peakx = rightPeakPoint.getX() - ((rightPeakPoint.getX() - leftPeakPoint.getX()) / 2D);
-                        Point p = new Point(leftPeakPoint);
-                        p.setLocation(peakx, leftPeakPoint.getY());
-                        maxPoints.add(p);
+                        double peakx = (double) rightPeakPoint.getX() - ((double) (rightPeakPoint.getX() - leftPeakPoint.getX()) / 2D);
+                        maxPoints.add(new LinePoint((int) Math.round(peakx), leftPeakPoint.getY()));
                     }
                 }
                 leftPeakPoint = point;
@@ -104,6 +104,21 @@ public class Util {
 
         return maxPoints;
     }
-    
-    
+
+    public static List<LinePoint> findMaxAndMins(List<LinePoint> line) {
+        //create list of all positive Y values to get peaks
+        ArrayList<LinePoint> convList = new ArrayList<>(line.size());
+        line.forEach(p -> {
+            convList.add(new LinePoint(p.getX(), Math.abs(p.getY())));
+        });
+        //find X values of peaks
+        List<LinePoint> peaks = getMaximums(convList);
+        //collect peak points
+        List<LinePoint> ret = line.parallelStream()
+                .filter(p -> peaks.stream().anyMatch(pk -> pk.getX() == p.getX()))
+                .collect(Collectors.toList());
+        //sort be X position
+        ret.sort(Comparator.comparingInt(peak -> peak.getX()));
+        return ret;
+    }
 }

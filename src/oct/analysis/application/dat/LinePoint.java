@@ -11,15 +11,15 @@ package oct.analysis.application.dat;
  */
 public class LinePoint {
 
-    private final double x;
+    private final int x;
     private final double y;
 
-    public LinePoint(double x, double y) {
+    public LinePoint(int x, double y) {
         this.x = x;
         this.y = y;
     }
 
-    public double getX() {
+    public int getX() {
         return x;
     }
 
