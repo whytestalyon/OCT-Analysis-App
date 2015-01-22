@@ -123,7 +123,7 @@ public class OCTSelection {
         XYSeriesCollection lrp = new XYSeriesCollection();
         lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOct()));
 //        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
-        lrp.addSeries(getLrpPeaks(lrp.getSeries(0)));
+        lrp.addSeries(findMaximums(lrp.getSeries(0), selectionName + " LRP Maximums"));
         List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
         fwhm.forEach((fwhmSeries) -> {
             lrp.addSeries(fwhmSeries);
@@ -199,8 +199,8 @@ public class OCTSelection {
         return grayLevel;
     }
 
-    public XYSeries getLrpPeaks(XYSeries lrpSeries) {
-        XYSeries lrpMaxPoints = new XYSeries(selectionName + " LRP maximums");
+    public static XYSeries findMaximums(XYSeries lrpSeries, String title) {
+        XYSeries lrpMaxPoints = new XYSeries(title);
         XYDataItem leftPeakPoint = new XYDataItem(0, 0);
         int leftPeakPointIndex = 0;
         XYDataItem rightPeakPoint = new XYDataItem(0, 0);
@@ -239,6 +239,14 @@ public class OCTSelection {
         }
 
         return lrpMaxPoints;
+    }
+
+    public static XYSeries findMaxAndMins(XYSeries lrpSeries, String title) {
+        XYSeries lrpMaxPoints = new XYSeries("");
+        ((List<XYDataItem>) lrpSeries.getItems()).forEach(p -> {
+            lrpMaxPoints.add(p.getXValue(), Math.abs(p.getYValue()));
+        });
+        return findMaximums(lrpMaxPoints, title);
     }
 
     public List<XYSeries> getFWHMForLRPPeaks(XYSeries lrpPeaks, XYSeries lrpSeries) {
