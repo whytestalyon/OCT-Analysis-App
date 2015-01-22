@@ -9,6 +9,7 @@ import java.awt.Component;
 import java.awt.Point;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +17,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.FoveaFindingExp;
@@ -386,8 +389,16 @@ public class SelectionLRPManager {
         }
         //search for diff with greatest change in slope between peaks
         Diff maxDiff = diffs.stream().max(Comparator.comparingDouble(diff -> diff.getYDiff())).get();
+//        List<LinePoint> lp = new ArrayList<LinePoint>(2);
+//        lp.add(maxDiff.getLinePoint1());
+//        lp.add(maxDiff.getLinePoint2());
+//        try {
+//            Util.graphPoints(firstDeriv, lp);
+//        } catch (IOException ex) {
+//            Logger.getLogger(SelectionLRPManager.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         //find where the sign changes along derivative
-        double sign = Math.signum(maxDiff.getLinePoint1().getX());
+        double sign = Math.signum(maxDiff.getLinePoint1().getY());
         int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
         for (; sign == Math.signum(firstDeriv.get(signChangeXPos).getY()); signChangeXPos++);
         //find which point is closer to true zero arround sign change

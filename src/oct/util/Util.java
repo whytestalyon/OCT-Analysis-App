@@ -5,21 +5,34 @@
  */
 package oct.util;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCT;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
@@ -120,5 +133,39 @@ public class Util {
         //sort be X position
         ret.sort(Comparator.comparingInt(peak -> peak.getX()));
         return ret;
+    }
+
+    public static void graphPoints(List<LinePoint>... pointsList) throws IOException {
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        int seriesCntr = 1;
+        for (List<LinePoint> points : pointsList) {
+            XYSeries data = new XYSeries("Series " + seriesCntr);
+            points.forEach((point) -> {
+                data.add(point.getX(), point.getY());
+            });
+            dataset.addSeries(data);
+            seriesCntr++;
+        }
+
+        JFrame graphFrame = new JFrame("Points graph");
+
+        JPanel chartPanel = createChartPanel("Points graph", dataset);
+        graphFrame.add(chartPanel, BorderLayout.SOUTH);
+        SwingUtilities.invokeLater(() -> {
+            graphFrame.pack();
+            graphFrame.setVisible(true);
+        });
+    }
+
+    private static JPanel createChartPanel(String title, XYDataset dataset) throws IOException {
+        String xAxisLabel = "Pixel";
+        String yAxisLabel = "Slope";
+
+        JFreeChart chart = ChartFactory.createXYLineChart(title, xAxisLabel, yAxisLabel, dataset);
+        ChartPanel panel = new ChartPanel(chart);
+        panel.setPreferredSize(new Dimension(640, 480));
+        panel.setFillZoomRectangle(true);
+        panel.setMouseWheelEnabled(true);
+        return panel;
     }
 }
