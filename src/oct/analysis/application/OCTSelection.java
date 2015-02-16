@@ -17,6 +17,7 @@ import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
+import oct.util.Util;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -165,7 +166,7 @@ public class OCTSelection {
             double sum = 0;
 
             for (int xindex = panel_x_position - oct.getImageOffsetX() + 1; xindex < panel_x_position - oct.getImageOffsetX() + 1 + width; xindex++) {
-                sum += calculateGrayScaleValue(oct.getOctImage().getRGB(xindex, y));
+                sum += Util.calculateGrayScaleValue(oct.getOctImage().getRGB(xindex, y));
             }
             //calculate average pixel intensity
             double avg = sum / (double) width;
@@ -184,20 +185,6 @@ public class OCTSelection {
         return lrp;
     }
 
-    /**
-     * Determine the gray scale value of a pixel based on its RGB value.
-     *
-     * @param rgb
-     * @return
-     */
-    private int calculateGrayScaleValue(int rgb) {
-        int r = (rgb >> 16) & 0xFF;
-        int g = (rgb >> 8) & 0xFF;
-        int b = (rgb & 0xFF);
-
-        int grayLevel = (r + g + b) / 3;
-        return grayLevel;
-    }
 
     public static XYSeries findMaximums(XYSeries lrpSeries, String title) {
         XYSeries lrpMaxPoints = new XYSeries(title);

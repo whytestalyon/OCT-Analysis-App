@@ -36,13 +36,15 @@ public class OCT {
     private volatile boolean updateSharpen = true;
     private FloatProcessor logOctFP;
     private FloatProcessor linearOctFP;
-    private final UnsharpMask sharpener = new UnsharpMask();
+    private final UnsharpMask sharpener;
 
     public OCT(double scale, BufferedImage octImage) {
+        this.sharpener = new UnsharpMask();
         init(scale, octImage);
     }
 
     public OCT(double axialLength, double nominalScanWidth, int octWidth, BufferedImage octImage) {
+        this.sharpener = new UnsharpMask();
         double scanLength = (nominalScanWidth * axialLength) / 24D;
         init(((scanLength * 1000D) / (double) octWidth), octImage);
     }
@@ -86,6 +88,13 @@ public class OCT {
             }
         }
         return (logOct) ? logOctFP.getBufferedImage() : linearOctFP.getBufferedImage();
+    }
+
+    public BufferedImage getSharpenedOCT() {
+        FloatProcessor tmpFP = new ByteProcessor(logOctImage).convertToFloatProcessor();
+        tmpFP.snapshot();
+        sharpener.sharpenFloat(tmpFP, 15, 1);
+        return tmpFP.getBufferedImage();
     }
 
     public int getImageOffsetY() {

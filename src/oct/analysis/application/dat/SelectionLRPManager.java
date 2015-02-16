@@ -7,6 +7,7 @@ package oct.analysis.application.dat;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -16,9 +17,11 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.FoveaFindingExp;
@@ -320,6 +323,268 @@ public class SelectionLRPManager {
     }
 
     /**
+     * Get the X coordinates of the edges of the EZ on both sides of the fovea.
+     *
+     * @return an array containing two elements in the following order: x
+     * coordinate of the left edge of the EZ, x coordinate of the right edge of
+     * the EZ.
+     */
+    public int[] getEZEdgeCoords() {
+        //only run if the center of the fovea has been defined
+        if (foveaCenterXPosition < 0) {
+            return null;
+        }
+        System.out.println("Searching for EZ...");
+
+        //interpolator for denoising signals
+        UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
+
+        //get the contour of the Brooks Membrane
+        double[][] brmSeg = getXYArrays(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT)));
+        UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
+
+        //get a sharpened version of the OCT for processing
+        BufferedImage sharpOCT = analysisData.getOct().getSharpenedOCT();
+
+        //search for first pixel above BrM segment that is black
+        int searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition)) + 1;
+        do {
+            searchY--;
+        } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0
+                || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
+
+        //now that the first black pixel has been found create a contour of the 
+        //border between black and white pixels. If the contour returns to the
+        //original start of the contour search further above the BrM segment
+        //to find the contour desired
+        LinkedList<Point> contour = new LinkedList<>();
+        Point startPoint = new Point(foveaCenterXPosition, searchY);
+        contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        while (contour.get(0).equals(startPoint)) {
+            //search up past burrent point for the next possible contour location
+            contour = new LinkedList<>();
+            //search through black space
+            do {
+                searchY--;
+            } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) == 0);
+            //search through white space to find next place to start contour search
+            do {
+                searchY--;
+            } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0
+                    || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
+            startPoint = new Point(foveaCenterXPosition, searchY);
+            contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        }
+
+        //get contour to the left of the search point
+        contour.add(findContourLeft(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+
+        //sort contour by X position, keeping in mind that a single X position
+        //may have several Y values associated with it
+        Map<Double, List<Point>> grouped = contour.stream().collect(Collectors.groupingBy(Point::getX));
+
+        //create complete contour using the maximum Y value at each point
+        List<Point> refinedContour = grouped
+                .values()
+                .stream()
+                .map((points) -> {
+                    int maxY = points.stream().mapToInt(p -> p.y).max().getAsInt();
+                    return new Point(points.get(0).x, maxY);
+                })
+                .sorted((p1, p2) -> Integer.compare(p1.x, p2.x))
+                .collect(Collectors.toList());
+
+        //graph points for inspection
+        List<LinePoint> clp = refinedContour
+                .stream()
+                .map((p) -> {
+                    return new LinePoint(p.x, sharpOCT.getHeight() - p.getY());
+                })
+                .collect(Collectors.toList());
+        List<LinePoint> slp = refinedContour
+                .stream()
+                .map(p -> new LinePoint(p.x, sharpOCT.getHeight() - brmInterp.value(p.x)))
+                .collect(Collectors.toList());
+        Util.graphPoints(clp, slp);
+
+        return null;
+    }
+
+    /**
+     * Determine if the supplied coordinate (excluding itself) in the supplied
+     * black and white image is surrounded by white pixels on all sides.
+     *
+     * @param xStart
+     * @param yStart
+     * @param sharpOCT
+     * @return
+     */
+    private boolean isSurroundedByWhite(int xStart, int yStart, BufferedImage sharpOCT) {
+        boolean allWhite = true;
+        for (int x = -1; x < 2; x++) {
+            for (int y = -1; y < 2; y++) {
+                if (x != 0 && y != 0) {
+                    allWhite &= Util.calculateGrayScaleValue(sharpOCT.getRGB(xStart + x, yStart + y)) > 0;
+                }
+            }
+        }
+        return allWhite;
+    }
+
+    /**
+     * Recursively search for a contour to the right of the supplied starting
+     * point. If the contour returned contains the starting point then the
+     * contour traced back to the start point rather than towards the edge of
+     * the image.
+     *
+     * @param searchPoint point to search from
+     * @param startPoint start search point
+     * @param contourList list to add the contour points to
+     * @param sharpOCT OCT to find the contour in
+     * @return the next point in the contour after the search point
+     */
+    private Point findContourRight(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT) {
+        Point nextPoint;
+        Cardinality nextDirection;
+        switch (searchDirection) {
+            case SOUTH:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x + 1, searchPoint.y)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.EAST;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x + 1, searchPoint.y + 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x + 1, searchPoint.y + 1);
+                    nextDirection = Cardinality.WEST;
+                } else {
+                    nextPoint = new Point(searchPoint.x + 1, searchPoint.y);
+                    nextDirection = Cardinality.SOUTH;
+                }
+                break;
+            case EAST:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x, searchPoint.y - 1)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.NORTH;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x + 1, searchPoint.y - 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x + 1, searchPoint.y - 1);
+                    nextDirection = Cardinality.SOUTH;
+                } else {
+                    nextPoint = new Point(searchPoint.x, searchPoint.y - 1);
+                    nextDirection = Cardinality.EAST;
+                }
+                break;
+            case WEST:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x, searchPoint.y + 1)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.SOUTH;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x - 1, searchPoint.y + 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x - 1, searchPoint.y + 1);
+                    nextDirection = Cardinality.NORTH;
+                } else {
+                    nextPoint = new Point(searchPoint.x, searchPoint.y + 1);
+                    nextDirection = Cardinality.WEST;
+                }
+                break;
+            case NORTH:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x - 1, searchPoint.y)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.WEST;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x - 1, searchPoint.y - 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x - 1, searchPoint.y - 1);
+                    nextDirection = Cardinality.EAST;
+                } else {
+                    nextPoint = new Point(searchPoint.x - 1, searchPoint.y);
+                    nextDirection = Cardinality.NORTH;
+                }
+                break;
+            default:
+                //will never happen, just placed in to make code compile
+                nextPoint = new Point(searchPoint);
+                nextDirection = Cardinality.EAST;
+                break;
+        }
+        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 40 || nextPoint.x >= sharpOCT.getWidth() - 40)) {
+            contourList.add(findContourRight(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT));
+        }
+        return nextPoint;
+    }
+
+    /**
+     * Recursively search for a contour to the left of the supplied starting
+     * point. If the contour returned contains the starting point then the
+     * contour traced back to the start point rather than towards the edge of
+     * the image.
+     *
+     * @param searchPoint point to search from
+     * @param startPoint start search point
+     * @param contourList list to add the contour points to
+     * @param sharpOCT OCT to find the contour in
+     * @return the next point in the contour after the search point
+     */
+    private Point findContourLeft(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT) {
+        System.out.println("CL searching: " + searchPoint.x);
+        Point nextPoint;
+        Cardinality nextDirection;
+        switch (searchDirection) {
+            case SOUTH:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x - 1, searchPoint.y)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.WEST;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x - 1, searchPoint.y + 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x - 1, searchPoint.y + 1);
+                    nextDirection = Cardinality.EAST;
+                } else {
+                    nextPoint = new Point(searchPoint.x - 1, searchPoint.y);
+                    nextDirection = Cardinality.SOUTH;
+                }
+                break;
+            case EAST:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x, searchPoint.y + 1)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.SOUTH;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x + 1, searchPoint.y + 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x + 1, searchPoint.y + 1);
+                    nextDirection = Cardinality.NORTH;
+                } else {
+                    nextPoint = new Point(searchPoint.x, searchPoint.y + 1);
+                    nextDirection = Cardinality.EAST;
+                }
+                break;
+            case WEST:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x, searchPoint.y - 1)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.NORTH;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x - 1, searchPoint.y - 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x - 1, searchPoint.y - 1);
+                    nextDirection = Cardinality.SOUTH;
+                } else {
+                    nextPoint = new Point(searchPoint.x, searchPoint.y - 1);
+                    nextDirection = Cardinality.WEST;
+                }
+                break;
+            case NORTH:
+                if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x + 1, searchPoint.y)) > 0) {
+                    nextPoint = new Point(searchPoint);
+                    nextDirection = Cardinality.EAST;
+                } else if (Util.calculateGrayScaleValue(sharpOCT.getRGB(searchPoint.x + 1, searchPoint.y - 1)) == 0) {
+                    nextPoint = new Point(searchPoint.x + 1, searchPoint.y - 1);
+                    nextDirection = Cardinality.WEST;
+                } else {
+                    nextPoint = new Point(searchPoint.x + 1, searchPoint.y);
+                    nextDirection = Cardinality.NORTH;
+                }
+                break;
+            default:
+                //will never happen, just placed in to make code compile
+                nextPoint = new Point(searchPoint);
+                nextDirection = Cardinality.EAST;
+                break;
+        }
+        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 40 || nextPoint.x >= sharpOCT.getWidth() - 40)) {
+            contourList.add(findContourLeft(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT));
+        }
+        return nextPoint;
+    }
+
+    /**
      * Obtain the X coordinate (relative to the OCT image) of the center of the
      * fovea.
      *
@@ -440,6 +705,14 @@ public class SelectionLRPManager {
             return Math.abs(linePoint1.getY() - linePoint2.getY());
         }
 
+    }
+
+    private enum Cardinality {
+
+        NORTH,
+        SOUTH,
+        EAST,
+        WEST;
     }
 
 }

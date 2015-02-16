@@ -324,9 +324,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         sharpRadiusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Radius"));
 
-        octSharpRadiusSlider.setMajorTickSpacing(5);
-        octSharpRadiusSlider.setMaximum(50);
-        octSharpRadiusSlider.setMinorTickSpacing(1);
+        octSharpRadiusSlider.setMajorTickSpacing(10);
+        octSharpRadiusSlider.setMaximum(150);
+        octSharpRadiusSlider.setMinorTickSpacing(2);
         octSharpRadiusSlider.setPaintLabels(true);
         octSharpRadiusSlider.setPaintTicks(true);
         octSharpRadiusSlider.setSnapToTicks(true);
@@ -796,6 +796,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisMode = AnalysisMode.EZ;
         int fv = selectionLRPManager.getCenterOfFovea();
         selectionLRPManager.addOrUpdateSelection(new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV"));
+        selectionLRPManager.setFoveaCenterXPosition(fv);
+        int[] ez = selectionLRPManager.getEZEdgeCoords();
+        System.out.println("Got EZ: " + ez);
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed

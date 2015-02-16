@@ -135,7 +135,7 @@ public class Util {
         return ret;
     }
 
-    public static void graphPoints(List<LinePoint>... pointsList) throws IOException {
+    public static void graphPoints(List<LinePoint>... pointsList) {
         XYSeriesCollection dataset = new XYSeriesCollection();
         int seriesCntr = 1;
         for (List<LinePoint> points : pointsList) {
@@ -157,7 +157,7 @@ public class Util {
         });
     }
 
-    private static JPanel createChartPanel(String title, XYDataset dataset) throws IOException {
+    private static JPanel createChartPanel(String title, XYDataset dataset) {
         String xAxisLabel = "Pixel";
         String yAxisLabel = "Slope";
 
@@ -167,5 +167,19 @@ public class Util {
         panel.setFillZoomRectangle(true);
         panel.setMouseWheelEnabled(true);
         return panel;
+    }
+
+    /**
+     * Determine the gray scale value of a pixel based on its RGB value.
+     *
+     * @param rgb
+     * @return
+     */
+    public static int calculateGrayScaleValue(int rgb) {
+        int r = (rgb >> 16) & 255;
+        int g = (rgb >> 8) & 255;
+        int b = rgb & 255;
+        int grayLevel = (r + g + b) / 3;
+        return grayLevel;
     }
 }
