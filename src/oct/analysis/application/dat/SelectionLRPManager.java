@@ -340,7 +340,7 @@ public class SelectionLRPManager {
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
 
         //get the contour of the Brooks Membrane
-        double[][] brmSeg = getXYArrays(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT)));
+        double[][] brmSeg = getXYArraysFromPoints(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT)));
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
 
         //get a sharpened version of the OCT for processing
@@ -395,17 +395,50 @@ public class SelectionLRPManager {
                 .collect(Collectors.toList());
 
         //graph points for inspection
+//        List<LinePoint> clp = refinedContour
+//                .stream()
+//                .map((p) -> {
+//                    return new LinePoint(p.x, sharpOCT.getHeight() - p.getY());
+//                })
+//                .collect(Collectors.toList());
+//        List<LinePoint> slp = refinedContour
+//                .stream()
+//                .map(p -> new LinePoint(p.x, sharpOCT.getHeight() - brmInterp.value(p.x)))
+//                .collect(Collectors.toList());
+//        Util.graphPoints(clp, slp);
+        //adjust the Y value of each refined contour point such that the end points
+        //have a Y value relatively close to the Y value of the segmented BrM at
+        //the same location
+        int minX = (int) refinedContour.stream().mapToDouble(Point::getX).min().getAsDouble();
+        int maxX = (int) refinedContour.stream().mapToDouble(Point::getX).max().getAsDouble();
+        double avgDif = refinedContour
+                .stream()
+                .filter(p -> p.x < minX + 5 || p.x > maxX - 5)
+                .mapToDouble(p -> Math.abs(p.getY() - brmInterp.value(p.x)))
+                .average()
+                .getAsDouble();
+        List<LinePoint> adjRefContour = refinedContour.parallelStream()
+                .map(p -> new LinePoint(p.x, p.y + avgDif))
+                .collect(Collectors.toList());
+
+        //interpolate the refined contour
+        double[][] refinedContourPoints = getXYArraysFromLinePoints(adjRefContour);
+        UnivariateFunction interpRefContour = interpolator.interpolate(refinedContourPoints[0], refinedContourPoints[1]);
         List<LinePoint> clp = refinedContour
                 .stream()
-                .map((p) -> {
-                    return new LinePoint(p.x, sharpOCT.getHeight() - p.getY());
-                })
+                .map(p -> new LinePoint(p.x, sharpOCT.getHeight() - interpRefContour.value(p.x)))
                 .collect(Collectors.toList());
         List<LinePoint> slp = refinedContour
                 .stream()
                 .map(p -> new LinePoint(p.x, sharpOCT.getHeight() - brmInterp.value(p.x)))
                 .collect(Collectors.toList());
         Util.graphPoints(clp, slp);
+
+        //get the difference between the BrM segment and the adjusted Refined contour
+        List<LinePoint> diffLine = findAbsoluteDiff(brmInterp, interpRefContour, minX, maxX);
+        
+        //graph diff for checking
+        Util.graphPoints(diffLine);
 
         return null;
     }
@@ -594,24 +627,18 @@ public class SelectionLRPManager {
         //interpolator for denoising signals
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
         //get the contour of the ILM
-        double[][] ilmSeg = getXYArrays(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT)));
+        double[][] ilmSeg = getXYArraysFromPoints(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.ILM_SEGMENT)));
         //interpolate ILM contour
         UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
         //get the contour of the Brooks Membrane
-        double[][] brmSeg = getXYArrays(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT)));
+        double[][] brmSeg = getXYArraysFromPoints(new ArrayList<>(analysisData.getSegmentation().getSegment(Segmentation.BrM_SEGMENT)));
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
 
         //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
-        double[] x = new double[analysisData.getOct().getLinearOctImage().getWidth()];
-        double[] y = new double[analysisData.getOct().getLinearOctImage().getWidth()];
-        for (int xPos = 0; xPos < analysisData.getOct().getLinearOctImage().getWidth(); xPos++) {
-            double yPos = Math.abs(ilmInterp.value(xPos) - brmInterp.value(xPos));
-            x[xPos] = xPos;
-            y[xPos] = yPos;
-        }
+        double[][] diffLine = getXYArraysFromLinePoints(findAbsoluteDiff(brmInterp, ilmInterp, 0, analysisData.getOct().getLinearOctImage().getWidth() - 1));
 
         //interpolate difference curve to function so we can find derivaties of diff.
-        UnivariateFunction diffInerp = interpolator.interpolate(x, y);
+        UnivariateFunction diffInerp = interpolator.interpolate(diffLine[0], diffLine[1]);
 
         //create differentiator for the diff interpolation function
         FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);//use 4 point differences differentiator (that is it uses 4 points arround the point in question to derive the slope at the given point) 
@@ -672,7 +699,7 @@ public class SelectionLRPManager {
         return centerOfFovea;
     }
 
-    public double[][] getXYArrays(List<Point> points) {
+    public double[][] getXYArraysFromPoints(List<Point> points) {
         double[] x = new double[points.size()];
         double[] y = new double[points.size()];
         ListIterator<Point> pi = points.listIterator();
@@ -682,6 +709,29 @@ public class SelectionLRPManager {
             y[i] = p.getY();
         }
         return new double[][]{x, y};
+    }
+
+    /**
+     *
+     * @param points
+     * @return
+     */
+    public double[][] getXYArraysFromLinePoints(List<LinePoint> points) {
+        double[] x = new double[points.size()];
+        double[] y = new double[points.size()];
+        ListIterator<LinePoint> pi = points.listIterator();
+        for (int i = 0; pi.hasNext(); i++) {
+            LinePoint p = pi.next();
+            x[i] = p.getX();
+            y[i] = p.getY();
+        }
+        return new double[][]{x, y};
+    }
+
+    public List<LinePoint> findAbsoluteDiff(UnivariateFunction fa, UnivariateFunction fb, int minX, int maxX) {
+        return IntStream.rangeClosed(minX, maxX)
+                .mapToObj(x -> new LinePoint(x, Math.abs(fa.value(x) - fb.value(x))))
+                .collect(Collectors.toList());
     }
 
     private static class Diff {
