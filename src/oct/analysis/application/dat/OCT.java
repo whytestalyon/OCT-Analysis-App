@@ -55,8 +55,13 @@ public class OCT {
         //store liner scale version of OCT
         linearOctImage = getLinearOCT(octImage);
         //store image processors for various filters
-        logOctFP = new ByteProcessor(logOctImage).convertToFloatProcessor();
-        linearOctFP = new ByteProcessor(linearOctImage).convertToFloatProcessor();
+        try {
+            logOctFP = new ByteProcessor(logOctImage).convertToFloatProcessor();
+            linearOctFP = new ByteProcessor(linearOctImage).convertToFloatProcessor();
+        } catch (IllegalArgumentException ie) {
+            logOctFP = new FloatProcessor(Util.convertTo2D(logOctImage));
+            linearOctFP = new FloatProcessor(Util.convertTo2D(linearOctImage));
+        }
         //initialize snapshots of the original images to reset to later
         logOctFP.snapshot();
         linearOctFP.snapshot();
@@ -90,11 +95,18 @@ public class OCT {
         return (logOct) ? logOctFP.getBufferedImage() : linearOctFP.getBufferedImage();
     }
 
-    public BufferedImage getSharpenedOCT() {
-        FloatProcessor tmpFP = new ByteProcessor(logOctImage).convertToFloatProcessor();
+    public BufferedImage getFullySharpenedOCT() {
+        FloatProcessor tmpFP = new FloatProcessor(Util.convertTo2D(logOctImage));
         tmpFP.snapshot();
-        sharpener.sharpenFloat(tmpFP, 15, 1);
-        return tmpFP.getBufferedImage();
+        sharpener.sharpenFloat(tmpFP, 15, 1F);
+        return tmpFP.convertToByteProcessor().getBufferedImage();
+    }
+
+    public BufferedImage getPartiallySharpenedOCT() {
+        FloatProcessor tmpFP = new FloatProcessor(Util.convertTo2D(logOctImage));
+        tmpFP.snapshot();
+        sharpener.sharpenFloat(tmpFP, 15, 0.8F);
+        return tmpFP.convertToByteProcessor().getBufferedImage();
     }
 
     public int getImageOffsetY() {

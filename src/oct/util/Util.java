@@ -10,6 +10,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -181,5 +182,65 @@ public class Util {
         int b = rgb & 255;
         int grayLevel = (r + g + b) / 3;
         return grayLevel;
+    }
+
+    /**
+     * Convert the supplied image to a 2D pixel array such that an (X,Y) value
+     * indexes as array[x][y].
+     *
+     * Credit for this method goes to Stack Overflow user Mota and their post
+     * here:
+     * http://stackoverflow.com/questions/6524196/java-get-pixel-array-from-image
+     * for this implementation.
+     *
+     * This method will return the red, green and blue values directly for each
+     * pixel, and if there is an alpha channel it will add the alpha value.
+     * Using this method is harder in terms of calculating indices, but is much
+     * faster than using getRGB to build this same array.
+     *
+     * @param image
+     * @return
+     */
+    public static int[][] convertTo2D(BufferedImage image) {
+
+        final byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+        final int width = image.getWidth();
+        final int height = image.getHeight();
+        final boolean hasAlphaChannel = image.getAlphaRaster() != null;
+
+        int[][] result = new int[width][height];
+        if (hasAlphaChannel) {
+            final int pixelLength = 4;
+            for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += pixelLength) {
+                int argb = 0;
+                argb += (((int) pixels[pixel] & 0xff) << 24); // alpha
+                argb += ((int) pixels[pixel + 1] & 0xff); // blue
+                argb += (((int) pixels[pixel + 2] & 0xff) << 8); // green
+                argb += (((int) pixels[pixel + 3] & 0xff) << 16); // red
+                result[col][row] = argb;
+                col++;
+                if (col == width) {
+                    col = 0;
+                    row++;
+                }
+            }
+        } else {
+            final int pixelLength = 3;
+            for (int pixel = 0, row = 0, col = 0; pixel < pixels.length; pixel += pixelLength) {
+                int argb = 0;
+                argb += -16777216; // 255 alpha
+                argb += ((int) pixels[pixel] & 0xff); // blue
+                argb += (((int) pixels[pixel + 1] & 0xff) << 8); // green
+                argb += (((int) pixels[pixel + 2] & 0xff) << 16); // red
+                result[col][row] = argb;
+                col++;
+                if (col == width) {
+                    col = 0;
+                    row++;
+                }
+            }
+        }
+
+        return result;
     }
 }

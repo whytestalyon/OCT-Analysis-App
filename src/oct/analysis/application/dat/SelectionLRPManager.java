@@ -344,7 +344,7 @@ public class SelectionLRPManager {
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
 
         //get a sharpened version of the OCT for processing
-        BufferedImage sharpOCT = analysisData.getOct().getSharpenedOCT();
+        BufferedImage sharpOCT = analysisData.getOct().getFullySharpenedOCT();
 
         //search for first pixel above BrM segment that is black
         int searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition)) + 1;

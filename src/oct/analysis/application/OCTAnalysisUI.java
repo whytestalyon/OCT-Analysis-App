@@ -795,7 +795,19 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
         int fv = selectionLRPManager.getCenterOfFovea();
-        selectionLRPManager.addOrUpdateSelection(new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV"));
+        OCTLine foveaSelection = new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+        selectionLRPManager.addOrUpdateSelection(foveaSelection);
+        octAnalysisPanel.repaint();
+        int option = JOptionPane.showConfirmDialog(null, "Does the location of the fovea look correct?", "Found Fovea?", JOptionPane.YES_NO_OPTION);
+        if (option == JOptionPane.NO_OPTION) {
+            //recalculate the position of the fovea using sharper image
+            selectionLRPManager.removeSelection(foveaSelection, true);
+            analysisMetrics.setUseSharperImage(true);
+            fv = selectionLRPManager.getCenterOfFovea();
+            foveaSelection = new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+            selectionLRPManager.addOrUpdateSelection(foveaSelection);
+            octAnalysisPanel.repaint();
+        }
         selectionLRPManager.setFoveaCenterXPosition(fv);
         int[] ez = selectionLRPManager.getEZEdgeCoords();
         System.out.println("Got EZ: " + ez);

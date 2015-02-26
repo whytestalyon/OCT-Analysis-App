@@ -16,6 +16,7 @@ public class OCTAnalysisManager {
     private int micronsBetweenSelections = 0;
     private OCT oct = null;
     private volatile Segmentation segmentation = null;
+    private volatile boolean useSharperImage = false;
 
     private OCTAnalysisManager() {
     }
@@ -49,11 +50,22 @@ public class OCTAnalysisManager {
         this.oct = oct;
     }
     
-    public Segmentation getSegmentation(){
-        if(segmentation == null){
-            segmentation = new Segmentation(oct.getLogOctImage(), 1);
+    public void setUseSharperImage(boolean useSharperImage){
+        if(useSharperImage != this.useSharperImage){
+            segmentation = null;
+        }
+        this.useSharperImage = useSharperImage;
+    }
+
+    public Segmentation getSegmentation() {
+        if (segmentation == null) {
+            if (useSharperImage) {
+                segmentation = new Segmentation(oct.getPartiallySharpenedOCT(), 1);
+            } else {
+                segmentation = new Segmentation(oct.getLogOctImage(), 1);
+            }
         }
         return segmentation;
     }
-    
+
 }

@@ -1,6 +1,9 @@
 package oct.analysis.application;
 
 import chuiSegmentation.CSegImage;
+import ij.plugin.filter.UnsharpMask;
+import ij.process.ByteProcessor;
+import ij.process.FloatProcessor;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -8,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,6 +33,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import oct.io.TiffReader;
 import oct.util.Segmentation;
+import oct.util.Util;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
 import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
@@ -57,11 +62,28 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class FoveaFindingExp extends JFrame {
 
     final JPanel chartPanel;
+    private static final UnsharpMask sharpener = new UnsharpMask();
 
     public FoveaFindingExp(String title, BufferedImage img) throws IOException {
         super("XY Line Chart Example with JFreechart");
+        FloatProcessor tmpFP;
+        try {
+            tmpFP = new ByteProcessor(img).convertToFloatProcessor();
+        } catch (IllegalArgumentException ie) {
+            tmpFP = new FloatProcessor(Util.convertTo2D(img));
+        }
+        tmpFP.snapshot();
+        sharpener.sharpenFloat(tmpFP, 15, 0.5F);
 
-        chartPanel = createChartPanel(title, img);
+        // create a grayscale image the same size
+        BufferedImage image = tmpFP.getBufferedImage();
+        BufferedImage gray = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+        // convert the original colored image to grayscale
+        ColorConvertOp op = new ColorConvertOp(
+                image.getColorModel().getColorSpace(),
+                gray.getColorModel().getColorSpace(), null);
+        op.filter(image, gray);
+        chartPanel = createChartPanel(title, gray);
         add(chartPanel, BorderLayout.SOUTH);
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -196,12 +218,13 @@ public class FoveaFindingExp extends JFrame {
         HashMap<String, BufferedImage> octMap = new HashMap<>();
 //        octMap.put("RW_10174_OD_L_7_0", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\Normal\\AVG_RW_10174_OD_L_7_0_02_529disp_25frames.tif")));
 //        octMap.put("RW_10174_OD_L_7_90", TiffReader.readTiffImage(new File("D:\\Documents\\Example Human OCTs\\Normal\\AVG_RW_10174_OD_L_7_90_05_529disp_27frames.tif")));
-//        octMap.put("RW_10174_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\Normal\\AVG_RW_10174_OS_Raw_L_90.tif")));
-//        octMap.put("DH_10160_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif")));
+        octMap.put("RW_10174_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\Normal\\AVG_RW_10174_OS_Raw_L_90.tif")));
+        octMap.put("DH_10160_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif")));
 //        octMap.put("JC_10193_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\JC_10193_OD_L_7_0_0000002_OCT_600x1000_fr90reg_fr80-100_resized_810x460.tif")));
 //        octMap.put("KS_10175_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\KS_10175_OS_L_7_0_24_529disp_fr38reg_fr28-70_AL24p2.tif")));
 //        octMap.put("KS_10238_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\KS_10238_OS_L_7_90_05_529disp_reg_fr1-25_AL21p35.tif")));
 //        octMap.put("KS_10243_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\KS_10243_OD_L_7_0_02_529disp_reg_fr1-14_AL22p43.tif")));
+        octMap.put("KS_10062_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\AVG_KS_10062_OD_L_7_90_05_23fr.tif")));
 //        octMap.put("JC_10073_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\JC_10073_OS_L_7_0_0000027_OCT_1000x600_reg_6fr_resized_810x460.tif")));
         octMap.put("JC_0677_OD_L_7_0", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\Normal\\JC_0677_OD_L_7_0_0000093_529disp_reg_fr1-15.tif")));
 
