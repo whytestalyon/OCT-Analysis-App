@@ -10,9 +10,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -40,30 +42,31 @@ public class OCTSelection {
     protected static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
     protected final String selectionName;
     protected final int selectionType;
-    protected int panel_x_position;
-    protected int panel_y_position;
+    protected int xPositionOnOct;
+    protected int yPositionOnOct;
     protected int width;
     protected final int height;
     protected boolean highlighted = false;
     protected boolean drawn = false;
 
-    public OCTSelection(int panel_x_position, int panel_y_position, int width, int height, int selectionType, String selectionName) {
-        this.panel_x_position = panel_x_position;
-        this.panel_y_position = panel_y_position;
+    public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, int selectionType, String selectionName) {
+        this.xPositionOnOct = xPositionOnOct;
+        this.yPositionOnOct = yPositionOnOct;
         this.width = width;
         this.height = height;
         this.selectionType = selectionType;
         this.selectionName = selectionName;
     }
 
-    public void drawSelection(Graphics g) {
+    public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
         if (highlighted) {
             g.setColor(Color.pink);
         } else {
             g.setColor(Color.green);
         }
-//        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
-        g.drawRect(panel_x_position, panel_y_position, width, height - 1);
+//        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
+        //draw rectangle arround the area that is the selection
+        g.drawRect(imageOffsetX + xPositionOnOct - 1, imageOffsetY + yPositionOnOct, width + 2, height - 1);
         drawn = true;
     }
 
@@ -75,20 +78,20 @@ public class OCTSelection {
         this.highlighted = highlighted;
     }
 
-    public int getPanel_x_position() {
-        return panel_x_position;
+    public int getXPositionOnOct() {
+        return xPositionOnOct;
     }
 
-    public int getPanel_y_position() {
-        return panel_y_position;
+    public int getYPositionOnOct() {
+        return yPositionOnOct;
     }
 
-    public void setPanel_x_position(int panel_x_position) {
-        this.panel_x_position = panel_x_position;
+    public void setXPositionOnOct(int xPositionOnOct) {
+        this.xPositionOnOct = xPositionOnOct;
     }
 
-    public void setPanel_y_position(int panel_y_position) {
-        this.panel_y_position = panel_y_position;
+    public void setYPositionOnOct(int yPositionOnOct) {
+        this.yPositionOnOct = yPositionOnOct;
     }
 
     public void setWidth(int width) {
@@ -122,7 +125,7 @@ public class OCTSelection {
     public JPanel createLRPPanel() {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();
-        lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOct()));
+        lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOctImage()));
 //        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
         lrp.addSeries(findMaximums(lrp.getSeries(0), selectionName + " LRP Maximums"));
         List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
@@ -157,19 +160,16 @@ public class OCTSelection {
         return panel;
     }
 
-    public XYSeries getLrpSeriesFromOCT(OCT oct) {
+    public XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
         XYSeries lrp = new XYSeries(selectionName + " LRP");
         lrp.setKey(selectionName);
+
         double value = -1;
         //iterate over each row of pixels in the selection area and calculate average pixel intensity
         for (int y = height - 1; y >= 0; y--) {
-            double sum = 0;
-
-            for (int xindex = panel_x_position - oct.getImageOffsetX() + 1; xindex < panel_x_position - oct.getImageOffsetX() + 1 + width; xindex++) {
-                sum += Util.calculateGrayScaleValue(oct.getOctImage().getRGB(xindex, y));
-            }
-            //calculate average pixel intensity
-            double avg = sum / (double) width;
+            int yVal = y;
+            //calculate average pixel grayscale intensity
+            double avg = IntStream.range(xPositionOnOct, xPositionOnOct + width).map(x -> Util.calculateGrayScaleValue(oct.getRGB(x, yVal))).average().getAsDouble();
             //smooth the LRP to provide a higher quality LRP signal
             if (value < -1) {
                 //initialize the first value for the smoothing filter
@@ -184,7 +184,6 @@ public class OCTSelection {
 
         return lrp;
     }
-
 
     public static XYSeries findMaximums(XYSeries lrpSeries, String title) {
         XYSeries lrpMaxPoints = new XYSeries(title);
@@ -346,6 +345,6 @@ public class OCTSelection {
     }
 
     public boolean positionOverlapsSelection(int xpos) {
-        return xpos <= panel_x_position + width && xpos >= panel_x_position;
+        return xpos <= xPositionOnOct + width && xpos >= xPositionOnOct - 1;
     }
 }

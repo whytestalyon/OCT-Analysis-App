@@ -691,8 +691,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octAnalysisPanel.requestFocus();
         //only perform actions when mouse click occurs over image area
         if (analysisMode != null
-                && analysisMetrics.getOct() != null
-                && analysisMetrics.getOct().coordinateOverlapsOCT(evt.getX(), evt.getY())) {
+                && octAnalysisPanel.coordinateOverlapsOCT(evt.getX(), evt.getY())) {
             switch (evt.getButton()) {
                 case MouseEvent.BUTTON1:
                     switch (analysisMode) {
@@ -794,22 +793,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
-        int fv = selectionLRPManager.getCenterOfFovea();
-        OCTLine foveaSelection = new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+        //first automatically find the center of the fovea and add line at location
+        int fv = analysisMetrics.getFoveaXPosition();
+        OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         selectionLRPManager.addOrUpdateSelection(foveaSelection);
         octAnalysisPanel.repaint();
-        int option = JOptionPane.showConfirmDialog(null, "Does the location of the fovea look correct?", "Found Fovea?", JOptionPane.YES_NO_OPTION);
-        if (option == JOptionPane.NO_OPTION) {
-            //recalculate the position of the fovea using sharper image
-            selectionLRPManager.removeSelection(foveaSelection, true);
-            analysisMetrics.setUseSharperImage(true);
-            fv = selectionLRPManager.getCenterOfFovea();
-            foveaSelection = new OCTLine(analysisMetrics.getOct().getImageOffsetX() + fv, 0, analysisMetrics.getOct().getLogOctImage().getHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
-            selectionLRPManager.addOrUpdateSelection(foveaSelection);
-            octAnalysisPanel.repaint();
-        }
-        selectionLRPManager.setFoveaCenterXPosition(fv);
-        int[] ez = selectionLRPManager.getEZEdgeCoords();
+        //second, automatically find the X position of each EZ edge
+        int[] ez = analysisMetrics.getEZEdgeCoords();
         System.out.println("Got EZ: " + ez);
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 

@@ -13,7 +13,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
-import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 
 /**
@@ -24,6 +23,8 @@ public class OCTImagePanel extends JPanel {
 
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
     private final SelectionLRPManager selectionLrpMngr = SelectionLRPManager.getInstance();
+    private int imageOffsetY = 0;
+    private int imageOffsetX = 0;
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -49,61 +50,52 @@ public class OCTImagePanel extends JPanel {
         if (analysisData.getOct() == null) {
             return super.getPreferredSize(); //To change body of generated methods, choose Tools | Templates.
         } else {
-            return new Dimension(analysisData.getOct().getOctImage().getWidth(), analysisData.getOct().getOctImage().getHeight());
+            return new Dimension(analysisData.getOct().getImageWidth(), analysisData.getOct().getImageHeight());
         }
-    }
-
-    /**
-     * Changes the mode with which the OCT should be rendered. Calling this
-     * method will cause the panel to redraw the OCT and any analysis artifacts
-     * using the new mode setting.
-     *
-     * @param mode th mode to change the display of the OCT image
-     */
-    public void setOCTMode(OCTMode mode) {
-        switch (mode) {
-            case LINEAR:
-                analysisData.getOct().transformOCTToLinear();
-                break;
-            case LOG:
-                analysisData.getOct().transformOCTToLogrithmic();
-                break;
-        }
-        this.repaint();
     }
 
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
         OCT oct = analysisData.getOct();
-        if (oct != null && oct.getOctImage() != null) {
-            //collect previous offsets
-            int oldXoffset = oct.getImageOffsetX();
-            int oldYoffset = oct.getImageOffsetY();
+        if (oct != null) {
             //center the image within the panel, make sure the selection draw method takes this into account
-            int imageWidth = oct.getOctImage().getWidth();
+            int imageWidth = oct.getImageWidth();
             int panelWidth = this.getWidth();
-            int imageOffsetX = 0;
             if (panelWidth > imageWidth) {
                 imageOffsetX = panelWidth / 2 - imageWidth / 2;
             }
-            oct.setImageOffsetX(imageOffsetX);
-            int imageHeight = oct.getOctImage().getHeight();
+            int imageHeight = oct.getImageHeight();
             int panelHeight = this.getHeight();
-            int imageOffsetY = 0;
             if (panelHeight > imageHeight) {
                 imageOffsetY = panelHeight / 2 - imageHeight / 2;
             }
-            oct.setImageOffsetY(imageOffsetY);
             //draw OCT to the JPanel
-            grphcs.drawImage(oct.getOctImage(), imageOffsetX, imageOffsetY, null);
-            //update selection to new offset
-            selectionLrpMngr.updateSelectionOffsets(oldXoffset, oldYoffset);
+            grphcs.drawImage(analysisData.getOctImage(), imageOffsetX, imageOffsetY, null);
             //draw the selections to the panel if available
             selectionLrpMngr.getSelections().stream().forEach((selection) -> {
-                selection.drawSelection(grphcs);
-                selection.setDrawn(true);
+                selection.drawSelection(grphcs, imageOffsetX, imageOffsetY);
             });
+        }
+    }
+
+    /**
+     * Determine if the supplied coordinate overlaps with the area of this panel
+     * that displays the OCT image
+     *
+     * @param x
+     * @param y
+     * @return true if the coordinate is within the bounds of the displayed OCT,
+     * false if it isn't or if the OCT image isn't displayed already
+     */
+    public boolean coordinateOverlapsOCT(int x, int y) {
+        OCT oct = analysisData.getOct();
+        if (oct != null) {
+            boolean withinX = ((imageOffsetX + oct.getImageWidth()) - x) * (x - imageOffsetX) > -1;
+            boolean withinY = ((imageOffsetY + oct.getImageHeight()) - y) * (y - imageOffsetY) > -1;
+            return withinX && withinY;
+        } else {
+            return false;
         }
     }
 }

@@ -12,12 +12,11 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.stream.Collectors;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -27,10 +26,10 @@ import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCT;
+import oct.analysis.application.dat.OCTAnalysisManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -55,11 +54,13 @@ public class Util {
         switch (n) {
             case JOptionPane.YES_OPTION:
                 double scale = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT scale (microns per pixel):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCT(scale, octImage);
+                OCTAnalysisManager.getInstance().setScale(scale);
+                return new OCT(octImage);
             case JOptionPane.NO_OPTION:
                 double nominalScanWidth = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT nominal scan length(millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 double axialLength = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT scale (millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                return new OCT(axialLength, nominalScanWidth, octAnalysisPanel.getWidth(), octImage);
+                OCTAnalysisManager.getInstance().setScale(axialLength, nominalScanWidth, octImage.getWidth());
+                return new OCT(octImage);
             default:
                 break;
         }
@@ -242,5 +243,34 @@ public class Util {
         }
 
         return result;
+    }
+
+    public static double[][] getXYArraysFromPoints(List<Point> points) {
+        double[] x = new double[points.size()];
+        double[] y = new double[points.size()];
+        ListIterator<Point> pi = points.listIterator();
+        for (int i = 0; pi.hasNext(); i++) {
+            Point p = pi.next();
+            x[i] = p.getX();
+            y[i] = p.getY();
+        }
+        return new double[][]{x, y};
+    }
+
+    /**
+     *
+     * @param points
+     * @return
+     */
+    public static double[][] getXYArraysFromLinePoints(List<LinePoint> points) {
+        double[] x = new double[points.size()];
+        double[] y = new double[points.size()];
+        ListIterator<LinePoint> pi = points.listIterator();
+        for (int i = 0; pi.hasNext(); i++) {
+            LinePoint p = pi.next();
+            x[i] = p.getX();
+            y[i] = p.getY();
+        }
+        return new double[][]{x, y};
     }
 }

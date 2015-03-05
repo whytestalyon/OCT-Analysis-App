@@ -14,16 +14,16 @@ import java.awt.Graphics;
  */
 public class OCTLine extends OCTSelection {
 
-    public OCTLine(int panel_x_position, int panel_y_position, int height, int selectionType, String selectionName) {
-        super(panel_x_position, panel_y_position, 1, height, selectionType, selectionName);
+    public OCTLine(int xPositionOnOct, int yPositionOnOct, int height, int selectionType, String selectionName) {
+        super(xPositionOnOct, yPositionOnOct, 1, height, selectionType, selectionName);
     }
 
     @Override
-    public void drawSelection(Graphics g) {
+    public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
         g.setColor(Color.green);
-//        System.out.println("Drawing selection at x: " + panel_x_position + ", y: " + panel_y_position + ", w: " + width + ", h: " + (height - 1));
-        g.drawLine(panel_x_position, panel_y_position, panel_x_position, panel_y_position + height - 1);
+//        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
+        g.drawLine(imageOffsetX + xPositionOnOct, imageOffsetY + yPositionOnOct, imageOffsetX + xPositionOnOct, imageOffsetY + yPositionOnOct + height - 1);
         drawn = true;
     }
-    
+
 }

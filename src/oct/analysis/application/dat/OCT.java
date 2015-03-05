@@ -1,19 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package oct.analysis.application.dat;
 
-import ij.plugin.filter.UnsharpMask;
-import ij.process.ByteProcessor;
-import ij.process.FloatProcessor;
-import ij.process.ImageProcessor;
-import java.awt.FlowLayout;
+import ij.ImagePlus;
+import ij.process.ImageConverter;
 import java.awt.image.BufferedImage;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
 import oct.util.Util;
 
 /**
@@ -22,179 +11,73 @@ import oct.util.Util;
  */
 public class OCT {
 
-    private boolean logOct = true;
-    private double scale;
-    private BufferedImage logOctImage;
-    private BufferedImage linearOctImage;
-    private int imageOffsetY = 0;
-    private int imageOffsetX = 0;
+    private final BufferedImage logOctImage;
+    private final BufferedImage linearOctImage;
     private final double logScale = 255D / Math.log(255D);
-    private double blurFactor = 0;
-    private volatile boolean updateBlur = false;
-    private double sharpenSigma = 0; //"Radius (Sigma)" is the standard deviation (blur radius) of the Gaussian blur that is subtracted.
-    private float sharpenWeight = 0; //Mask Weight" determines the strength of filtering, where "Mask Weight"=1 would be an infinite weight of the high-pass filtered image that is added.
-    private volatile boolean updateSharpen = true;
-    private FloatProcessor logOctFP;
-    private FloatProcessor linearOctFP;
-    private final UnsharpMask sharpener;
 
-    public OCT(double scale, BufferedImage octImage) {
-        this.sharpener = new UnsharpMask();
-        init(scale, octImage);
-    }
-
-    public OCT(double axialLength, double nominalScanWidth, int octWidth, BufferedImage octImage) {
-        this.sharpener = new UnsharpMask();
-        double scanLength = (nominalScanWidth * axialLength) / 24D;
-        init(((scanLength * 1000D) / (double) octWidth), octImage);
-    }
-
-    private void init(double scale, BufferedImage octImage) {
-        this.scale = scale;
-        this.logOctImage = octImage;
+    /**
+     * Creates a simple data structure for caching the log and linear versions
+     * of an OCT image.
+     *
+     * @param octImage the log OCT image to be cached
+     */
+    public OCT(BufferedImage octImage) {
+        //segmentation as well as some image operations can only be done on 
+        //8-bit gray scale images, ensure image is in useable format for application
+        ImagePlus ip = new ImagePlus("", octImage);
+        if (ip.getBitDepth() != 8) {
+            ImageConverter ic = new ImageConverter(ip);
+            ic.convertToGray8();
+        }
+        //store log OCT image
+        logOctImage = ip.getBufferedImage();
         //store liner scale version of OCT
-        linearOctImage = getLinearOCT(octImage);
-        //store image processors for various filters
-        try {
-            logOctFP = new ByteProcessor(logOctImage).convertToFloatProcessor();
-            linearOctFP = new ByteProcessor(linearOctImage).convertToFloatProcessor();
-        } catch (IllegalArgumentException ie) {
-            logOctFP = new FloatProcessor(Util.convertTo2D(logOctImage));
-            linearOctFP = new FloatProcessor(Util.convertTo2D(linearOctImage));
-        }
-        //initialize snapshots of the original images to reset to later
-        logOctFP.snapshot();
-        linearOctFP.snapshot();
+        linearOctImage = getLinearOCT(logOctImage);
     }
 
-    public double getScale() {
-        return scale;
-    }
-
-    public BufferedImage getOctImage() {
-        //determine if operations need be applied (or changed from previous values)
-        if (updateBlur || updateSharpen) {
-            updateBlur = updateSharpen = false;
-            logOctFP.reset();//return to original image
-            linearOctFP.reset();//return to original image
-            if (blurFactor > 0) {
-                logOctFP.blurGaussian(blurFactor);
-                linearOctFP.blurGaussian(blurFactor);
-            }
-            if (sharpenSigma > 0 && sharpenWeight > 0) {
-                sharpener.sharpenFloat(logOctFP, sharpenSigma, sharpenWeight);
-                sharpener.sharpenFloat(linearOctFP, sharpenSigma, sharpenWeight);
-//            JFrame frame = new JFrame();
-//            frame.getContentPane().setLayout(new FlowLayout());
-//            frame.getContentPane().add(new JLabel(new ImageIcon(bp.getBufferedImage())));
-//            frame.getContentPane().add(new JLabel(new ImageIcon(fp.getBufferedImage())));
-//            frame.pack();
-//            frame.setVisible(true);
-            }
-        }
-        return (logOct) ? logOctFP.getBufferedImage() : linearOctFP.getBufferedImage();
-    }
-
-    public BufferedImage getFullySharpenedOCT() {
-        FloatProcessor tmpFP = new FloatProcessor(Util.convertTo2D(logOctImage));
-        tmpFP.snapshot();
-        sharpener.sharpenFloat(tmpFP, 15, 1F);
-        return tmpFP.convertToByteProcessor().getBufferedImage();
-    }
-
-    public BufferedImage getPartiallySharpenedOCT() {
-        FloatProcessor tmpFP = new FloatProcessor(Util.convertTo2D(logOctImage));
-        tmpFP.snapshot();
-        sharpener.sharpenFloat(tmpFP, 15, 0.8F);
-        return tmpFP.convertToByteProcessor().getBufferedImage();
-    }
-
-    public int getImageOffsetY() {
-        return imageOffsetY;
-    }
-
-    public void setImageOffsetY(int imageOffsetY) {
-        this.imageOffsetY = imageOffsetY;
-    }
-
-    public int getImageOffsetX() {
-        return imageOffsetX;
-    }
-
-    public void setImageOffsetX(int imageOffsetX) {
-        this.imageOffsetX = imageOffsetX;
-    }
-
-    public void transformOCTToLinear() {
-        logOct = false;
-    }
-
-    public void transformOCTToLogrithmic() {
-        logOct = true;
-    }
-
-    public boolean isLogOct() {
-        return logOct;
-    }
-
-    public boolean isLinearOct() {
-        return !logOct;
-    }
-
-    public double getBlurFactor() {
-        return blurFactor;
-    }
-
-    public void setBlurFactor(double blurFactor) {
-        if (blurFactor != this.blurFactor) {
-            this.blurFactor = blurFactor;
-            updateBlur = true;
-        }
-    }
-
-    public void setSharpenSigma(double sharpenSigma) {
-        if (this.sharpenSigma != sharpenSigma) {
-            this.sharpenSigma = sharpenSigma;
-            updateSharpen = true;
-        }
-    }
-
-    public void setSharpenWeight(float sharpenWeight) {
-        if (sharpenWeight < 0 || sharpenWeight > 1) {
-            throw new IllegalArgumentException("Illegal Sharpen weight of " + sharpenWeight + ", must be between 0 and 1.");
-        }
-        if (this.sharpenWeight != sharpenWeight) {
-            this.sharpenWeight = sharpenWeight;
-            updateSharpen = true;
-        }
-    }
-
+    /**
+     * Get the logrithmic version of the OCT
+     *
+     * @return
+     */
     public BufferedImage getLogOctImage() {
         return logOctImage;
     }
 
+    /**
+     * Get the linear version of the OCT
+     *
+     * @return
+     */
     public BufferedImage getLinearOctImage() {
         return linearOctImage;
     }
 
     /**
-     * Determine if the supplied coordinate overlaps with the area of this panel
-     * that displays the OCT image
+     * Get the width of the OCT image
      *
-     * @param x
-     * @param y
-     * @return true if the coordinate is within the bounds of the displayed OCT,
-     * false if it isn't or if the OCT image isn't displayed already
+     * @return
      */
-    public boolean coordinateOverlapsOCT(int x, int y) {
-        if (logOctImage == null) {
-            return false;
-        }
-        boolean withinX = ((imageOffsetX + logOctImage.getWidth()) - x) * (x - imageOffsetX) > -1;
-        boolean withinY = ((imageOffsetY + logOctImage.getHeight()) - y) * (y - imageOffsetY) > -1;
-        return withinX && withinY;
+    public int getImageWidth() {
+        return logOctImage.getWidth();
     }
 
+    /**
+     * Get the height of the OCT image
+     *
+     * @return
+     */
+    public int getImageHeight() {
+        return logOctImage.getHeight();
+    }
+
+    /**
+     * Get a deep copy of the supplied image after each pixel has been converted
+     * to a linear value.
+     *
+     * @param logOCT
+     * @return
+     */
     private BufferedImage getLinearOCT(BufferedImage logOCT) {
         BufferedImage retImg = Util.deepCopyBufferedImage(logOCT);
         int w = retImg.getWidth();
@@ -208,6 +91,13 @@ public class OCT {
         return retImg;
     }
 
+    /**
+     * Calculate the exponential of an RGB value to obtain the original linear
+     * value.
+     *
+     * @param rgb
+     * @return
+     */
     private int exp(int rgb) {
         int r = (rgb >> 16) & 0xFF;
         int g = (rgb >> 8) & 0xFF;
@@ -216,6 +106,12 @@ public class OCT {
         return ret;
     }
 
+    /**
+     * Calculate the logrithmic value of an assumed linear RGB value.
+     *
+     * @param rgb
+     * @return
+     */
     private int ln(int rgb) {
         int r = (rgb >> 16) & 0xFF;
         int g = (rgb >> 8) & 0xFF;
