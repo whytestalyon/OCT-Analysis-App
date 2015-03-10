@@ -6,18 +6,26 @@
 package oct.util.ip;
 
 import ij.process.FloatProcessor;
+import java.util.List;
 
 /**
  *
  * @author Brandon
  */
 public interface ImageOperation {
-
+    
     /**
      * Performs the specific image operation on the image represented by the
      * supplied float processor.
      *
      * @param fp the image to apply the given operation to
      */
-    public void performOperation(FloatProcessor fp);
+    public abstract void performOperation(FloatProcessor fp);
+
+    /**
+     * Check to indicate if the filter is active and should be used or not.
+     *
+     * @return true if active, false otherwise
+     */
+    public abstract boolean isActive();
 }

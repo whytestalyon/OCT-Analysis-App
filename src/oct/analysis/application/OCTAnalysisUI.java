@@ -23,6 +23,7 @@ import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import oct.analysis.application.dat.AnalysisMode;
+import oct.analysis.application.dat.ImageOperationManager;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTMode;
@@ -30,6 +31,8 @@ import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.ToolMode;
 import oct.io.TiffReader;
 import oct.util.Util;
+import oct.util.ip.BlurOperation;
+import oct.util.ip.SharpenOperation;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.StandardChartTheme;
 
@@ -880,8 +883,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void octSharpRadiusSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_octSharpRadiusSliderStateChanged
         SwingUtilities.invokeLater(() -> {
             //update weight of sharpen filter for the OCT 
-            double value = (double) ((JSlider) evt.getSource()).getValue() * 0.1d;
-            analysisMetrics.getOct().setSharpenSigma(value);
+            double value = (double) ((JSlider) evt.getSource()).getValue() * 0.1D;
+            SharpenOperation sharpOp = new SharpenOperation(value, ((float) octSharpWeightSlider.getValue()) * 0.01F);
+            ImageOperationManager.getInstance().updateSharpenOperation(sharpOp);
             //redraw OCT use new sharpen weight
             octAnalysisPanel.repaint();
             //redraw LRPs to update with new information
@@ -893,7 +897,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             //update smoothing factor for OCT
             double value = (double) ((JSlider) evt.getSource()).getValue() * 0.1D;
-            analysisMetrics.getOct().setBlurFactor(value);
+            BlurOperation blurOp = new BlurOperation(value);
+            ImageOperationManager.getInstance().updateBlurOperation(blurOp);
             //redraw OCT use new smoothing factor
             octAnalysisPanel.repaint();
             //redraw LRPs to update with new information
@@ -939,7 +944,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
         for (int i = 1; i < 16; i++) {
             if (i % 2 == 1) {
-                labelTable.put(i, new JLabel(df.format((double) i * analysisMetrics.getOct().getScale())));
+                labelTable.put(i, new JLabel(df.format((double) i * analysisMetrics.getScale())));
             }
         }
         widthSlider.setLabelTable(labelTable);
@@ -950,18 +955,27 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_pixelModeButtonActionPerformed
 
     private void logModeOCTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeOCTButtonActionPerformed
-        octAnalysisPanel.setOCTMode(OCTMode.LOG);
+        analysisMetrics.setOCTMode(OCTMode.LOG);
+        //redraw OCT use new mode weight
+        octAnalysisPanel.repaint();
+        //redraw LRPs (if applicable since they may not be open) to update with new information
+        selectionLRPManager.updateLRPs();
     }//GEN-LAST:event_logModeOCTButtonActionPerformed
 
     private void linearOCTModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearOCTModeButtonActionPerformed
-        octAnalysisPanel.setOCTMode(OCTMode.LINEAR);
+        analysisMetrics.setOCTMode(OCTMode.LINEAR);
+        //redraw OCT use new mode weight
+        octAnalysisPanel.repaint();
+        //redraw LRPs (if applicable since they may not be open) to update with new information
+        selectionLRPManager.updateLRPs();
     }//GEN-LAST:event_linearOCTModeButtonActionPerformed
 
     private void octSharpWeightSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_octSharpWeightSliderStateChanged
         SwingUtilities.invokeLater(() -> {
             //update weight of sharpen filter for the OCT 
             float value = ((JSlider) evt.getSource()).getValue() * 0.01f;
-            analysisMetrics.getOct().setSharpenWeight(value);
+            SharpenOperation sharpOp = new SharpenOperation(((double) octSharpRadiusSlider.getValue()) * 0.1D, value);
+            ImageOperationManager.getInstance().updateSharpenOperation(sharpOp);
             //redraw OCT use new sharpen weight
             octAnalysisPanel.repaint();
             //redraw LRPs to update with new information

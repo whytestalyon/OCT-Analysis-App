@@ -122,7 +122,7 @@ public class SelectionLRPManager {
 
     public void updateLRPs() {
         SwingUtilities.invokeLater(() -> {
-            selectionMap.values().forEach((selection) -> {
+            selectionMap.values().parallelStream().forEach((selection) -> {
                 //update the JFrame for the given selection with the new LRP
                 updateLRP(selection);
             });

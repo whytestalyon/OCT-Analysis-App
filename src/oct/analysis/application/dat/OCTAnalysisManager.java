@@ -93,8 +93,8 @@ public class OCTAnalysisManager {
             Diff maxDiff = diffs.stream().max(Comparator.comparingDouble((Diff diff) -> diff.getYDiff())).get();
             double sign = Math.signum(maxDiff.getLinePoint1().getY());
             int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
-            for (; sign == Math.signum(firstDeriv.get(signChangeXPos).getY()); signChangeXPos++) {
-                ;
+            while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
+                signChangeXPos++;
             }
             foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
             System.out.println("Fovea found at: " + foveaCenterXPosition);
@@ -123,17 +123,37 @@ public class OCTAnalysisManager {
             return null;
         }
         System.out.println("Searching for EZ...");
+        /*
+        first get a sharpened version of the OCT and use that to obtain the segmentation
+        of the Brook's membrane. Use a Loess interpolation algorithm to smooth 
+        out imperfetions in the segmentation line.
+        */
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
         double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(getSegmentation(new SharpenOperation(15, 0.5F)).getSegment(Segmentation.BrM_SEGMENT)));
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
         BufferedImage sharpOCT = getSharpenedOctImage(1.0F);
+        /*
+        Starting from the identified location of the fovea search north ward in 
+        the image until the most northern pixels northward (in a 3x3 matrix of 
+        pixels arround the the search point (X,Y) ) are black (ie. the search
+        matrix is has found that the search point isn't totally surrounded by
+        white pixels). Then a recursive search algorithm determines if the 
+        black area signifies the seperation between bands or simply represents
+        a closed (a black blob entirely surrounded by white pixels) black band.
+        It will continue searching northward in the image until it can find an 
+        open region of all blak pixels. Once this is found it will find the contour
+        of the edge between the black and white pixels along the width of the image.
+        */
         int searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition)) + 1;
         do {
             searchY--;
         } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
         LinkedList<Point> contour = new LinkedList<>();
         Point startPoint = new Point(foveaCenterXPosition, searchY);
+        //find contour by search to te right of the fovea
         contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        //search until open black area found (ie. if the search algorithm arrives back at
+        //the starting pixel keep moving north to next black area to search)
         while (contour.get(0).equals(startPoint)) {
             contour = new LinkedList<>();
             do {
@@ -145,21 +165,43 @@ public class OCTAnalysisManager {
             startPoint = new Point(foveaCenterXPosition, searchY);
             contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
         }
+        //open balck space found, complete contour to left of fovea
         contour.add(findContourLeft(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        /*
+        since the contour can snake around due to aberations and low image density 
+        we need to create a single line (represented by points) from left to right
+        to represent the countour. This is easily done by building a line of
+        points consisting of the point with the largest Y value (furthest from 
+        the top of the image) at each X value. This eliminates overhangs from the 
+        contour line.
+        */
         Map<Double, List<Point>> grouped = contour.stream().collect(Collectors.groupingBy(Point::getX));
         List<Point> refinedContour = grouped.values().stream().map((List<Point> points) -> {
             int maxY = points.stream().mapToInt((Point p) -> p.y).max().getAsInt();
             return new Point(points.get(0).x, maxY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
+        /*
+        find the average difference in the distance in the Y between the 5 pixels
+        at each end of the Brook's Membrane contour and the new contour created
+        along the top egde of the EZ.
+        */
         int minX = (int) refinedContour.stream().mapToDouble(Point::getX).min().getAsDouble();
         int maxX = (int) refinedContour.stream().mapToDouble(Point::getX).max().getAsDouble();
         double avgDif = refinedContour.stream().filter((Point p) -> p.x < minX + 5 || p.x > maxX - 5).mapToDouble((Point p) -> Math.abs(p.getY() - brmInterp.value(p.x))).average().getAsDouble();
         List<LinePoint> adjRefContour = refinedContour.parallelStream().map((Point p) -> new LinePoint(p.x, p.y + avgDif)).collect(Collectors.toList());
+        /*
+        use a Loess interpolator again to smooth the new contour of the EZ
+        */
         double[][] refinedContourPoints = Util.getXYArraysFromLinePoints(adjRefContour);
         UnivariateFunction interpRefContour = interpolator.interpolate(refinedContourPoints[0], refinedContourPoints[1]);
         List<LinePoint> clp = refinedContour.stream().map((Point p) -> new LinePoint(p.x, sharpOCT.getHeight() - interpRefContour.value(p.x))).collect(Collectors.toList());
         List<LinePoint> slp = refinedContour.stream().map((Point p) -> new LinePoint(p.x, sharpOCT.getHeight() - brmInterp.value(p.x))).collect(Collectors.toList());
         Util.graphPoints(clp, slp);
+        /*
+        Find the difference between the two contours (Brook's membrane and the
+        EZ + Brooks membrane) and use this to determine where the edge of the
+        EZ is
+        */
         List<LinePoint> diffLine = findAbsoluteDiff(brmInterp, interpRefContour, minX, maxX);
         Util.graphPoints(diffLine);
         return null;
@@ -219,13 +261,19 @@ public class OCTAnalysisManager {
     }
 
     /**
-     * This method returns the OCT image according to the currently set OCT
-     * mode.
+     * This method returns the OCT image according to the currently set OCT mode
+     * and image operations.
      *
      * @return
      */
     public BufferedImage getOctImage() {
-        return (displayMode == OCTMode.LOG) ? oct.getLogOctImage() : oct.getLinearOctImage();
+        BufferedImage modeOCT = (displayMode == OCTMode.LOG) ? oct.getLogOctImage() : oct.getLinearOctImage();
+        FloatProcessor fp = new ByteProcessor(modeOCT).convertToFloatProcessor();
+        fp.snapshot();
+        ImageOperationManager.getInstance().getActiveOperationList().forEach(imop -> {
+            imop.performOperation(fp);
+        });
+        return fp.getBufferedImage();
     }
 
     /**

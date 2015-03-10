@@ -45,4 +45,9 @@ public class SharpenOperation implements ImageOperation {
         this.sharpenWeight = sharpenWeight;
     }
 
+    @Override
+    public boolean isActive() {
+        return sharpenWeight > 0F && sharpenSigma > 0D;
+    }
+
 }

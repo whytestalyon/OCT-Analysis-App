@@ -32,4 +32,9 @@ public class BlurOperation implements ImageOperation {
         this.blurFactor = blurFactor;
     }
 
+    @Override
+    public boolean isActive() {
+        return blurFactor > 0D;
+    }
+
 }
