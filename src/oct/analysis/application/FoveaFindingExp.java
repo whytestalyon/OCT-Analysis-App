@@ -147,10 +147,6 @@ public class FoveaFindingExp extends JFrame {
         }
 //        dataset.addSeries(brm);
 
-        //draw segmentation on image
-//        drawSegmentation(img, ilm, brm, title);
-        add(drawSegmentation(img, ilm, brm), BorderLayout.NORTH);
-
         //calcualte the difference (in the Y value) between at each point along the X axis for the above contours
         ListIterator<XYDataItem> ilmIter = ((List<XYDataItem>) ilm.getItems()).listIterator();
         ListIterator<XYDataItem> brmIter = ((List<XYDataItem>) brm.getItems()).listIterator();
@@ -206,7 +202,12 @@ public class FoveaFindingExp extends JFrame {
         dataset.addSeries(td);
         XYSeries peaks = OCTSelection.findMaxAndMins(fd, "F' Peaks");
         dataset.addSeries(peaks);
-        dataset.addSeries(findFovea(peaks, firstDerive));
+        XYSeries fovea = findFovea(peaks, firstDerive);
+        dataset.addSeries(fovea);
+
+        //draw segmentation on image
+//        drawSegmentation(img, ilm, brm, title);
+        add(drawSegmentation(img, ilm, brm, (int) Math.round(fovea.getDataItem(0).getXValue())), BorderLayout.NORTH);
 
         return dataset;
     }
@@ -219,11 +220,12 @@ public class FoveaFindingExp extends JFrame {
 //        octMap.put("RW_10174_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\Normal\\AVG_RW_10174_OS_Raw_L_90.tif")));
 //        octMap.put("8bit_DH_10160_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\8bit_DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif")));
 //        octMap.put("DH_10160_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif")));
+        octMap.put("DH_10160_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83.tif")));
 //        octMap.put("JC_10193_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\JC_10193_OD_L_7_0_0000002_OCT_600x1000_fr90reg_fr80-100_resized_810x460.tif")));
 //        octMap.put("KS_10175_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\KS_10175_OS_L_7_0_24_529disp_fr38reg_fr28-70_AL24p2.tif")));
 //        octMap.put("KS_10238_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\KS_10238_OS_L_7_90_05_529disp_reg_fr1-25_AL21p35.tif")));
 //        octMap.put("KS_10243_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\KS_10243_OD_L_7_0_02_529disp_reg_fr1-14_AL22p43.tif")));
-        octMap.put("KS_10062_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\AVG_KS_10062_OD_L_7_90_05_23fr.tif")));
+//        octMap.put("KS_10062_OD", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\EZ\\AVG_KS_10062_OD_L_7_90_05_23fr.tif")));
 //        octMap.put("JC_10073_OS", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\JC_10073_OS_L_7_0_0000027_OCT_1000x600_reg_6fr_resized_810x460.tif")));
 //        octMap.put("JC_0677_OD_L_7_0", TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\Normal\\JC_0677_OD_L_7_0_0000093_529disp_reg_fr1-15.tif")));
 
@@ -254,8 +256,8 @@ public class FoveaFindingExp extends JFrame {
                 .getPointCollection();
     }
 
-    public static JPanel drawSegmentation(BufferedImage oct, XYSeries ilmSeg, XYSeries brmSeg) {
-        return new DemoOCTPanel(oct, ilmSeg, brmSeg);
+    public static JPanel drawSegmentation(BufferedImage oct, XYSeries ilmSeg, XYSeries brmSeg, int foveaXpos) {
+        return new DemoOCTPanel(oct, ilmSeg, brmSeg, foveaXpos);
     }
 
     public static XYSeries findFovea(XYSeries peaks, double[] firstDeriv) {
@@ -303,12 +305,14 @@ public class FoveaFindingExp extends JFrame {
         BufferedImage oct;
         XYSeries ilmSeg;
         XYSeries brmSeg;
+        int foveaX;
 
-        public DemoOCTPanel(BufferedImage oct, XYSeries ilmSeg, XYSeries brmSeg) {
+        public DemoOCTPanel(BufferedImage oct, XYSeries ilmSeg, XYSeries brmSeg, int foveaX) {
             this.oct = oct;
             this.ilmSeg = ilmSeg;
             this.brmSeg = brmSeg;
             setSize(oct.getWidth(), oct.getHeight());
+            this.foveaX = foveaX;
         }
 
         @Override
@@ -328,6 +332,8 @@ public class FoveaFindingExp extends JFrame {
             ((List<XYDataItem>) brmSeg.getItems()).forEach(p -> {
                 g.drawLine(p.getX().intValue(), p.getY().intValue(), p.getX().intValue(), p.getY().intValue());
             });
+            g.setColor(Color.yellow);
+            g.drawLine(foveaX, 0, foveaX, oct.getHeight());
         }
 
     }

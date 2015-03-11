@@ -653,10 +653,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //clear old operations and modes
         analysisMetrics.setOCTMode(OCTMode.LOG);
         ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
-        ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0,0));
+        ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0, 0));
         //clear old OCT
         analysisMetrics.setOct(null);
         analysisMetrics.setScale(0);
+        //reset display panel offsets
+        octAnalysisPanel.resetImageOffsets();
         //load new image
         openFileChooser.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
         openFileChooser.setMultiSelectionEnabled(false);
@@ -814,6 +816,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisMode = AnalysisMode.EZ;
         //first automatically find the center of the fovea and add line at location
         int fv = analysisMetrics.getFoveaXPosition();
+        System.out.println("Fovea X position: " + fv);
         OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         selectionLRPManager.addOrUpdateSelection(foveaSelection);
         octAnalysisPanel.repaint();

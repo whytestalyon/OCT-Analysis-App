@@ -17,6 +17,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import oct.util.Segmentation;
 import oct.util.Util;
 import oct.util.ip.ImageOperation;
@@ -57,7 +58,7 @@ public class OCTAnalysisManager {
         if (foveaCenterXPosition < 0) {
             //find the fovea since it hasn't been found/defined yet
             UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
-            Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.5F));
+            Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
             double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
             UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
             double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));
@@ -232,7 +233,7 @@ public class OCTAnalysisManager {
             int minY = points.stream().mapToInt((Point p) -> p.y).min().getAsInt();
             return new Point(points.get(0).x, minY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
-        
+
         /*
          use a Loess interpolator again to smooth the new contours of the EZ and Bruch's Membrane
          */
@@ -242,35 +243,32 @@ public class OCTAnalysisManager {
         UnivariateFunction interpBruchsContour = interpolator.interpolate(refinedContourPoints[0], refinedContourPoints[1]);
 
         /*
-         find the average difference in the distance in the Y between the 5 pixels
+         find the average difference in the distance in the Y between the 10 pixels
          at each end of the Bruch's Membrane contour and the contour created
          along the top of the EZ.
          */
         //since the lines are sorted on X position it is easy to align the lines
         //based on the tails of each line
-        double avgDif = (Math.abs(refinedEZContour.get(0).getY() - refinedBruchsMembraneContour.get(0).getY())
-                + Math.abs(refinedEZContour.get(1).getY() - refinedBruchsMembraneContour.get(1).getY())
-                + Math.abs(refinedEZContour.get(2).getY() - refinedBruchsMembraneContour.get(2).getY())
-                + Math.abs(refinedEZContour.get(3).getY() - refinedBruchsMembraneContour.get(3).getY())
-                + Math.abs(refinedEZContour.get(4).getY() - refinedBruchsMembraneContour.get(4).getY())
-                + Math.abs(refinedEZContour.get(refinedEZContour.size() - 5).getY() - refinedBruchsMembraneContour.get(refinedBruchsMembraneContour.size() - 5).getY())
-                + Math.abs(refinedEZContour.get(refinedEZContour.size() - 4).getY() - refinedBruchsMembraneContour.get(refinedBruchsMembraneContour.size() - 4).getY())
-                + Math.abs(refinedEZContour.get(refinedEZContour.size() - 3).getY() - refinedBruchsMembraneContour.get(refinedBruchsMembraneContour.size() - 3).getY())
-                + Math.abs(refinedEZContour.get(refinedEZContour.size() - 2).getY() - refinedBruchsMembraneContour.get(refinedBruchsMembraneContour.size() - 2).getY())
-                + Math.abs(refinedEZContour.get(refinedEZContour.size() - 1).getY() - refinedBruchsMembraneContour.get(refinedBruchsMembraneContour.size() - 1).getY())) / 10D;
-        List<LinePoint> adjEZContour = refinedEZContour.parallelStream().map((Point p) -> new LinePoint(p.x, p.y + avgDif)).collect(Collectors.toList());
-        
+        int minX = refinedEZContour.get(0).x;
+        int maxX = refinedEZContour.get(refinedEZContour.size() - 1).x;
+        double avgDif = Stream.concat(IntStream.range(minX, minX + 10).boxed(), IntStream.range(maxX - 9, maxX + 1).boxed())
+                .mapToDouble(x -> Math.abs(interpEZContour.value(x) - interpBruchsContour.value(x)))
+                .average()
+                .getAsDouble();
+//        List<LinePoint> adjEZContour = refinedEZContour.parallelStream().map((Point p) -> new LinePoint(p.x, p.y + avgDif)).collect(Collectors.toList());
+
         int height = sharpOCT.getHeight();//make to use in lambda expression
-        List<LinePoint> clp = adjEZContour.stream().map(p -> new LinePoint(p.getX(), height - p.getY())).collect(Collectors.toList());
-        List<LinePoint> slp = refinedBruchsMembraneContour.stream().map((Point p) -> new LinePoint(p.x, height - p.getY())).collect(Collectors.toList());
+        List<LinePoint> clp = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpEZContour.value(x) - avgDif)).collect(Collectors.toList());
+        List<LinePoint> slp = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpBruchsContour.value(x))).collect(Collectors.toList());
         Util.graphPoints(clp, slp);
         /*
          Find the difference between the two contours (Bruch's membrane and the
          EZ + Bruch's membrane) and use this to determine where the edge of the
          EZ is
          */
-        List<LinePoint> diffLine = findAbsoluteDiff(adjEZContour, refinedBruchsMembraneContour.stream().map((Point p) -> new LinePoint(p.x, p.getY())).collect(Collectors.toList()));
-        Util.graphPoints(diffLine);
+        List<LinePoint> diffLine = findAbsoluteDiff(interpEZContour, interpBruchsContour, minX, maxX);
+        List<LinePoint> peaks = Util.findPeaksAndVallies(diffLine);
+        Util.graphPoints(diffLine, peaks);
         return null;
     }
 

@@ -132,7 +132,27 @@ public class Util {
         List<LinePoint> ret = line.parallelStream()
                 .filter(p -> peaks.stream().anyMatch(pk -> pk.getX() == p.getX()))
                 .collect(Collectors.toList());
-        //sort be X position
+        //sort by X position
+        ret.sort(Comparator.comparingInt(peak -> peak.getX()));
+        return ret;
+    }
+
+    public static List<LinePoint> findPeaksAndVallies(List<LinePoint> line) {
+        //first find peaks
+        List<LinePoint> peaks = getMaximums(line);
+        //create inverse of line to find vallies
+        ArrayList<LinePoint> convList = new ArrayList<>(line.size());
+        line.forEach(p -> {
+            convList.add(new LinePoint(p.getX(), 0D - p.getY()));
+        });
+        //find X values of vallies
+        List<LinePoint> vallies = getMaximums(convList);
+        //collect valley points
+        List<LinePoint> ret = line.parallelStream()
+                .filter(p -> vallies.stream().anyMatch(pk -> pk.getX() == p.getX()))
+                .collect(Collectors.toList());
+        //sort by X position
+        ret.addAll(peaks);
         ret.sort(Comparator.comparingInt(peak -> peak.getX()));
         return ret;
     }
@@ -160,8 +180,8 @@ public class Util {
     }
 
     private static JPanel createChartPanel(String title, XYDataset dataset) {
-        String xAxisLabel = "Pixel";
-        String yAxisLabel = "Slope";
+        String xAxisLabel = "X";
+        String yAxisLabel = "Y";
 
         JFreeChart chart = ChartFactory.createXYLineChart(title, xAxisLabel, yAxisLabel, dataset);
         ChartPanel panel = new ChartPanel(chart);

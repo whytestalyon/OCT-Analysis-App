@@ -53,6 +53,10 @@ public class OCTImagePanel extends JPanel {
             return new Dimension(analysisData.getOct().getImageWidth(), analysisData.getOct().getImageHeight());
         }
     }
+    
+    public void resetImageOffsets(){
+        imageOffsetY = imageOffsetX = 0;
+    }
 
     @Override
     protected void paintComponent(Graphics grphcs) {
