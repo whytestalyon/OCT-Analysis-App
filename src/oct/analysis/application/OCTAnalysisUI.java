@@ -642,6 +642,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fileOpenMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileOpenMenuItemActionPerformed
+        //clear old selections 
+        selectionLRPManager.removeSelections(true);
+        //reset values
+        octSharpRadiusSlider.setValue(0);
+        octSharpWeightSlider.setValue(0);
+        octSmoothingSlider.setValue(0);
+        logModeOCTButton.setSelected(true);
+        lrpSmoothingSlider.setValue(5);
+        //clear old operations and modes
+        analysisMetrics.setOCTMode(OCTMode.LOG);
+        ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
+        ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0,0));
+        //clear old OCT
+        analysisMetrics.setOct(null);
+        analysisMetrics.setScale(0);
+        //load new image
         openFileChooser.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
         openFileChooser.setMultiSelectionEnabled(false);
         int returnVal = openFileChooser.showOpenDialog(this);
