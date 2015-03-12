@@ -653,6 +653,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpSmoothingSlider.setValue(5);
         //clear old operations and modes
         analysisMetrics.setOCTMode(OCTMode.LOG);
+        analysisMetrics.setFoveaCenterXPosition(-1);
         ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
         ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0, 0));
         //clear old OCT
@@ -823,8 +824,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //second, automatically find the X position of each EZ edge
         int[] ez = analysisMetrics.getEZEdgeCoords();
         System.out.println("Got EZ: " + Arrays.toString(ez));
-        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZL"));
-        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZR"));
+        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Left"));
+        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Right"));
         octAnalysisPanel.repaint();
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
