@@ -15,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -28,6 +29,7 @@ import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDiffer
 import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
 import org.apache.commons.math3.analysis.interpolation.LoessInterpolator;
 import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
+import org.apache.commons.math3.exception.OutOfRangeException;
 
 /**
  *
@@ -133,7 +135,7 @@ public class OCTAnalysisManager {
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
         double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(getSegmentation(new SharpenOperation(15, 0.5F)).getSegment(Segmentation.BrM_SEGMENT)));
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
-        BufferedImage sharpOCT = getSharpenedOctImage(15D, 1.0F);
+        BufferedImage sharpOCT = getSharpenedOctImage(8.5D, 1.0F);
         /*
          Starting from the identified location of the fovea search northward in 
          the image until the most northern pixels northward (in a 3x3 matrix of 
@@ -196,7 +198,7 @@ public class OCTAnalysisManager {
          of the edge between the black and white pixels, along the width of the image,
          of the bottom of the Bruch's membrane.
          */
-        sharpOCT = getSharpenedOctImage(9D, 1.0F);
+        sharpOCT = getSharpenedOctImage(5D, 1.0F);
         searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition));
         do {
             searchY++;
@@ -250,26 +252,64 @@ public class OCTAnalysisManager {
         //since the lines are sorted on X position it is easy to align the lines
         //based on the tails of each line
         int minX = refinedEZContour.get(0).x;
-        int maxX = refinedEZContour.get(refinedEZContour.size() - 1).x;
-        double avgDif = Stream.concat(IntStream.range(minX, minX + 10).boxed(), IntStream.range(maxX - 9, maxX + 1).boxed())
-                .mapToDouble(x -> Math.abs(interpEZContour.value(x) - interpBruchsContour.value(x)))
+        int maxX;
+        //the interpolator can shorten the range of the X values from the original supplied
+        //so we need to test where the end of the range occurs since it isn't directly accessible
+        for (maxX = refinedEZContour.get(refinedEZContour.size() - 1).x; maxX > minX; maxX--) {
+            try {
+                double tmp = interpEZContour.value(maxX) - interpBruchsContour.value(maxX);
+                //if this break is reached we have found the max value the interpolators will allow
+                break;
+            } catch (OutOfRangeException oe) {
+                //do nothing but let loop continue
+            }
+        }
+        double avgDif = Stream.concat(IntStream.range(minX, minX + 40).boxed(), IntStream.range(maxX - 39, maxX + 1).boxed())
+                .mapToDouble(x -> interpBruchsContour.value(x) - interpEZContour.value(x))
                 .average()
                 .getAsDouble();
-//        List<LinePoint> adjEZContour = refinedEZContour.parallelStream().map((Point p) -> new LinePoint(p.x, p.y + avgDif)).collect(Collectors.toList());
 
         int height = sharpOCT.getHeight();//make to use in lambda expression
-        List<LinePoint> clp = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpEZContour.value(x) - avgDif)).collect(Collectors.toList());
-        List<LinePoint> slp = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpBruchsContour.value(x))).collect(Collectors.toList());
-        Util.graphPoints(clp, slp);
+        List<LinePoint> ezLine = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpEZContour.value(x) - avgDif)).collect(Collectors.toList());
+        List<LinePoint> bmLine = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpBruchsContour.value(x))).collect(Collectors.toList());
+        List<LinePoint> bmUnfiltLine = refinedBruchsMembraneContour.stream().map((Point p) -> new LinePoint(p.x, height - p.getY())).collect(Collectors.toList());
+        Util.graphPoints(ezLine, bmLine, bmUnfiltLine);
         /*
          Find the difference between the two contours (Bruch's membrane and the
          EZ + Bruch's membrane) and use this to determine where the edge of the
          EZ is
          */
-        List<LinePoint> diffLine = findAbsoluteDiff(interpEZContour, interpBruchsContour, minX, maxX);
+        List<LinePoint> diffLine = findDiffWithAdjustment(interpBruchsContour, 0D, interpEZContour, avgDif, minX, maxX);
         List<LinePoint> peaks = Util.findPeaksAndVallies(diffLine);
         Util.graphPoints(diffLine, peaks);
-        return null;
+
+        /*
+         Find the first zero crossings of the difference line on both sides of the fovea.
+         If a zero crossing can't be found then search for the first crossing of a
+         value of 1, then 2, then 3, etc. until an X coordinate of a crossing is
+         found on each side of the fovea.
+         */
+        OptionalInt ezLeftEdge;
+        double crossingThreshold = 0D;
+        do {
+            double filtThresh = crossingThreshold;
+            ezLeftEdge = diffLine
+                    .stream()
+                    .filter(lp -> lp.getY() <= filtThresh && lp.getX() < foveaCenterXPosition)
+                    .mapToInt(LinePoint::getX).max();
+            crossingThreshold++;
+        } while (!ezLeftEdge.isPresent());
+        OptionalInt ezRightEdge;
+        crossingThreshold = 0D;
+        do {
+            double filtThresh = crossingThreshold;
+            ezRightEdge = diffLine
+                    .stream()
+                    .filter(lp -> lp.getY() <= filtThresh && lp.getX() > foveaCenterXPosition)
+                    .mapToInt(LinePoint::getX).min();
+            crossingThreshold++;
+        } while (!ezLeftEdge.isPresent());
+        return new int[]{ezLeftEdge.getAsInt(),ezRightEdge.getAsInt()};
     }
 
     private static class OCTAnalysisMetricsHolder {
@@ -554,6 +594,12 @@ public class OCTAnalysisManager {
         tmpFp.snapshot();//need to create a snapshot before any operations can be performed on image
         new SharpenOperation(sigma, weight).performOperation(tmpFp);
         return tmpFp.getBufferedImage();
+    }
+
+    public List<LinePoint> findDiffWithAdjustment(UnivariateFunction fa, double faYValueAdj, UnivariateFunction fb, double fbYValueAdj, int minX, int maxX) {
+        return IntStream.rangeClosed(minX, maxX)
+                .mapToObj(x -> new LinePoint(x, (fa.value(x) + faYValueAdj) - (fb.value(x) + fbYValueAdj)))
+                .collect(Collectors.toList());
     }
 
     public List<LinePoint> findAbsoluteDiff(UnivariateFunction fa, UnivariateFunction fb, int minX, int maxX) {

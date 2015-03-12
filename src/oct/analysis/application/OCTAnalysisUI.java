@@ -13,6 +13,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.Hashtable;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
@@ -819,10 +820,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         System.out.println("Fovea X position: " + fv);
         OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
         selectionLRPManager.addOrUpdateSelection(foveaSelection);
-        octAnalysisPanel.repaint();
         //second, automatically find the X position of each EZ edge
         int[] ez = analysisMetrics.getEZEdgeCoords();
-        System.out.println("Got EZ: " + ez);
+        System.out.println("Got EZ: " + Arrays.toString(ez));
+        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZL"));
+        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZR"));
+        octAnalysisPanel.repaint();
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
