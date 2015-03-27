@@ -60,6 +60,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
      */
     public OCTAnalysisUI() {
         initComponents();
+        //set connection for debugin
+        analysisMetrics.setImjPanel(octAnalysisPanel);
         //get current selection width setting
         selectionLRPManager.setSelectionWidth(widthSlider.getValue());
     }
@@ -328,9 +330,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         sharpRadiusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Radius"));
 
-        octSharpRadiusSlider.setMajorTickSpacing(10);
-        octSharpRadiusSlider.setMaximum(150);
-        octSharpRadiusSlider.setMinorTickSpacing(2);
+        octSharpRadiusSlider.setMajorTickSpacing(20);
+        octSharpRadiusSlider.setMaximum(200);
+        octSharpRadiusSlider.setMinorTickSpacing(5);
         octSharpRadiusSlider.setPaintLabels(true);
         octSharpRadiusSlider.setPaintTicks(true);
         octSharpRadiusSlider.setSnapToTicks(true);
@@ -817,16 +819,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         enableAnalysisTools();
         analysisMode = AnalysisMode.EZ;
         //first automatically find the center of the fovea and add line at location
-        int fv = analysisMetrics.getFoveaXPosition();
-        System.out.println("Fovea X position: " + fv);
-        OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
-        selectionLRPManager.addOrUpdateSelection(foveaSelection);
-        //second, automatically find the X position of each EZ edge
-        int[] ez = analysisMetrics.getEZEdgeCoords();
-        System.out.println("Got EZ: " + Arrays.toString(ez));
-        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Left"));
-        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Right"));
-        octAnalysisPanel.repaint();
+        SwingUtilities.invokeLater(() -> {
+            int fv = analysisMetrics.getFoveaXPosition();
+            System.out.println("Fovea X position: " + fv);
+            OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+            selectionLRPManager.addOrUpdateSelection(foveaSelection);
+            //second, automatically find the X position of each EZ edge
+            int[] ez = analysisMetrics.getEZEdgeCoords();
+            System.out.println("Got EZ: " + Arrays.toString(ez));
+            selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Left"));
+            selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Right"));
+            octAnalysisPanel.repaint();
+        });
     }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed

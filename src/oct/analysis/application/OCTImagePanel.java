@@ -9,8 +9,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
+import java.awt.Point;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
+import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
@@ -25,6 +29,8 @@ public class OCTImagePanel extends JPanel {
     private final SelectionLRPManager selectionLrpMngr = SelectionLRPManager.getInstance();
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
+    private Point drawPoint = null;
+    private List<LinePoint>[] drawLines = null;
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -53,8 +59,8 @@ public class OCTImagePanel extends JPanel {
             return new Dimension(analysisData.getOct().getImageWidth(), analysisData.getOct().getImageHeight());
         }
     }
-    
-    public void resetImageOffsets(){
+
+    public void resetImageOffsets() {
         imageOffsetY = imageOffsetX = 0;
     }
 
@@ -80,7 +86,30 @@ public class OCTImagePanel extends JPanel {
             selectionLrpMngr.getSelections().stream().forEach((selection) -> {
                 selection.drawSelection(grphcs, imageOffsetX, imageOffsetY);
             });
+            //draw point on oct if available
+            if (drawPoint != null) {
+                System.out.println("painting rectangle!");
+                grphcs.setColor(Color.red);
+                grphcs.drawRect(imageOffsetX + drawPoint.x - 1, imageOffsetY + drawPoint.y - 1, 3, 3);
+            }
+            //draw lines on oct if available
+            if (drawLines != null) {
+                grphcs.setColor(Color.red);
+                Arrays.stream(drawLines).flatMap(line -> line.stream()).forEach(p -> {
+                    int y = imageOffsetY + (int)Math.round(p.getY());
+                    grphcs.drawLine(imageOffsetX + p.getX(), y, imageOffsetX + p.getX(), y);
+                });
+            }
         }
+    }
+
+    public void setDrawPoint(Point p) {
+        drawPoint = p;
+        repaint();
+    }
+
+    public void graphPoints(List<LinePoint>... drawLines) {
+        this.drawLines = drawLines;
     }
 
     /**

@@ -16,9 +16,12 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.OptionalInt;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import oct.analysis.application.OCTImagePanel;
 import oct.util.Segmentation;
 import oct.util.Util;
 import oct.util.ip.ImageOperation;
@@ -42,12 +45,17 @@ public class OCTAnalysisManager {
     private OCT oct = null;
     private OCTMode displayMode = OCTMode.LOG; //default display mode of image is assumed to be a Log OCT image
     private int foveaCenterXPosition = -1;
+    private OCTImagePanel imjPanel;
 
     private OCTAnalysisManager() {
     }
 
     public static OCTAnalysisManager getInstance() {
         return OCTAnalysisMetricsHolder.INSTANCE;
+    }
+
+    public void setImjPanel(OCTImagePanel imjPanel) {
+        this.imjPanel = imjPanel;
     }
 
     /**
@@ -151,11 +159,11 @@ public class OCTAnalysisManager {
         int searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition)) + 1;
         do {
             searchY--;
-        } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
+        } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || !isContrastPoint(foveaCenterXPosition, searchY, sharpOCT));
         LinkedList<Point> contour = new LinkedList<>();
         Point startPoint = new Point(foveaCenterXPosition, searchY);
         //find contour by searching for white pixel boundary to te right of the fovea
-        contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT, false));
         //search until open black area found (ie. if the search algorithm arrives back at
         //the starting pixel keep moving north to next black area to search)
         while (contour.get(0).equals(startPoint)) {
@@ -167,10 +175,11 @@ public class OCTAnalysisManager {
                 searchY--;
             } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
             startPoint = new Point(foveaCenterXPosition, searchY);
-            contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+            contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT, false));
         }
         //open balck space found, complete contour to left of fovea
-        contour.add(findContourLeft(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        contour.add(findContourLeft(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT, false));
+        imjPanel.setDrawPoint(new Point(foveaCenterXPosition, searchY));
         /*
          since the contour can snake around due to aberations and low image density 
          we need to create a single line (represented by points) from left to right
@@ -198,7 +207,7 @@ public class OCTAnalysisManager {
          of the edge between the black and white pixels, along the width of the image,
          of the bottom of the Bruch's membrane.
          */
-        sharpOCT = getSharpenedOctImage(5D, 1.0F);
+//        sharpOCT = getSharpenedOctImage(5D, 1.0F);
         searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition));
         do {
             searchY++;
@@ -206,7 +215,7 @@ public class OCTAnalysisManager {
         contour = new LinkedList<>();
         startPoint = new Point(foveaCenterXPosition, searchY);
         //find contour by searching for white pixel boundary to te right of the fovea
-        contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
+        contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, false));
         //search until open black area found (ie. if the search algorithm arrives back at
         //the starting pixel keep moving south to next black area to search)
         while (contour.get(0).equals(startPoint)) {
@@ -218,10 +227,11 @@ public class OCTAnalysisManager {
                 searchY++;
             } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
             startPoint = new Point(foveaCenterXPosition, searchY);
-            contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
+            contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, false));
         }
         //open balck space found, complete contour to left of fovea
-        contour.add(findContourLeft(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
+        System.out.println("OCT width: " + sharpOCT.getWidth());
+        contour.add(findContourLeft(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, false));
         /*
          since the contour can snake around due to aberations and low image density 
          we need to create a single line (represented by points) from left to right
@@ -274,6 +284,7 @@ public class OCTAnalysisManager {
         List<LinePoint> bmLine = IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, height - interpBruchsContour.value(x))).collect(Collectors.toList());
         List<LinePoint> bmUnfiltLine = refinedBruchsMembraneContour.stream().map((Point p) -> new LinePoint(p.x, height - p.getY())).collect(Collectors.toList());
         Util.graphPoints(ezLine, bmLine, bmUnfiltLine);
+        imjPanel.graphPoints(IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, interpEZContour.value(x))).collect(Collectors.toList()), IntStream.rangeClosed(minX, maxX).mapToObj(x -> new LinePoint(x, interpBruchsContour.value(x))).collect(Collectors.toList()));
         /*
          Find the difference between the two contours (Bruch's membrane and the
          EZ + Bruch's membrane) and use this to determine where the edge of the
@@ -293,6 +304,7 @@ public class OCTAnalysisManager {
         double crossingThreshold = 0D;
         do {
             double filtThresh = crossingThreshold;
+            System.out.println("Crossing threshold = " + crossingThreshold);
             ezLeftEdge = diffLine
                     .stream()
                     .filter(lp -> lp.getY() <= filtThresh && lp.getX() < foveaCenterXPosition)
@@ -303,13 +315,14 @@ public class OCTAnalysisManager {
         crossingThreshold = 0D;
         do {
             double filtThresh = crossingThreshold;
+            System.out.println("Crossing threshold = " + crossingThreshold);
             ezRightEdge = diffLine
                     .stream()
                     .filter(lp -> lp.getY() <= filtThresh && lp.getX() > foveaCenterXPosition)
                     .mapToInt(LinePoint::getX).min();
             crossingThreshold++;
-        } while (!ezLeftEdge.isPresent());
-        return new int[]{ezLeftEdge.getAsInt(),ezRightEdge.getAsInt()};
+        } while (!ezRightEdge.isPresent());
+        return new int[]{ezLeftEdge.getAsInt(), ezRightEdge.getAsInt()};
     }
 
     private static class OCTAnalysisMetricsHolder {
@@ -429,6 +442,10 @@ public class OCTAnalysisManager {
         return allWhite;
     }
 
+    private boolean isContrastPoint(int x, int y, BufferedImage sharpOCT) {
+        return Util.calculateGrayScaleValue(sharpOCT.getRGB(x, y)) == 0 && Util.calculateGrayScaleValue(sharpOCT.getRGB(x, y + 1)) > 0;
+    }
+
     /**
      * Recursively search for a contour to the right of the supplied starting
      * point. If the contour returned contains the starting point then the
@@ -441,7 +458,16 @@ public class OCTAnalysisManager {
      * @param sharpOCT OCT to find the contour in
      * @return the next point in the contour after the search point
      */
-    private Point findContourRight(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT) {
+    private Point findContourRight(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT, boolean trace) {
+        if (trace) {
+            System.out.println("CR searching: " + searchPoint.x);
+            imjPanel.setDrawPoint(searchPoint);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(OCTAnalysisManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         Point nextPoint;
         Cardinality nextDirection;
         switch (searchDirection) {
@@ -499,8 +525,8 @@ public class OCTAnalysisManager {
                 nextDirection = Cardinality.EAST;
                 break;
         }
-        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 40 || nextPoint.x >= sharpOCT.getWidth() - 40)) {
-            contourList.add(findContourRight(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT));
+        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 20 || nextPoint.x >= sharpOCT.getWidth() - 20)) {
+            contourList.add(findContourRight(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT, trace));
         }
         return nextPoint;
     }
@@ -517,8 +543,16 @@ public class OCTAnalysisManager {
      * @param sharpOCT OCT to find the contour in
      * @return the next point in the contour after the search point
      */
-    private Point findContourLeft(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT) {
-//        System.out.println("CL searching: " + searchPoint.x);
+    private Point findContourLeft(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT, boolean trace) {
+        if (trace) {
+            System.out.println("CR searching: " + searchPoint.x);
+            imjPanel.setDrawPoint(searchPoint);
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(OCTAnalysisManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         Point nextPoint;
         Cardinality nextDirection;
         switch (searchDirection) {
@@ -576,8 +610,8 @@ public class OCTAnalysisManager {
                 nextDirection = Cardinality.EAST;
                 break;
         }
-        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 40 || nextPoint.x >= sharpOCT.getWidth() - 40)) {
-            contourList.add(findContourLeft(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT));
+        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 20 || nextPoint.x >= sharpOCT.getWidth() - 20)) {
+            contourList.add(findContourLeft(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT, trace));
         }
         return nextPoint;
     }
