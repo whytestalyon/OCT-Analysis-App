@@ -23,6 +23,8 @@ public class OCTLine extends OCTSelection {
         g.setColor(Color.green);
 //        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
         g.drawLine(imageOffsetX + xPositionOnOct, imageOffsetY + yPositionOnOct, imageOffsetX + xPositionOnOct, imageOffsetY + yPositionOnOct + height - 1);
+        //draw button for interacting with the selection
+        drawSelectButton(g, imageOffsetX, imageOffsetY);
         drawn = true;
     }
 

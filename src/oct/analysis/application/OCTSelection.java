@@ -8,15 +8,13 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
+import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
-import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.util.Util;
@@ -67,7 +65,30 @@ public class OCTSelection {
 //        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
         //draw rectangle arround the area that is the selection
         g.drawRect(imageOffsetX + xPositionOnOct - 1, imageOffsetY + yPositionOnOct, width + 2, height - 1);
+        //draw button for interacting with the selection
+        drawSelectButton(g, imageOffsetX, imageOffsetY);
         drawn = true;
+    }
+
+    protected void drawSelectButton(Graphics g, int imageOffsetX, int imageOffsetY) {
+        int x = getCenterX();
+        Polygon buttonOutline = new Polygon();
+        buttonOutline.addPoint(imageOffsetX + x - 6, imageOffsetY - 1);
+        buttonOutline.addPoint(imageOffsetX + x - 6, imageOffsetY + 16);
+        buttonOutline.addPoint(imageOffsetX + x, imageOffsetY + 22);
+        buttonOutline.addPoint(imageOffsetX + x + 6, imageOffsetY + 16);
+        buttonOutline.addPoint(imageOffsetX + x + 6, imageOffsetY - 1);
+        g.setColor(Color.lightGray);
+        g.drawPolygon(buttonOutline);
+        g.fillPolygon(buttonOutline);
+        Polygon button = new Polygon();
+        button.addPoint(imageOffsetX + x - 5, imageOffsetY);
+        button.addPoint(imageOffsetX + x - 5, imageOffsetY + 15);
+        button.addPoint(imageOffsetX + x, imageOffsetY + 20);
+        button.addPoint(imageOffsetX + x + 5, imageOffsetY + 15);
+        button.addPoint(imageOffsetX + x + 5, imageOffsetY);
+        g.setColor(Color.DARK_GRAY);
+        g.drawPolygon(button);
     }
 
     public boolean isHighlighted() {
@@ -346,5 +367,9 @@ public class OCTSelection {
 
     public boolean positionOverlapsSelection(int xpos) {
         return xpos <= xPositionOnOct + width && xpos >= xPositionOnOct - 1;
+    }
+
+    public int getCenterX() {
+        return xPositionOnOct + (width / 2);
     }
 }
