@@ -20,7 +20,11 @@ public class OCTLine extends OCTSelection {
 
     @Override
     public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
-        g.setColor(Color.green);
+        if (highlighted) {
+            g.setColor(Color.pink);
+        } else {
+            g.setColor(Color.green);
+        }
 //        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
         g.drawLine(imageOffsetX + xPositionOnOct, imageOffsetY + yPositionOnOct, imageOffsetX + xPositionOnOct, imageOffsetY + yPositionOnOct + height - 1);
         //draw button for interacting with the selection

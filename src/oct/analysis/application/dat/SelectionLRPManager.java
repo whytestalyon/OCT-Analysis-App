@@ -6,6 +6,7 @@
 package oct.analysis.application.dat;
 
 import java.awt.Component;
+import java.awt.Polygon;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -255,9 +256,11 @@ public class SelectionLRPManager {
      * @return the selection that overlaps the give X coordinate, or null if
      * none is found
      */
-    public OCTSelection getOverlappingSelection(int xpos) {
+    public OCTSelection getOverlappingSelection(int xpos, int ypos, int xOffset, int yOffset) {
         for (OCTSelection selection : selectionMap.values()) {
-            if (selection.getSelectionType() == OCTSelection.PERIPHERAL_SELECTION && selection.positionOverlapsSelection(xpos)) {
+            Polygon selbtn = selection.getSelectionButtonShape();
+            selbtn.translate(xOffset, yOffset);
+            if (selbtn.contains(xpos, ypos)) {
                 return selection;
             }
         }

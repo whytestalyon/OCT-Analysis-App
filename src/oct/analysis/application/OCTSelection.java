@@ -64,24 +64,20 @@ public class OCTSelection {
         }
 //        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
         //draw rectangle arround the area that is the selection
-        g.drawRect(imageOffsetX + xPositionOnOct - 1, imageOffsetY + yPositionOnOct, width + 2, height - 1);
+        g.drawRect(imageOffsetX + xPositionOnOct - 1, imageOffsetY + yPositionOnOct, width + 1, height - 1);
         //draw button for interacting with the selection
         drawSelectButton(g, imageOffsetX, imageOffsetY);
         drawn = true;
     }
 
     protected void drawSelectButton(Graphics g, int imageOffsetX, int imageOffsetY) {
-        int x = getCenterX();
-        Polygon buttonOutline = new Polygon();
-        buttonOutline.addPoint(imageOffsetX + x - 6, imageOffsetY - 1);
-        buttonOutline.addPoint(imageOffsetX + x - 6, imageOffsetY + 16);
-        buttonOutline.addPoint(imageOffsetX + x, imageOffsetY + 22);
-        buttonOutline.addPoint(imageOffsetX + x + 6, imageOffsetY + 16);
-        buttonOutline.addPoint(imageOffsetX + x + 6, imageOffsetY - 1);
+        Polygon buttonOutline = getSelectionButtonShape();
+        buttonOutline.translate(imageOffsetX, imageOffsetY);
         g.setColor(Color.lightGray);
         g.drawPolygon(buttonOutline);
         g.fillPolygon(buttonOutline);
         Polygon button = new Polygon();
+        int x = getCenterX();
         button.addPoint(imageOffsetX + x - 5, imageOffsetY);
         button.addPoint(imageOffsetX + x - 5, imageOffsetY + 15);
         button.addPoint(imageOffsetX + x, imageOffsetY + 20);
@@ -89,6 +85,17 @@ public class OCTSelection {
         button.addPoint(imageOffsetX + x + 5, imageOffsetY);
         g.setColor(Color.DARK_GRAY);
         g.drawPolygon(button);
+    }
+    
+    public Polygon getSelectionButtonShape(){
+        int x = getCenterX();
+        Polygon buttonOutline = new Polygon();
+        buttonOutline.addPoint(x - 6, -1);
+        buttonOutline.addPoint(x - 6, 16);
+        buttonOutline.addPoint(x, 22);
+        buttonOutline.addPoint(x + 6, 16);
+        buttonOutline.addPoint(x + 6, -1);
+        return buttonOutline;
     }
 
     public boolean isHighlighted() {

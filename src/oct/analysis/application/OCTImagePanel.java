@@ -112,6 +112,14 @@ public class OCTImagePanel extends JPanel {
         this.drawLines = drawLines;
     }
 
+    public int getImageOffsetY() {
+        return imageOffsetY;
+    }
+
+    public int getImageOffsetX() {
+        return imageOffsetX;
+    }
+
     /**
      * Determine if the supplied coordinate overlaps with the area of this panel
      * that displays the OCT image

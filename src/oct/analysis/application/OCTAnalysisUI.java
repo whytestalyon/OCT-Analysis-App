@@ -731,9 +731,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:
-                                    if (selectSelection(evt.getX()) != null) {
-                                        octAnalysisPanel.repaint();
-                                    }
+                                    selectSelection(evt.getX(), evt.getY());
                                     break;
                             }
                             break;
@@ -758,7 +756,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     selection = selectionLRPManager.getFoveaSelection(evt.getX());
                                     break;
                                 case SCREEN_SELECT:
-                                    selection = selectSelection(evt.getX());
+                                    selectSelection(evt.getX(), evt.getY());
                                     break;
                             }
                             if (selection != null) {
@@ -1056,19 +1054,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
      * all currently selected selections will be unselected.
      *
      * @param clickXPosition
+     * @param clickYPosition
      * @return
      */
-    public OCTSelection selectSelection(int clickXPosition) {
+    public OCTSelection selectSelection(int clickXPosition, int clickYPosition) {
         //clear the currently selected OCT selection (if there even is one)
         selectionLRPManager.unselectSelections();
-        octAnalysisPanel.repaint();
         //determine if click was over one of the EZ selections
-        OCTSelection selection = selectionLRPManager.getOverlappingSelection(clickXPosition);
+        OCTSelection selection = selectionLRPManager.getOverlappingSelection(clickXPosition, clickYPosition, octAnalysisPanel.getImageOffsetX(), octAnalysisPanel.getImageOffsetY());
         if (selection != null) {
             //high light the selection and allow the user to move the selection with the arrow keys
             selection.setHighlighted(true);
             selectionLRPManager.setSelectedSelection(selection);
         }
+        octAnalysisPanel.repaint();
         return selection;
     }
 
