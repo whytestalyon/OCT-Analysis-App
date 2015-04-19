@@ -190,7 +190,7 @@ public class OCTAnalysisManager {
          */
         Map<Double, List<Point>> grouped = contour.stream().collect(Collectors.groupingBy(Point::getX));
         List<Point> refinedEZContour = grouped.values().stream().map((List<Point> points) -> {
-            int maxY = points.stream().mapToInt((Point p) -> p.y).max().getAsInt();
+            int maxY = points.stream().mapToInt((Point p) -> p.y).min().getAsInt();
             return new Point(points.get(0).x, maxY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
 
