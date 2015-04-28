@@ -80,6 +80,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
+        jFrame1 = new javax.swing.JFrame();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         modesPanels = new javax.swing.JPanel();
         octModePanel = new javax.swing.JPanel();
@@ -127,6 +128,17 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 openFileChooserActionPerformed(evt);
             }
         });
+
+        javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
+        jFrame1.getContentPane().setLayout(jFrame1Layout);
+        jFrame1Layout.setHorizontalGroup(
+            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 400, Short.MAX_VALUE)
+        );
+        jFrame1Layout.setVerticalGroup(
+            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 300, Short.MAX_VALUE)
+        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationByPlatform(true);
@@ -1019,6 +1031,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     public void restartAnalysis() {
         selectionLRPManager.removeSelections(true);
+        octAnalysisPanel.clearDrawnLines();
         octAnalysisPanel.repaint();
         selectionLRPManager.setSelectionWidth(5);
         selectionLRPManager.setLrpSmoothingFactor(5);
@@ -1118,6 +1131,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem fileOpenMenuItem;
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
+    private javax.swing.JFrame jFrame1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JRadioButton linearOCTModeButton;

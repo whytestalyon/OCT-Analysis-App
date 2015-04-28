@@ -10,11 +10,14 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.LinePoint;
+import oct.analysis.application.dat.MousePosition;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
@@ -30,7 +33,10 @@ public class OCTImagePanel extends JPanel {
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
     private Point drawPoint = null;
-    private List<LinePoint>[] drawLines = null;
+    private LinkedList<List<LinePoint>> linesToDraw = null;
+    private boolean drawLines;
+    private MousePosition mousePosition = null;
+    private Rectangle posDrawRect = new Rectangle(0, this.getHeight(), 60, 40);
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -87,16 +93,15 @@ public class OCTImagePanel extends JPanel {
                 selection.drawSelection(grphcs, imageOffsetX, imageOffsetY);
             });
             //draw point on oct if available
-            if (drawPoint != null) {
-                System.out.println("painting rectangle!");
+            if (drawPoint != null && drawLines) {
                 grphcs.setColor(Color.red);
                 grphcs.drawRect(imageOffsetX + drawPoint.x - 1, imageOffsetY + drawPoint.y - 1, 3, 3);
             }
             //draw lines on oct if available
-            if (drawLines != null) {
+            if (linesToDraw != null && drawLines) {
                 grphcs.setColor(Color.red);
-                Arrays.stream(drawLines).flatMap(line -> line.stream()).forEach(p -> {
-                    int y = imageOffsetY + (int)Math.round(p.getY());
+                linesToDraw.stream().flatMap(line -> line.stream()).forEach(p -> {
+                    int y = imageOffsetY + (int) Math.round(p.getY());
                     grphcs.drawLine(imageOffsetX + p.getX(), y, imageOffsetX + p.getX(), y);
                 });
             }
@@ -108,8 +113,32 @@ public class OCTImagePanel extends JPanel {
         repaint();
     }
 
-    public void graphPoints(List<LinePoint>... drawLines) {
-        this.drawLines = drawLines;
+    public void setDrawnLines(List<LinePoint>... linesToDraw) {
+        this.linesToDraw = new LinkedList<>();
+        addDrawnLine(linesToDraw);
+    }
+
+    public void addDrawnLine(List<LinePoint>... linesToDraw) {
+        Arrays.stream(linesToDraw).forEach(r -> {
+            this.linesToDraw.add(r);
+        });
+    }
+
+    public void hideLines() {
+        drawLines = false;
+    }
+
+    public void showLines() {
+        drawLines = true;
+    }
+
+    public boolean isDoDraw() {
+        return drawLines;
+    }
+
+    public void clearDrawnLines() {
+        this.linesToDraw = null;
+        this.drawPoint = null;
     }
 
     public int getImageOffsetY() {
@@ -138,5 +167,12 @@ public class OCTImagePanel extends JPanel {
         } else {
             return false;
         }
+    }
+
+    public void setMousePosition(MousePosition mp) {
+        this.mousePosition = mp;
+        mousePosition.addPropertyChangeListener(evt -> {
+            
+        });
     }
 }
