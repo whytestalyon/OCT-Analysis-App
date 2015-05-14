@@ -64,6 +64,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisMetrics.setImjPanel(octAnalysisPanel);
         //get current selection width setting
         selectionLRPManager.setSelectionWidth(widthSlider.getValue());
+        //register the oct panel with the mouse position listener
+        posListTextArea.setOctPanel(octAnalysisPanel);
+        octAnalysisPanel.addMouseMotionListener(posListTextArea);
     }
 
     /**
@@ -80,25 +83,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
-        jFrame1 = new javax.swing.JFrame();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         modesPanels = new javax.swing.JPanel();
-        octModePanel = new javax.swing.JPanel();
-        linearOCTModeButton = new javax.swing.JRadioButton();
-        logModeOCTButton = new javax.swing.JRadioButton();
-        selectionWidthModePanel = new javax.swing.JPanel();
-        pixelModeButton = new javax.swing.JRadioButton();
-        micronModeButton = new javax.swing.JRadioButton();
-        selectionWidthSliderPanel = new javax.swing.JPanel();
-        widthSlider = new javax.swing.JSlider();
-        lrpSmoothingPanel = new javax.swing.JPanel();
-        lrpSmoothingSlider = new javax.swing.JSlider();
-        octSmoothingPanel = new javax.swing.JPanel();
-        octSmoothingSlider = new javax.swing.JSlider();
+        sharpenToolbar = new javax.swing.JToolBar();
         sharpRadiusPanel = new javax.swing.JPanel();
         octSharpRadiusSlider = new javax.swing.JSlider();
         octSharpWeightPanel = new javax.swing.JPanel();
         octSharpWeightSlider = new javax.swing.JSlider();
+        smoothingToolbar = new javax.swing.JToolBar();
+        lrpSmoothingPanel = new javax.swing.JPanel();
+        lrpSmoothingSlider = new javax.swing.JSlider();
+        octSmoothingPanel = new javax.swing.JPanel();
+        octSmoothingSlider = new javax.swing.JSlider();
         jToolBar1 = new javax.swing.JToolBar();
         ezAnalysisToggleButton = new javax.swing.JToggleButton();
         spatialAnalysisToggleButton = new javax.swing.JToggleButton();
@@ -108,6 +104,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         foveaSelectButton = new javax.swing.JToggleButton();
         singleSelectButton = new javax.swing.JToggleButton();
         screenSelectButton = new javax.swing.JToggleButton();
+        jPanel1 = new javax.swing.JPanel();
+        posListTextArea = new oct.analysis.application.comp.MouseListeningTextArea();
+        jPanel2 = new javax.swing.JPanel();
+        modesToolbar = new javax.swing.JToolBar();
+        octModePanel = new javax.swing.JPanel();
+        linearOCTModeButton = new javax.swing.JRadioButton();
+        logModeOCTButton = new javax.swing.JRadioButton();
+        selectionWidthModePanel = new javax.swing.JPanel();
+        pixelModeButton = new javax.swing.JRadioButton();
+        micronModeButton = new javax.swing.JRadioButton();
+        selectionWidthSliderPanel = new javax.swing.JPanel();
+        widthSlider = new javax.swing.JSlider();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
@@ -121,6 +129,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         lrpMenuItem = new javax.swing.JMenuItem();
+        toolbarsMenu = new javax.swing.JMenu();
+        smoothingTBMenuItem = new javax.swing.JCheckBoxMenuItem();
+        sharpenTBMenuItem = new javax.swing.JCheckBoxMenuItem();
+        ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         openFileChooser.setDialogTitle("Select OCT...");
         openFileChooser.addActionListener(new java.awt.event.ActionListener() {
@@ -128,17 +140,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 openFileChooserActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout jFrame1Layout = new javax.swing.GroupLayout(jFrame1.getContentPane());
-        jFrame1.getContentPane().setLayout(jFrame1Layout);
-        jFrame1Layout.setHorizontalGroup(
-            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        jFrame1Layout.setVerticalGroup(
-            jFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationByPlatform(true);
@@ -171,174 +172,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
         octAnalysisPanelLayout.setVerticalGroup(
             octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 361, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        modesPanels.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Mode"));
-
-        lrpButtonGroup.add(linearOCTModeButton);
-        linearOCTModeButton.setText("Linear OCT");
-        linearOCTModeButton.setToolTipText("Display the OCT image as a Linear Image");
-        linearOCTModeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                linearOCTModeButtonActionPerformed(evt);
-            }
-        });
-
-        lrpButtonGroup.add(logModeOCTButton);
-        logModeOCTButton.setSelected(true);
-        logModeOCTButton.setText("Logrithmic OCT");
-        logModeOCTButton.setToolTipText("Display the OCT image as a Logrithmic Image");
-        logModeOCTButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                logModeOCTButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout octModePanelLayout = new javax.swing.GroupLayout(octModePanel);
-        octModePanel.setLayout(octModePanelLayout);
-        octModePanelLayout.setHorizontalGroup(
-            octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(octModePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(linearOCTModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(logModeOCTButton, javax.swing.GroupLayout.DEFAULT_SIZE, 102, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        octModePanelLayout.setVerticalGroup(
-            octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(octModePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(linearOCTModeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(logModeOCTButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Selection Width Mode"));
-
-        selModeButtonGroup.add(pixelModeButton);
-        pixelModeButton.setSelected(true);
-        pixelModeButton.setText("Pixels");
-        pixelModeButton.setToolTipText("Display selection widths in terms of Pixels");
-        pixelModeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pixelModeButtonActionPerformed(evt);
-            }
-        });
-
-        selModeButtonGroup.add(micronModeButton);
-        micronModeButton.setText("Microns");
-        micronModeButton.setToolTipText("Display selection width in terms of Microns");
-        micronModeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                micronModeButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout selectionWidthModePanelLayout = new javax.swing.GroupLayout(selectionWidthModePanel);
-        selectionWidthModePanel.setLayout(selectionWidthModePanelLayout);
-        selectionWidthModePanelLayout.setHorizontalGroup(
-            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pixelModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(micronModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
-        );
-        selectionWidthModePanelLayout.setVerticalGroup(
-            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(pixelModeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(micronModeButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        selectionWidthSliderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Selection Width"));
-
-        widthSlider.setMajorTickSpacing(2);
-        widthSlider.setMaximum(15);
-        widthSlider.setMinimum(1);
-        widthSlider.setMinorTickSpacing(1);
-        widthSlider.setPaintLabels(true);
-        widthSlider.setPaintTicks(true);
-        widthSlider.setSnapToTicks(true);
-        widthSlider.setToolTipText("Adjust the width of the OCT selections");
-        widthSlider.setValue(5);
-        widthSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                widthSliderStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout selectionWidthSliderPanelLayout = new javax.swing.GroupLayout(selectionWidthSliderPanel);
-        selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
-        selectionWidthSliderPanelLayout.setHorizontalGroup(
-            selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 474, Short.MAX_VALUE)
-        );
-        selectionWidthSliderPanelLayout.setVerticalGroup(
-            selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, selectionWidthSliderPanelLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(widthSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        lrpSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("LRP Smoothing Factor"));
-
-        lrpSmoothingSlider.setMajorTickSpacing(5);
-        lrpSmoothingSlider.setMaximum(50);
-        lrpSmoothingSlider.setMinorTickSpacing(1);
-        lrpSmoothingSlider.setPaintLabels(true);
-        lrpSmoothingSlider.setPaintTicks(true);
-        lrpSmoothingSlider.setSnapToTicks(true);
-        lrpSmoothingSlider.setToolTipText("Adjust the smoothing applied to LRPs (values of 0 and 1 have the same effect)");
-        lrpSmoothingSlider.setValue(5);
-        lrpSmoothingSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                lrpSmoothingSliderStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout lrpSmoothingPanelLayout = new javax.swing.GroupLayout(lrpSmoothingPanel);
-        lrpSmoothingPanel.setLayout(lrpSmoothingPanelLayout);
-        lrpSmoothingPanelLayout.setHorizontalGroup(
-            lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
-        );
-        lrpSmoothingPanelLayout.setVerticalGroup(
-            lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
-        octSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Smoothing Factor"));
-
-        octSmoothingSlider.setMajorTickSpacing(5);
-        octSmoothingSlider.setMaximum(50);
-        octSmoothingSlider.setMinorTickSpacing(1);
-        octSmoothingSlider.setPaintLabels(true);
-        octSmoothingSlider.setPaintTicks(true);
-        octSmoothingSlider.setSnapToTicks(true);
-        octSmoothingSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
-        octSmoothingSlider.setValue(0);
-        octSmoothingSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                octSmoothingSliderStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout octSmoothingPanelLayout = new javax.swing.GroupLayout(octSmoothingPanel);
-        octSmoothingPanel.setLayout(octSmoothingPanelLayout);
-        octSmoothingPanelLayout.setHorizontalGroup(
-            octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        octSmoothingPanelLayout.setVerticalGroup(
-            octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
+        sharpenToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        sharpenToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        sharpenToolbar.setRollover(true);
+        sharpenToolbar.setName("OCT Sharpen Toolbar"); // NOI18N
 
         sharpRadiusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Radius"));
 
@@ -360,12 +200,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
         sharpRadiusPanelLayout.setHorizontalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
         );
         sharpRadiusPanelLayout.setVerticalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
+
+        sharpenToolbar.add(sharpRadiusPanel);
 
         octSharpWeightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Weight Factor"));
 
@@ -385,49 +227,97 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSharpWeightPanel.setLayout(octSharpWeightPanelLayout);
         octSharpWeightPanelLayout.setHorizontalGroup(
             octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
         );
         octSharpWeightPanelLayout.setVerticalGroup(
             octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
+        sharpenToolbar.add(octSharpWeightPanel);
+
+        smoothingToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        smoothingToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        smoothingToolbar.setRollover(true);
+        smoothingToolbar.setName("OCT Smoothing Toolbar"); // NOI18N
+
+        lrpSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("LRP Smoothing Factor"));
+
+        lrpSmoothingSlider.setMajorTickSpacing(5);
+        lrpSmoothingSlider.setMaximum(50);
+        lrpSmoothingSlider.setMinorTickSpacing(1);
+        lrpSmoothingSlider.setPaintLabels(true);
+        lrpSmoothingSlider.setPaintTicks(true);
+        lrpSmoothingSlider.setSnapToTicks(true);
+        lrpSmoothingSlider.setToolTipText("Adjust the smoothing applied to LRPs (values of 0 and 1 have the same effect)");
+        lrpSmoothingSlider.setValue(5);
+        lrpSmoothingSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                lrpSmoothingSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout lrpSmoothingPanelLayout = new javax.swing.GroupLayout(lrpSmoothingPanel);
+        lrpSmoothingPanel.setLayout(lrpSmoothingPanelLayout);
+        lrpSmoothingPanelLayout.setHorizontalGroup(
+            lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+        );
+        lrpSmoothingPanelLayout.setVerticalGroup(
+            lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        smoothingToolbar.add(lrpSmoothingPanel);
+
+        octSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Smoothing Factor"));
+
+        octSmoothingSlider.setMajorTickSpacing(5);
+        octSmoothingSlider.setMaximum(50);
+        octSmoothingSlider.setMinorTickSpacing(1);
+        octSmoothingSlider.setPaintLabels(true);
+        octSmoothingSlider.setPaintTicks(true);
+        octSmoothingSlider.setSnapToTicks(true);
+        octSmoothingSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSmoothingSlider.setValue(0);
+        octSmoothingSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                octSmoothingSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout octSmoothingPanelLayout = new javax.swing.GroupLayout(octSmoothingPanel);
+        octSmoothingPanel.setLayout(octSmoothingPanelLayout);
+        octSmoothingPanelLayout.setHorizontalGroup(
+            octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+        );
+        octSmoothingPanelLayout.setVerticalGroup(
+            octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        smoothingToolbar.add(octSmoothingPanel);
+
         javax.swing.GroupLayout modesPanelsLayout = new javax.swing.GroupLayout(modesPanels);
         modesPanels.setLayout(modesPanelsLayout);
         modesPanelsLayout.setHorizontalGroup(
             modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(modesPanelsLayout.createSequentialGroup()
-                .addComponent(octModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(modesPanelsLayout.createSequentialGroup()
-                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(octSmoothingPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(sharpRadiusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(octSharpWeightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addComponent(smoothingToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(sharpenToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         modesPanelsLayout.setVerticalGroup(
             modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, modesPanelsLayout.createSequentialGroup()
-                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(octSmoothingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(sharpRadiusPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(octSharpWeightPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(octModePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(selectionWidthModePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(selectionWidthSliderPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(smoothingToolbar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(sharpenToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
+        jToolBar1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         jToolBar1.setRollover(true);
 
         ezAnalysisToggleButton.setAction(ezAnalysisMenuItem.getAction());
@@ -481,6 +371,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         singleLRPAnalysisToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         jToolBar1.add(singleLRPAnalysisToggleButton);
 
+        analysisToolsToolBar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         analysisToolsToolBar.setRollover(true);
 
         foveaSelectButton.setAction(foveaSelectMenuItem.getAction());
@@ -529,6 +420,146 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
         analysisToolsToolBar.add(screenSelectButton);
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Position"));
+
+        posListTextArea.setText("Mouse Position");
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
+        );
+
+        jPanel2.setLayout(new java.awt.BorderLayout());
+
+        modesToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        modesToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        modesToolbar.setRollover(true);
+        modesToolbar.setName("OCT Modes Toolbar"); // NOI18N
+
+        octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Mode"));
+
+        lrpButtonGroup.add(linearOCTModeButton);
+        linearOCTModeButton.setText("Linear OCT");
+        linearOCTModeButton.setToolTipText("Display the OCT image as a Linear Image");
+        linearOCTModeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                linearOCTModeButtonActionPerformed(evt);
+            }
+        });
+
+        lrpButtonGroup.add(logModeOCTButton);
+        logModeOCTButton.setSelected(true);
+        logModeOCTButton.setText("Logrithmic OCT");
+        logModeOCTButton.setToolTipText("Display the OCT image as a Logrithmic Image");
+        logModeOCTButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                logModeOCTButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout octModePanelLayout = new javax.swing.GroupLayout(octModePanel);
+        octModePanel.setLayout(octModePanelLayout);
+        octModePanelLayout.setHorizontalGroup(
+            octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(octModePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(linearOCTModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(logModeOCTButton, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                .addContainerGap())
+        );
+        octModePanelLayout.setVerticalGroup(
+            octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(octModePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(linearOCTModeButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(logModeOCTButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        modesToolbar.add(octModePanel);
+
+        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Selection Width Mode"));
+
+        selModeButtonGroup.add(pixelModeButton);
+        pixelModeButton.setSelected(true);
+        pixelModeButton.setText("Pixels");
+        pixelModeButton.setToolTipText("Display selection widths in terms of Pixels");
+        pixelModeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pixelModeButtonActionPerformed(evt);
+            }
+        });
+
+        selModeButtonGroup.add(micronModeButton);
+        micronModeButton.setText("Microns");
+        micronModeButton.setToolTipText("Display selection width in terms of Microns");
+        micronModeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                micronModeButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout selectionWidthModePanelLayout = new javax.swing.GroupLayout(selectionWidthModePanel);
+        selectionWidthModePanel.setLayout(selectionWidthModePanelLayout);
+        selectionWidthModePanelLayout.setHorizontalGroup(
+            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pixelModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(micronModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+        );
+        selectionWidthModePanelLayout.setVerticalGroup(
+            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(pixelModeButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(micronModeButton)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        modesToolbar.add(selectionWidthModePanel);
+
+        selectionWidthSliderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Selection Width"));
+
+        widthSlider.setMajorTickSpacing(2);
+        widthSlider.setMaximum(15);
+        widthSlider.setMinimum(1);
+        widthSlider.setMinorTickSpacing(1);
+        widthSlider.setPaintLabels(true);
+        widthSlider.setPaintTicks(true);
+        widthSlider.setSnapToTicks(true);
+        widthSlider.setToolTipText("Adjust the width of the OCT selections");
+        widthSlider.setValue(5);
+        widthSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                widthSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout selectionWidthSliderPanelLayout = new javax.swing.GroupLayout(selectionWidthSliderPanel);
+        selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
+        selectionWidthSliderPanelLayout.setHorizontalGroup(
+            selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+        );
+        selectionWidthSliderPanelLayout.setVerticalGroup(
+            selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, selectionWidthSliderPanelLayout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(widthSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        modesToolbar.add(selectionWidthSliderPanel);
+
+        jPanel2.add(modesToolbar, java.awt.BorderLayout.NORTH);
 
         fileMenu.setText("File");
 
@@ -627,19 +658,54 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         jMenuBar1.add(toolsMenu);
 
+        toolbarsMenu.setText("Toolbars");
+
+        smoothingTBMenuItem.setSelected(true);
+        smoothingTBMenuItem.setText("Smoothing Toolbar");
+        smoothingTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                smoothingTBMenuItemActionPerformed(evt);
+            }
+        });
+        toolbarsMenu.add(smoothingTBMenuItem);
+
+        sharpenTBMenuItem.setSelected(true);
+        sharpenTBMenuItem.setText("Sharpen Toolbar");
+        sharpenTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sharpenTBMenuItemActionPerformed(evt);
+            }
+        });
+        toolbarsMenu.add(sharpenTBMenuItem);
+
+        ModesTBMenuItem.setSelected(true);
+        ModesTBMenuItem.setText("OCT Modes Toolbar");
+        ModesTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ModesTBMenuItemActionPerformed(evt);
+            }
+        });
+        toolbarsMenu.add(ModesTBMenuItem);
+
+        jMenuBar1.add(toolbarsMenu);
+
         setJMenuBar(jMenuBar1);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(modesPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 164, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(modesPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -648,7 +714,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                     .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
                     .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(modesPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -1020,6 +1091,27 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_octSharpWeightSliderStateChanged
 
+    private void smoothingTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_smoothingTBMenuItemActionPerformed
+        SwingUtilities.invokeLater(() -> {
+            //toggle display of smoothing toolbar
+            smoothingToolbar.setVisible(smoothingTBMenuItem.isSelected());
+        });
+    }//GEN-LAST:event_smoothingTBMenuItemActionPerformed
+
+    private void sharpenTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sharpenTBMenuItemActionPerformed
+        SwingUtilities.invokeLater(() -> {
+            //toggle display of sharpen toolbar
+            sharpenToolbar.setVisible(sharpenTBMenuItem.isSelected());
+        });
+    }//GEN-LAST:event_sharpenTBMenuItemActionPerformed
+
+    private void ModesTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModesTBMenuItemActionPerformed
+        SwingUtilities.invokeLater(() -> {
+            //toggle display of OCT modes toolbar
+            modesToolbar.setVisible(ModesTBMenuItem.isSelected());
+        });
+    }//GEN-LAST:event_ModesTBMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1122,6 +1214,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Exit;
+    private javax.swing.JCheckBoxMenuItem ModesTBMenuItem;
     private javax.swing.JMenu analysisMenu;
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
@@ -1131,8 +1224,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem fileOpenMenuItem;
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
-    private javax.swing.JFrame jFrame1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JToolBar jToolBar1;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
@@ -1144,6 +1238,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem mirrorAnalysisMenuItem;
     private javax.swing.JToggleButton mirrorAnalysisToggleButton;
     private javax.swing.JPanel modesPanels;
+    private javax.swing.JToolBar modesToolbar;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JPanel octModePanel;
     private javax.swing.JSlider octSharpRadiusSlider;
@@ -1153,17 +1248,23 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JRadioButton pixelModeButton;
+    private oct.analysis.application.comp.MouseListeningTextArea posListTextArea;
     private javax.swing.JToggleButton screenSelectButton;
     private javax.swing.ButtonGroup selModeButtonGroup;
     private javax.swing.JPanel selectionWidthModePanel;
     private javax.swing.JPanel selectionWidthSliderPanel;
     private javax.swing.JPanel sharpRadiusPanel;
+    private javax.swing.JCheckBoxMenuItem sharpenTBMenuItem;
+    private javax.swing.JToolBar sharpenToolbar;
     private javax.swing.JMenuItem singleLRPAnalysisMenuItem;
     private javax.swing.JToggleButton singleLRPAnalysisToggleButton;
     private javax.swing.JToggleButton singleSelectButton;
     private javax.swing.JCheckBoxMenuItem singleSelectMenuItem;
+    private javax.swing.JCheckBoxMenuItem smoothingTBMenuItem;
+    private javax.swing.JToolBar smoothingToolbar;
     private javax.swing.JMenuItem spatialAnalysisMenuItem;
     private javax.swing.JToggleButton spatialAnalysisToggleButton;
+    private javax.swing.JMenu toolbarsMenu;
     private javax.swing.JMenu toolsMenu;
     private javax.swing.ButtonGroup toolsToolBarBtnGroup;
     private javax.swing.JSlider widthSlider;

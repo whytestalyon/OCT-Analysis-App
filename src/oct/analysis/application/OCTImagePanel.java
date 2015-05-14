@@ -11,13 +11,14 @@ import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.LinePoint;
-import oct.analysis.application.dat.MousePosition;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
@@ -35,8 +36,6 @@ public class OCTImagePanel extends JPanel {
     private Point drawPoint = null;
     private LinkedList<List<LinePoint>> linesToDraw = null;
     private boolean drawLines;
-    private MousePosition mousePosition = null;
-    private Rectangle posDrawRect = new Rectangle(0, this.getHeight(), 60, 40);
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -169,10 +168,16 @@ public class OCTImagePanel extends JPanel {
         }
     }
 
-    public void setMousePosition(MousePosition mp) {
-        this.mousePosition = mp;
-        mousePosition.addPropertyChangeListener(evt -> {
-            
-        });
+    /**
+     * Determine if the supplied coordinate overlaps with the area of this panel
+     * that displays the OCT image
+     *
+     * @param x
+     * @param y
+     * @return true if the coordinate is within the bounds of the displayed OCT,
+     * false if it isn't or if the OCT image isn't displayed already
+     */
+    public boolean coordinateOverlapsOCT(Point p) {
+        return coordinateOverlapsOCT(p.x, p.y);
     }
 }
