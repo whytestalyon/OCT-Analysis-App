@@ -23,6 +23,7 @@ import javax.swing.JSlider;
 import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import oct.analysis.application.comp.ToolbarFloatListener;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.ImageOperationManager;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -84,7 +85,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
-        modesPanels = new javax.swing.JPanel();
+        filterPanel = new javax.swing.JPanel();
         sharpenToolbar = new javax.swing.JToolBar();
         sharpRadiusPanel = new javax.swing.JPanel();
         octSharpRadiusSlider = new javax.swing.JSlider();
@@ -95,7 +96,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpSmoothingSlider = new javax.swing.JSlider();
         octSmoothingPanel = new javax.swing.JPanel();
         octSmoothingSlider = new javax.swing.JSlider();
-        jToolBar1 = new javax.swing.JToolBar();
+        analysisTypeToolbar = new javax.swing.JToolBar();
         ezAnalysisToggleButton = new javax.swing.JToggleButton();
         spatialAnalysisToggleButton = new javax.swing.JToggleButton();
         mirrorAnalysisToggleButton = new javax.swing.JToggleButton();
@@ -104,9 +105,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         foveaSelectButton = new javax.swing.JToggleButton();
         singleSelectButton = new javax.swing.JToggleButton();
         screenSelectButton = new javax.swing.JToggleButton();
-        jPanel1 = new javax.swing.JPanel();
+        positionPanel = new javax.swing.JPanel();
         posListTextArea = new oct.analysis.application.comp.MouseListeningTextArea();
-        jPanel2 = new javax.swing.JPanel();
+        modesPanel = new javax.swing.JPanel();
         modesToolbar = new javax.swing.JToolBar();
         octModePanel = new javax.swing.JPanel();
         linearOCTModeButton = new javax.swing.JRadioButton();
@@ -299,26 +300,29 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         smoothingToolbar.add(octSmoothingPanel);
 
-        javax.swing.GroupLayout modesPanelsLayout = new javax.swing.GroupLayout(modesPanels);
-        modesPanels.setLayout(modesPanelsLayout);
-        modesPanelsLayout.setHorizontalGroup(
-            modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(modesPanelsLayout.createSequentialGroup()
+        javax.swing.GroupLayout filterPanelLayout = new javax.swing.GroupLayout(filterPanel);
+        filterPanel.setLayout(filterPanelLayout);
+        filterPanelLayout.setHorizontalGroup(
+            filterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(filterPanelLayout.createSequentialGroup()
                 .addComponent(smoothingToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(sharpenToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-        modesPanelsLayout.setVerticalGroup(
-            modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, modesPanelsLayout.createSequentialGroup()
-                .addGroup(modesPanelsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+        filterPanelLayout.setVerticalGroup(
+            filterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, filterPanelLayout.createSequentialGroup()
+                .addGroup(filterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(smoothingToolbar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(sharpenToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
-        jToolBar1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        jToolBar1.setRollover(true);
+        sharpenToolbar.addAncestorListener(new ToolbarFloatListener(sharpenToolbar, this));
+        smoothingToolbar.addAncestorListener(new ToolbarFloatListener(smoothingToolbar, this));
+
+        analysisTypeToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        analysisTypeToolbar.setRollover(true);
 
         ezAnalysisToggleButton.setAction(ezAnalysisMenuItem.getAction());
         analysisToolBarBtnGroup.add(ezAnalysisToggleButton);
@@ -332,7 +336,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 ezAnalysisToggleButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(ezAnalysisToggleButton);
+        analysisTypeToolbar.add(ezAnalysisToggleButton);
 
         spatialAnalysisToggleButton.setAction(spatialAnalysisMenuItem.getAction());
         analysisToolBarBtnGroup.add(spatialAnalysisToggleButton);
@@ -346,7 +350,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 spatialAnalysisToggleButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(spatialAnalysisToggleButton);
+        analysisTypeToolbar.add(spatialAnalysisToggleButton);
 
         mirrorAnalysisToggleButton.setAction(mirrorAnalysisMenuItem.getAction());
         analysisToolBarBtnGroup.add(mirrorAnalysisToggleButton);
@@ -360,7 +364,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 mirrorAnalysisToggleButtonActionPerformed(evt);
             }
         });
-        jToolBar1.add(mirrorAnalysisToggleButton);
+        analysisTypeToolbar.add(mirrorAnalysisToggleButton);
 
         singleLRPAnalysisToggleButton.setAction(singleLRPAnalysisMenuItem.getAction());
         analysisToolBarBtnGroup.add(singleLRPAnalysisToggleButton);
@@ -369,7 +373,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         singleLRPAnalysisToggleButton.setFocusable(false);
         singleLRPAnalysisToggleButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         singleLRPAnalysisToggleButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jToolBar1.add(singleLRPAnalysisToggleButton);
+        analysisTypeToolbar.add(singleLRPAnalysisToggleButton);
 
         analysisToolsToolBar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         analysisToolsToolBar.setRollover(true);
@@ -421,22 +425,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisToolsToolBar.add(screenSelectButton);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Position"));
+        positionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Position"));
 
         posListTextArea.setText("Mouse Position");
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        javax.swing.GroupLayout positionPanelLayout = new javax.swing.GroupLayout(positionPanel);
+        positionPanel.setLayout(positionPanelLayout);
+        positionPanelLayout.setHorizontalGroup(
+            positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        positionPanelLayout.setVerticalGroup(
+            positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
         );
 
-        jPanel2.setLayout(new java.awt.BorderLayout());
+        modesPanel.setLayout(new java.awt.BorderLayout());
 
         modesToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         modesToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
@@ -559,7 +563,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         modesToolbar.add(selectionWidthSliderPanel);
 
-        jPanel2.add(modesToolbar, java.awt.BorderLayout.NORTH);
+        modesPanel.add(modesToolbar, java.awt.BorderLayout.NORTH);
+        modesToolbar.addAncestorListener(new ToolbarFloatListener(modesToolbar,this));
 
         fileMenu.setText("File");
 
@@ -696,33 +701,36 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(analysisTypeToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 597, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(positionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addComponent(modesPanels, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 39, Short.MAX_VALUE)
-                    .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(analysisTypeToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                        .addComponent(positionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(modesPanels, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
+
+        analysisTypeToolbar.setFloatable(false);
+        analysisToolsToolBar.setFloatable(false);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1095,6 +1103,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             //toggle display of smoothing toolbar
             smoothingToolbar.setVisible(smoothingTBMenuItem.isSelected());
+            pack();
         });
     }//GEN-LAST:event_smoothingTBMenuItemActionPerformed
 
@@ -1102,6 +1111,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             //toggle display of sharpen toolbar
             sharpenToolbar.setVisible(sharpenTBMenuItem.isSelected());
+            pack();
         });
     }//GEN-LAST:event_sharpenTBMenuItemActionPerformed
 
@@ -1109,6 +1119,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         SwingUtilities.invokeLater(() -> {
             //toggle display of OCT modes toolbar
             modesToolbar.setVisible(ModesTBMenuItem.isSelected());
+            pack();
         });
     }//GEN-LAST:event_ModesTBMenuItemActionPerformed
 
@@ -1218,16 +1229,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu analysisMenu;
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
+    private javax.swing.JToolBar analysisTypeToolbar;
     private javax.swing.JMenuItem ezAnalysisMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
+    private javax.swing.JPanel filterPanel;
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JToolBar jToolBar1;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
@@ -1237,7 +1247,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton micronModeButton;
     private javax.swing.JMenuItem mirrorAnalysisMenuItem;
     private javax.swing.JToggleButton mirrorAnalysisToggleButton;
-    private javax.swing.JPanel modesPanels;
+    private javax.swing.JPanel modesPanel;
     private javax.swing.JToolBar modesToolbar;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JPanel octModePanel;
@@ -1249,6 +1259,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JRadioButton pixelModeButton;
     private oct.analysis.application.comp.MouseListeningTextArea posListTextArea;
+    private javax.swing.JPanel positionPanel;
     private javax.swing.JToggleButton screenSelectButton;
     private javax.swing.ButtonGroup selModeButtonGroup;
     private javax.swing.JPanel selectionWidthModePanel;
