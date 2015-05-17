@@ -86,16 +86,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         filterPanel = new javax.swing.JPanel();
-        sharpenToolbar = new javax.swing.JToolBar();
-        sharpRadiusPanel = new javax.swing.JPanel();
-        octSharpRadiusSlider = new javax.swing.JSlider();
-        octSharpWeightPanel = new javax.swing.JPanel();
-        octSharpWeightSlider = new javax.swing.JSlider();
-        smoothingToolbar = new javax.swing.JToolBar();
+        filtersToolbar = new javax.swing.JToolBar();
+        jPanel1 = new javax.swing.JPanel();
         lrpSmoothingPanel = new javax.swing.JPanel();
         lrpSmoothingSlider = new javax.swing.JSlider();
         octSmoothingPanel = new javax.swing.JPanel();
         octSmoothingSlider = new javax.swing.JSlider();
+        sharpRadiusPanel = new javax.swing.JPanel();
+        octSharpRadiusSlider = new javax.swing.JSlider();
+        octSharpWeightPanel = new javax.swing.JPanel();
+        octSharpWeightSlider = new javax.swing.JSlider();
         analysisTypeToolbar = new javax.swing.JToolBar();
         ezAnalysisToggleButton = new javax.swing.JToggleButton();
         spatialAnalysisToggleButton = new javax.swing.JToggleButton();
@@ -131,8 +131,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         lrpMenuItem = new javax.swing.JMenuItem();
         toolbarsMenu = new javax.swing.JMenu();
-        smoothingTBMenuItem = new javax.swing.JCheckBoxMenuItem();
-        sharpenTBMenuItem = new javax.swing.JCheckBoxMenuItem();
+        filtersTBMenuItem = new javax.swing.JCheckBoxMenuItem();
         ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         openFileChooser.setDialogTitle("Select OCT...");
@@ -176,71 +175,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             .addGap(0, 0, Short.MAX_VALUE)
         );
 
-        sharpenToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        sharpenToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
-        sharpenToolbar.setRollover(true);
-        sharpenToolbar.setName("OCT Sharpen Toolbar"); // NOI18N
+        filterPanel.setLayout(new java.awt.BorderLayout());
 
-        sharpRadiusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Radius"));
-
-        octSharpRadiusSlider.setMajorTickSpacing(20);
-        octSharpRadiusSlider.setMaximum(200);
-        octSharpRadiusSlider.setMinorTickSpacing(5);
-        octSharpRadiusSlider.setPaintLabels(true);
-        octSharpRadiusSlider.setPaintTicks(true);
-        octSharpRadiusSlider.setSnapToTicks(true);
-        octSharpRadiusSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
-        octSharpRadiusSlider.setValue(0);
-        octSharpRadiusSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                octSharpRadiusSliderStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout sharpRadiusPanelLayout = new javax.swing.GroupLayout(sharpRadiusPanel);
-        sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
-        sharpRadiusPanelLayout.setHorizontalGroup(
-            sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-        );
-        sharpRadiusPanelLayout.setVerticalGroup(
-            sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
-        sharpenToolbar.add(sharpRadiusPanel);
-
-        octSharpWeightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Weight Factor"));
-
-        octSharpWeightSlider.setMajorTickSpacing(10);
-        octSharpWeightSlider.setMinorTickSpacing(2);
-        octSharpWeightSlider.setPaintLabels(true);
-        octSharpWeightSlider.setPaintTicks(true);
-        octSharpWeightSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
-        octSharpWeightSlider.setValue(0);
-        octSharpWeightSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                octSharpWeightSliderStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout octSharpWeightPanelLayout = new javax.swing.GroupLayout(octSharpWeightPanel);
-        octSharpWeightPanel.setLayout(octSharpWeightPanelLayout);
-        octSharpWeightPanelLayout.setHorizontalGroup(
-            octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
-        );
-        octSharpWeightPanelLayout.setVerticalGroup(
-            octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
-
-        sharpenToolbar.add(octSharpWeightPanel);
-
-        smoothingToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        smoothingToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
-        smoothingToolbar.setRollover(true);
-        smoothingToolbar.setName("OCT Smoothing Toolbar"); // NOI18N
+        filtersToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        filtersToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
+        filtersToolbar.setRollover(true);
+        filtersToolbar.setName("OCT Filters Toolbar"); // NOI18N
 
         lrpSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("LRP Smoothing Factor"));
 
@@ -262,14 +202,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpSmoothingPanel.setLayout(lrpSmoothingPanelLayout);
         lrpSmoothingPanelLayout.setHorizontalGroup(
             lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         lrpSmoothingPanelLayout.setVerticalGroup(
             lrpSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(lrpSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
-
-        smoothingToolbar.add(lrpSmoothingPanel);
 
         octSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Smoothing Factor"));
 
@@ -291,35 +229,95 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSmoothingPanel.setLayout(octSmoothingPanelLayout);
         octSmoothingPanelLayout.setHorizontalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
         );
         octSmoothingPanelLayout.setVerticalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(octSmoothingSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
 
-        smoothingToolbar.add(octSmoothingPanel);
+        sharpRadiusPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Radius"));
 
-        javax.swing.GroupLayout filterPanelLayout = new javax.swing.GroupLayout(filterPanel);
-        filterPanel.setLayout(filterPanelLayout);
-        filterPanelLayout.setHorizontalGroup(
-            filterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(filterPanelLayout.createSequentialGroup()
-                .addComponent(smoothingToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(sharpenToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        octSharpRadiusSlider.setMajorTickSpacing(20);
+        octSharpRadiusSlider.setMaximum(200);
+        octSharpRadiusSlider.setMinorTickSpacing(5);
+        octSharpRadiusSlider.setPaintLabels(true);
+        octSharpRadiusSlider.setPaintTicks(true);
+        octSharpRadiusSlider.setSnapToTicks(true);
+        octSharpRadiusSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSharpRadiusSlider.setValue(0);
+        octSharpRadiusSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                octSharpRadiusSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout sharpRadiusPanelLayout = new javax.swing.GroupLayout(sharpRadiusPanel);
+        sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
+        sharpRadiusPanelLayout.setHorizontalGroup(
+            sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
         );
-        filterPanelLayout.setVerticalGroup(
-            filterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, filterPanelLayout.createSequentialGroup()
-                .addGroup(filterPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(smoothingToolbar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(sharpenToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
+        sharpRadiusPanelLayout.setVerticalGroup(
+            sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
         );
 
-        sharpenToolbar.addAncestorListener(new ToolbarFloatListener(sharpenToolbar, this));
-        smoothingToolbar.addAncestorListener(new ToolbarFloatListener(smoothingToolbar, this));
+        octSharpWeightPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Sharpen Weight Factor"));
+
+        octSharpWeightSlider.setMajorTickSpacing(10);
+        octSharpWeightSlider.setMinorTickSpacing(2);
+        octSharpWeightSlider.setPaintLabels(true);
+        octSharpWeightSlider.setPaintTicks(true);
+        octSharpWeightSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSharpWeightSlider.setValue(0);
+        octSharpWeightSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                octSharpWeightSliderStateChanged(evt);
+            }
+        });
+
+        javax.swing.GroupLayout octSharpWeightPanelLayout = new javax.swing.GroupLayout(octSharpWeightPanel);
+        octSharpWeightPanel.setLayout(octSharpWeightPanelLayout);
+        octSharpWeightPanelLayout.setHorizontalGroup(
+            octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        octSharpWeightPanelLayout.setVerticalGroup(
+            octSharpWeightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(octSharpWeightSlider, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(octSmoothingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(sharpRadiusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(octSharpWeightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(sharpRadiusPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(6, 6, 6)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(octSharpWeightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(octSmoothingPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(0, 0, Short.MAX_VALUE))
+        );
+
+        filtersToolbar.add(jPanel1);
+
+        filterPanel.add(filtersToolbar, java.awt.BorderLayout.CENTER);
+        filtersToolbar.addAncestorListener(new ToolbarFloatListener(filtersToolbar, this));
 
         analysisTypeToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         analysisTypeToolbar.setRollover(true);
@@ -476,7 +474,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(linearOCTModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(logModeOCTButton, javax.swing.GroupLayout.DEFAULT_SIZE, 294, Short.MAX_VALUE))
+                    .addComponent(logModeOCTButton, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
                 .addContainerGap())
         );
         octModePanelLayout.setVerticalGroup(
@@ -517,7 +515,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthModePanelLayout.setHorizontalGroup(
             selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(pixelModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(micronModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+            .addComponent(micronModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
         );
         selectionWidthModePanelLayout.setVerticalGroup(
             selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -552,7 +550,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 306, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -665,23 +663,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         toolbarsMenu.setText("Toolbars");
 
-        smoothingTBMenuItem.setSelected(true);
-        smoothingTBMenuItem.setText("Smoothing Toolbar");
-        smoothingTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        filtersTBMenuItem.setSelected(true);
+        filtersTBMenuItem.setText("Filters Toolbar");
+        filtersTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                smoothingTBMenuItemActionPerformed(evt);
+                filtersTBMenuItemActionPerformed(evt);
             }
         });
-        toolbarsMenu.add(smoothingTBMenuItem);
-
-        sharpenTBMenuItem.setSelected(true);
-        sharpenTBMenuItem.setText("Sharpen Toolbar");
-        sharpenTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                sharpenTBMenuItemActionPerformed(evt);
-            }
-        });
-        toolbarsMenu.add(sharpenTBMenuItem);
+        toolbarsMenu.add(filtersTBMenuItem);
 
         ModesTBMenuItem.setSelected(true);
         ModesTBMenuItem.setText("OCT Modes Toolbar");
@@ -726,7 +715,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                         .addComponent(positionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         analysisTypeToolbar.setFloatable(false);
@@ -1099,22 +1089,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_octSharpWeightSliderStateChanged
 
-    private void smoothingTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_smoothingTBMenuItemActionPerformed
-        SwingUtilities.invokeLater(() -> {
-            //toggle display of smoothing toolbar
-            smoothingToolbar.setVisible(smoothingTBMenuItem.isSelected());
-            pack();
-        });
-    }//GEN-LAST:event_smoothingTBMenuItemActionPerformed
-
-    private void sharpenTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sharpenTBMenuItemActionPerformed
-        SwingUtilities.invokeLater(() -> {
-            //toggle display of sharpen toolbar
-            sharpenToolbar.setVisible(sharpenTBMenuItem.isSelected());
-            pack();
-        });
-    }//GEN-LAST:event_sharpenTBMenuItemActionPerformed
-
     private void ModesTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModesTBMenuItemActionPerformed
         SwingUtilities.invokeLater(() -> {
             //toggle display of OCT modes toolbar
@@ -1122,6 +1096,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             pack();
         });
     }//GEN-LAST:event_ModesTBMenuItemActionPerformed
+
+    private void filtersTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filtersTBMenuItemActionPerformed
+        SwingUtilities.invokeLater(() -> {
+            //toggle display of smoothing toolbar
+            filtersToolbar.setVisible(filtersTBMenuItem.isSelected());
+            pack();
+        });
+    }//GEN-LAST:event_filtersTBMenuItemActionPerformed
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
@@ -1235,9 +1217,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
     private javax.swing.JPanel filterPanel;
+    private javax.swing.JCheckBoxMenuItem filtersTBMenuItem;
+    private javax.swing.JToolBar filtersToolbar;
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
@@ -1265,14 +1250,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel selectionWidthModePanel;
     private javax.swing.JPanel selectionWidthSliderPanel;
     private javax.swing.JPanel sharpRadiusPanel;
-    private javax.swing.JCheckBoxMenuItem sharpenTBMenuItem;
-    private javax.swing.JToolBar sharpenToolbar;
     private javax.swing.JMenuItem singleLRPAnalysisMenuItem;
     private javax.swing.JToggleButton singleLRPAnalysisToggleButton;
     private javax.swing.JToggleButton singleSelectButton;
     private javax.swing.JCheckBoxMenuItem singleSelectMenuItem;
-    private javax.swing.JCheckBoxMenuItem smoothingTBMenuItem;
-    private javax.swing.JToolBar smoothingToolbar;
     private javax.swing.JMenuItem spatialAnalysisMenuItem;
     private javax.swing.JToggleButton spatialAnalysisToggleButton;
     private javax.swing.JMenu toolbarsMenu;
