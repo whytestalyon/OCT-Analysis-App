@@ -685,28 +685,6 @@ public class OCTAnalysisManager {
         return progress;
     }
 
-    private static class Diff {
-
-        private LinePoint linePoint1, linePoint2;
-
-        public Diff(LinePoint linePoint1, LinePoint linePoint2) {
-            this.linePoint1 = linePoint1;
-            this.linePoint2 = linePoint2;
-        }
-
-        public LinePoint getLinePoint1() {
-            return linePoint1;
-        }
-
-        public LinePoint getLinePoint2() {
-            return linePoint2;
-        }
-
-        public double getYDiff() {
-            return Math.abs(linePoint1.getY() - linePoint2.getY());
-        }
-
-    }
 
     private enum Cardinality {
 
