@@ -84,6 +84,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
+        drawLinesButtonGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         filterPanel = new javax.swing.JPanel();
         filtersToolbar = new javax.swing.JToolBar();
@@ -117,6 +118,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         micronModeButton = new javax.swing.JRadioButton();
         selectionWidthSliderPanel = new javax.swing.JPanel();
         widthSlider = new javax.swing.JSlider();
+        jPanel2 = new javax.swing.JPanel();
+        drawLinesRadioBtn = new javax.swing.JRadioButton();
+        hideLinesRadioBtn = new javax.swing.JRadioButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
@@ -229,7 +233,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSmoothingPanel.setLayout(octSmoothingPanelLayout);
         octSmoothingPanelLayout.setHorizontalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
         );
         octSmoothingPanelLayout.setVerticalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -256,7 +260,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
         sharpRadiusPanelLayout.setHorizontalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
         );
         sharpRadiusPanelLayout.setVerticalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -293,7 +297,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel1Layout.setHorizontalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(octSmoothingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(lrpSmoothingPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -445,7 +449,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         modesToolbar.setRollover(true);
         modesToolbar.setName("OCT Modes Toolbar"); // NOI18N
 
-        octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Mode"));
+        octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Mode"));
 
         lrpButtonGroup.add(linearOCTModeButton);
         linearOCTModeButton.setText("Linear OCT");
@@ -472,24 +476,24 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(octModePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(linearOCTModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(logModeOCTButton, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
-                .addContainerGap())
+                .addComponent(linearOCTModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(logModeOCTButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(91, Short.MAX_VALUE))
         );
         octModePanelLayout.setVerticalGroup(
             octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(octModePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(linearOCTModeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(logModeOCTButton)
+                .addGroup(octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(linearOCTModeButton)
+                    .addComponent(logModeOCTButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         modesToolbar.add(octModePanel);
 
-        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Selection Width Mode"));
+        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Selection Width Mode"));
 
         selModeButtonGroup.add(pixelModeButton);
         pixelModeButton.setSelected(true);
@@ -514,22 +518,25 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthModePanel.setLayout(selectionWidthModePanelLayout);
         selectionWidthModePanelLayout.setHorizontalGroup(
             selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pixelModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(micronModeButton, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+            .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
+                .addComponent(pixelModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(micronModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 73, Short.MAX_VALUE))
         );
         selectionWidthModePanelLayout.setVerticalGroup(
             selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pixelModeButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(micronModeButton)
+                .addGroup(selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(pixelModeButton)
+                    .addComponent(micronModeButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         modesToolbar.add(selectionWidthModePanel);
 
-        selectionWidthSliderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("OCT Selection Width"));
+        selectionWidthSliderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Selection Width"));
 
         widthSlider.setMajorTickSpacing(2);
         widthSlider.setMaximum(15);
@@ -550,7 +557,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 140, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -560,6 +567,50 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
 
         modesToolbar.add(selectionWidthSliderPanel);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Draw Lines"));
+
+        drawLinesButtonGroup.add(drawLinesRadioBtn);
+        drawLinesRadioBtn.setText("Draw");
+        drawLinesRadioBtn.setToolTipText("Show drawn lines on the OCT");
+        drawLinesRadioBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                drawLinesRadioBtnActionPerformed(evt);
+            }
+        });
+
+        drawLinesButtonGroup.add(hideLinesRadioBtn);
+        hideLinesRadioBtn.setSelected(true);
+        hideLinesRadioBtn.setText("Hide");
+        hideLinesRadioBtn.setToolTipText("Hide drawn lines on the OCT");
+        hideLinesRadioBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideLinesRadioBtnActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(drawLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(hideLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(drawLinesRadioBtn)
+                    .addComponent(hideLinesRadioBtn))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        modesToolbar.add(jPanel2);
 
         modesPanel.add(modesToolbar, java.awt.BorderLayout.NORTH);
         modesToolbar.addAncestorListener(new ToolbarFloatListener(modesToolbar,this));
@@ -698,7 +749,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                     .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(positionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(modesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
             .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -713,7 +764,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                         .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(positionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE))
+                    .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1105,6 +1156,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_filtersTBMenuItemActionPerformed
 
+    private void drawLinesRadioBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_drawLinesRadioBtnActionPerformed
+        octAnalysisPanel.showLines();
+    }//GEN-LAST:event_drawLinesRadioBtnActionPerformed
+
+    private void hideLinesRadioBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideLinesRadioBtnActionPerformed
+        octAnalysisPanel.hideLines();
+    }//GEN-LAST:event_hideLinesRadioBtnActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1212,6 +1271,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
     private javax.swing.JToolBar analysisTypeToolbar;
+    private javax.swing.ButtonGroup drawLinesButtonGroup;
+    private javax.swing.JRadioButton drawLinesRadioBtn;
     private javax.swing.JMenuItem ezAnalysisMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
@@ -1221,8 +1282,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToolBar filtersToolbar;
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
+    private javax.swing.JRadioButton hideLinesRadioBtn;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;

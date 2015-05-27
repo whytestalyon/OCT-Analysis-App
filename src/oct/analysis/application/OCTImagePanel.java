@@ -10,9 +10,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.LayoutManager;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -125,10 +122,13 @@ public class OCTImagePanel extends JPanel {
 
     public void hideLines() {
         drawLines = false;
+        repaint();
+        
     }
 
     public void showLines() {
         drawLines = true;
+        repaint();
     }
 
     public boolean isDoDraw() {

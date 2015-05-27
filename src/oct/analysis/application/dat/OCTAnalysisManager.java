@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.swing.SwingWorker;
 import oct.analysis.application.OCTImagePanel;
 import oct.util.Segmentation;
 import oct.util.Util;
@@ -46,6 +47,8 @@ public class OCTAnalysisManager {
     private OCTMode displayMode = OCTMode.LOG; //default display mode of image is assumed to be a Log OCT image
     private int foveaCenterXPosition = -1;
     private OCTImagePanel imjPanel;
+    private String progressMessage = "";
+    private int progress = 0;
 
     private OCTAnalysisManager() {
     }
@@ -65,10 +68,13 @@ public class OCTAnalysisManager {
      * @return the X coordinate of the fovea relative to the OCT image supplied
      */
     public int getFoveaXPosition() {
+        progress = 0;
         if (foveaCenterXPosition < 0) {
             //find the fovea since it hasn't been found/defined yet
+            progressMessage = "Segmenting OCT...";
             UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
             Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
+            progressMessage = "Interpolating Segmentation...";
             double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
             UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
             double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));
@@ -77,9 +83,11 @@ public class OCTAnalysisManager {
             UnivariateFunction diffInerp = interpolator.interpolate(diffLine[0], diffLine[1]);
             FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);
             UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
+            progress = 20;
             /*
              * collect the first derivative at each pixel in the image
              */
+            progressMessage = "Calculating derivatives...";
             int numFreeVariablesInFunction = 1;
             int order = 1;
             DerivativeStructure xd;
@@ -93,6 +101,8 @@ public class OCTAnalysisManager {
                 yd = difFunc.value(xd);
                 firstDeriv.set(xRealValue, new LinePoint(xRealValue, yd.getPartialDerivative(1)));
             }
+            progress = 40;
+            progressMessage = "Finding peaks...";
             List<LinePoint> peaks = Util.findMaxAndMins(firstDeriv);
             LinePoint prevPeak = null;
             LinkedList<Diff> diffs = new LinkedList<>();
@@ -102,15 +112,19 @@ public class OCTAnalysisManager {
                 }
                 prevPeak = curPeak;
             }
+            progress = 60;
+            progressMessage = "Calculating diffs between derivatives...";
             Diff maxDiff = diffs.stream().max(Comparator.comparingDouble((Diff diff) -> diff.getYDiff())).get();
             double sign = Math.signum(maxDiff.getLinePoint1().getY());
             int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
+            progress = 80;
             while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
                 signChangeXPos++;
             }
             foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
             System.out.println("Fovea found at: " + foveaCenterXPosition);
         }
+        progress = 100;
         return foveaCenterXPosition;
     }
 
@@ -274,7 +288,7 @@ public class OCTAnalysisManager {
                 //do nothing but let loop continue
             }
         }
-        double avgDif = Stream.concat(IntStream.range(minX, minX + 40).boxed(), IntStream.range(maxX - 39, maxX + 1).boxed())
+        double avgDif = Stream.concat(IntStream.range(minX + 30, minX + 50).boxed(), IntStream.range(maxX - 49, maxX - 28).boxed())
                 .mapToDouble(x -> interpBruchsContour.value(x) - interpEZContour.value(x))
                 .average()
                 .getAsDouble();
@@ -301,7 +315,7 @@ public class OCTAnalysisManager {
          found on each side of the fovea.
          */
         OptionalInt ezLeftEdge;
-        double crossingThreshold = 0D;
+        double crossingThreshold = 0.25D;
         do {
             double filtThresh = crossingThreshold;
             System.out.println("Crossing threshold = " + crossingThreshold);
@@ -309,10 +323,10 @@ public class OCTAnalysisManager {
                     .stream()
                     .filter(lp -> lp.getY() <= filtThresh && lp.getX() < foveaCenterXPosition)
                     .mapToInt(LinePoint::getX).max();
-            crossingThreshold++;
+            crossingThreshold += 0.25D;
         } while (!ezLeftEdge.isPresent());
         OptionalInt ezRightEdge;
-        crossingThreshold = 0D;
+        crossingThreshold = 0.25D;
         do {
             double filtThresh = crossingThreshold;
             System.out.println("Crossing threshold = " + crossingThreshold);
@@ -320,7 +334,7 @@ public class OCTAnalysisManager {
                     .stream()
                     .filter(lp -> lp.getY() <= filtThresh && lp.getX() > foveaCenterXPosition)
                     .mapToInt(LinePoint::getX).min();
-            crossingThreshold++;
+            crossingThreshold += 0.25D;
         } while (!ezRightEdge.isPresent());
         return new int[]{ezLeftEdge.getAsInt(), ezRightEdge.getAsInt()};
     }
@@ -663,6 +677,14 @@ public class OCTAnalysisManager {
         return retLine;
     }
 
+    public String getProgressMessage() {
+        return progressMessage;
+    }
+
+    public int getProgress() {
+        return progress;
+    }
+
     private static class Diff {
 
         private LinePoint linePoint1, linePoint2;
@@ -692,5 +714,14 @@ public class OCTAnalysisManager {
         SOUTH,
         EAST,
         WEST;
+    }
+    
+    private class FoveaFindingTask extends SwingWorker<List<Integer>, Integer>{
+
+        @Override
+        protected List<Integer> doInBackground() throws Exception {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+        
     }
 }
