@@ -33,6 +33,7 @@ public class OCTImagePanel extends JPanel {
     private Point drawPoint = null;
     private LinkedList<List<LinePoint>> linesToDraw = null;
     private boolean drawLines;
+    private boolean drawSelections = true;
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -85,9 +86,11 @@ public class OCTImagePanel extends JPanel {
             //draw OCT to the JPanel
             grphcs.drawImage(analysisData.getOctImage(), imageOffsetX, imageOffsetY, null);
             //draw the selections to the panel if available
-            selectionLrpMngr.getSelections().stream().forEach((selection) -> {
-                selection.drawSelection(grphcs, imageOffsetX, imageOffsetY);
-            });
+            if (drawSelections) {
+                selectionLrpMngr.getSelections().stream().forEach((selection) -> {
+                    selection.drawSelection(grphcs, imageOffsetX, imageOffsetY);
+                });
+            }
             //draw point on oct if available
             if (drawPoint != null && drawLines) {
                 grphcs.setColor(Color.red);
@@ -120,10 +123,19 @@ public class OCTImagePanel extends JPanel {
         });
     }
 
+    public void showSelections() {
+        this.drawSelections = true;
+        repaint();
+    }
+
+    public void hideSelections() {
+        this.drawSelections = false;
+        repaint();
+    }
+
     public void hideLines() {
         drawLines = false;
         repaint();
-        
     }
 
     public void showLines() {
