@@ -252,7 +252,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSharpRadiusSlider.setPaintLabels(true);
         octSharpRadiusSlider.setPaintTicks(true);
         octSharpRadiusSlider.setSnapToTicks(true);
-        octSharpRadiusSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSharpRadiusSlider.setToolTipText("Adjust the number of pixels (as a radius) used to sharpen OCT at each given point");
         octSharpRadiusSlider.setValue(0);
         octSharpRadiusSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -277,7 +277,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSharpWeightSlider.setMinorTickSpacing(2);
         octSharpWeightSlider.setPaintLabels(true);
         octSharpWeightSlider.setPaintTicks(true);
-        octSharpWeightSlider.setToolTipText("Adjust the smoothing of the OCT image (performed using a 3x3 Gausian blur)");
+        octSharpWeightSlider.setToolTipText("Adjust the weighting factor given to the sharpened pixel information");
         octSharpWeightSlider.setValue(0);
         octSharpWeightSlider.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -497,7 +497,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         modesToolbar.add(octModePanel);
 
-        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Selection Width Mode"));
+        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Selection Width"));
 
         selModeButtonGroup.add(pixelModeButton);
         pixelModeButton.setSelected(true);
@@ -572,10 +572,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         modesToolbar.add(selectionWidthSliderPanel);
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Draw Lines"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Segmentation"));
 
         drawLinesButtonGroup.add(drawLinesRadioBtn);
-        drawLinesRadioBtn.setText("Draw");
+        drawLinesRadioBtn.setText("Show");
         drawLinesRadioBtn.setToolTipText("Show drawn lines on the OCT");
         drawLinesRadioBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -616,11 +616,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         modesToolbar.add(jPanel2);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Draw Selections"));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Selections"));
 
         drawSelBtnGroup.add(jRadioButton1);
         jRadioButton1.setSelected(true);
-        jRadioButton1.setText("Draw");
+        jRadioButton1.setText("Show");
         jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButton1ActionPerformed(evt);
@@ -978,10 +978,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
     private void spatialAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spatialAnalysisMenuItemActionPerformed
-        restartAnalysis();
-        enableAnalysisTools();
-        analysisMode = AnalysisMode.SPATIAL;
-
+        setAnalysisMode(AnalysisMode.SPATIAL);
     }//GEN-LAST:event_spatialAnalysisMenuItemActionPerformed
 
     private void analysisMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analysisMenuActionPerformed
