@@ -134,6 +134,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         ezAnalysisMenuItem = new javax.swing.JMenuItem();
         singleLRPAnalysisMenuItem = new javax.swing.JMenuItem();
         mirrorAnalysisMenuItem = new javax.swing.JMenuItem();
+        autoFoveaFindMenuItem = new javax.swing.JMenuItem();
+        interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -237,7 +239,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSmoothingPanel.setLayout(octSmoothingPanelLayout);
         octSmoothingPanelLayout.setHorizontalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
         );
         octSmoothingPanelLayout.setVerticalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -264,7 +266,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
         sharpRadiusPanelLayout.setHorizontalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
         );
         sharpRadiusPanelLayout.setVerticalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -439,18 +441,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         positionPanel.setLayout(positionPanelLayout);
         positionPanelLayout.setHorizontalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
         );
         positionPanelLayout.setVerticalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
         );
 
+        modesPanel.setMaximumSize(new java.awt.Dimension(400, 400));
         modesPanel.setLayout(new java.awt.BorderLayout());
 
         modesToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         modesToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
         modesToolbar.setRollover(true);
+        modesToolbar.setAlignmentX(0.5F);
         modesToolbar.setName("OCT Modes Toolbar"); // NOI18N
 
         octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Mode"));
@@ -483,7 +487,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(linearOCTModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(logModeOCTButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addContainerGap(120, Short.MAX_VALUE))
         );
         octModePanelLayout.setVerticalGroup(
             octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -526,7 +530,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(pixelModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(micronModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 73, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         selectionWidthModePanelLayout.setVerticalGroup(
             selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -561,7 +565,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -599,10 +603,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(drawLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(hideLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(drawLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(59, 59, 59)
+                .addComponent(hideLinesRadioBtn)
+                .addGap(97, 97, 97))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -621,6 +625,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         drawSelBtnGroup.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         jRadioButton1.setText("Show");
+        jRadioButton1.setAlignmentX(0.5F);
         jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButton1ActionPerformed(evt);
@@ -629,6 +634,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         drawSelBtnGroup.add(jRadioButton2);
         jRadioButton2.setText("Hide");
+        jRadioButton2.setAlignmentX(0.5F);
         jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButton2ActionPerformed(evt);
@@ -640,11 +646,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jRadioButton1)
+                .addGap(67, 67, 67)
                 .addComponent(jRadioButton2)
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addContainerGap(181, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -719,6 +724,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(mirrorAnalysisMenuItem);
 
+        autoFoveaFindMenuItem.setText("Find Fovea (auto)");
+        autoFoveaFindMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoFoveaFindMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(autoFoveaFindMenuItem);
+
+        interactiveFindFoveaMenuItem.setText("Find Fovea (interactive)");
+        interactiveFindFoveaMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interactiveFindFoveaMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(interactiveFindFoveaMenuItem);
+
         jMenuBar1.add(analysisMenu);
 
         toolsMenu.setText("Tools");
@@ -789,12 +810,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(analysisTypeToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(positionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(positionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(modesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -1213,6 +1234,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octAnalysisPanel.hideSelections();
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
+    private void autoFoveaFindMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoFoveaFindMenuItemActionPerformed
+        int fovea_coord = analysisMetrics.findCenterOfFovea(true);
+        selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getFoveaSelection(fovea_coord));
+        octAnalysisPanel.repaint();
+    }//GEN-LAST:event_autoFoveaFindMenuItemActionPerformed
+
+    private void interactiveFindFoveaMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveFindFoveaMenuItemActionPerformed
+        int fovea_coord = analysisMetrics.findCenterOfFovea(false);
+        selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getFoveaSelection(fovea_coord));
+        octAnalysisPanel.repaint();
+    }//GEN-LAST:event_interactiveFindFoveaMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1320,6 +1353,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
     private javax.swing.JToolBar analysisTypeToolbar;
+    private javax.swing.JMenuItem autoFoveaFindMenuItem;
     private javax.swing.ButtonGroup drawLinesButtonGroup;
     private javax.swing.JRadioButton drawLinesRadioBtn;
     private javax.swing.ButtonGroup drawSelBtnGroup;
@@ -1333,6 +1367,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JRadioButton hideLinesRadioBtn;
+    private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
