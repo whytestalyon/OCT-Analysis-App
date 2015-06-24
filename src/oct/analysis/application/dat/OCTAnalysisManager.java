@@ -339,6 +339,10 @@ public class OCTAnalysisManager {
         return new int[]{ezLeftEdge.getAsInt(), ezRightEdge.getAsInt()};
     }
 
+    public List<Integer> findPossibleFoveaPoints() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     private static class OCTAnalysisMetricsHolder {
 
         private static final OCTAnalysisManager INSTANCE = new OCTAnalysisManager();
