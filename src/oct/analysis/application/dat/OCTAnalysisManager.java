@@ -7,8 +7,15 @@ package oct.analysis.application.dat;
 
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -22,8 +29,10 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.OCTLine;
@@ -72,64 +81,7 @@ public class OCTAnalysisManager {
      *
      * @return the X coordinate of the fovea relative to the OCT image supplied
      */
-    public int getFoveaXPosition() {
-        progress = 0;
-        if (foveaCenterXPosition < 0) {
-            //find the fovea since it hasn't been found/defined yet
-            progressMessage = "Segmenting OCT...";
-            UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
-            Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
-            progressMessage = "Interpolating Segmentation...";
-            double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
-            UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
-            double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));
-            UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
-            double[][] diffLine = Util.getXYArraysFromLinePoints(findAbsoluteDiff(brmInterp, ilmInterp, 0, getOct().getLinearOctImage().getWidth() - 1));
-            UnivariateFunction diffInerp = interpolator.interpolate(diffLine[0], diffLine[1]);
-            FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);
-            UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
-            progress = 20;
-            /*
-             * collect the first derivative at each pixel in the image
-             */
-            progressMessage = "Calculating derivatives...";
-            int numFreeVariablesInFunction = 1;
-            int order = 1;
-            DerivativeStructure xd;
-            DerivativeStructure yd;
-            ArrayList<LinePoint> firstDeriv = new ArrayList<>(getOct().getLinearOctImage().getWidth() - 1);
-            IntStream.range(0, getOct().getLinearOctImage().getWidth() - 1).forEach((int i) -> {
-                firstDeriv.add(new LinePoint(0, 0));
-            });
-            for (int xRealValue = 1; xRealValue <= getOct().getLinearOctImage().getWidth() - 2; xRealValue++) {
-                xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, xRealValue);
-                yd = difFunc.value(xd);
-                firstDeriv.set(xRealValue, new LinePoint(xRealValue, yd.getPartialDerivative(1)));
-            }
-            progress = 40;
-            progressMessage = "Finding peaks...";
-            List<LinePoint> peaks = Util.findMaxAndMins(firstDeriv);
-            LinePoint prevPeak = null;
-            LinkedList<Diff> diffs = new LinkedList<>();
-            for (LinePoint curPeak : peaks) {
-                if (prevPeak != null) {
-                    diffs.add(new Diff(prevPeak, curPeak));
-                }
-                prevPeak = curPeak;
-            }
-            progress = 60;
-            progressMessage = "Calculating diffs between derivatives...";
-            Diff maxDiff = diffs.stream().max(Comparator.comparingDouble((Diff diff) -> diff.getYDiff())).get();
-            double sign = Math.signum(maxDiff.getLinePoint1().getY());
-            int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
-            progress = 80;
-            while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
-                signChangeXPos++;
-            }
-            foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
-            System.out.println("Fovea found at: " + foveaCenterXPosition);
-        }
-        progress = 100;
+    public int getFoveaCenterXPosition() {
         return foveaCenterXPosition;
     }
 
@@ -350,124 +302,34 @@ public class OCTAnalysisManager {
      * automatically identified locations where the fovea may be and then choose
      * the selection that is at the fovea. If none of the automated findings are
      * at the fovea the user has the option to manual specify it's location.
-     * Finally, the chosen X coordinate (within the OCT) of the fovea is
-     * returned.
+     * Finally, the chosen X coordinate (within the OCT) of the fovea is set in
+     * the manager and can be obtained via the getFoveaCenterXPosition getter.
      *
      * @param fullAutoMode find the fovea automatically without user input when
      * true, otherwise find the fovea in semi-automatic mode involving user
      * interaction
-     * @return the X coordinate (within the OCT) of the fovea
      */
-    public int findCenterOfFovea(boolean fullAutoMode) {
-        SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+    public void findCenterOfFovea(boolean fullAutoMode) throws InterruptedException, ExecutionException {
+        //disable clicking other components while processing by enabling glass pane
+        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(imgPanel);
+        Component glassPane = topFrame.getGlassPane();
+        glassPane.setVisible(true);
+
+        //monitor progress of finding the fovea
         ProgressMonitor pm = new ProgressMonitor(imgPanel,
                 "Analyzing OCT for fovea...",
                 "", 0, 100);
         pm.setProgress(0);
         pm.setMillisToDecideToPopup(100);
         pm.setMillisToPopup(200);
-        List<Integer> positionList = findPotentialFoveaSites(pm);
-
-        //automatically find the possible locations of the fovea
-        int fx = positionList.get(0);
-        if (!fullAutoMode) {
-            //draw potential fovea selections to screen for user to choose from
-            positionList.forEach(x -> {
-                selMngr.addOrUpdateSelection(new OCTLine(x, 0, oct.getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "Potential Fovea"));
-            });
-            imgPanel.repaint();
-            System.out.println("Displayed possible selections");
-            //notify user of how they can select the selection that is the fovea or make a new selection
-            JOptionPane.showMessageDialog(imgPanel,
-                    "Please select (by clicking one of the gray boxes at the top of a selection)\n"
-                    + " the selection that you believe is the fovea. If none of the\n"
-                    + " presented seletions look like the location of the fovea click\n"
-                    + " anywhere on the image to assign the location manually.",
-                    "Select Fovea",
-                    JOptionPane.INFORMATION_MESSAGE);
-            
-            FoveaFindingTask task = new FoveaFindingTask();
-            task.execute();
-            try {
-                fx = task.get();
-            } catch (InterruptedException | ExecutionException ex) {
-                Logger.getLogger(OCTAnalysisManager.class.getName()).log(Level.SEVERE, null, ex);
+        FoveaFindingTask fvtask = new FoveaFindingTask(!fullAutoMode, glassPane);
+        fvtask.addPropertyChangeListener((PropertyChangeEvent evt) -> {
+            if ("progress".equals(evt.getPropertyName())) {
+                int progress1 = (Integer) evt.getNewValue();
+                pm.setProgress(progress1);
             }
-        }
-        return fx;
-    }
-
-    private List<Integer> findPotentialFoveaSites(ProgressMonitor pm) {
-        //find the fovea since it hasn't been found/defined yet
-        UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
-        Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
-        double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
-        UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
-        double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));
-        UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
-        double[][] diffLine = Util.getXYArraysFromLinePoints(findAbsoluteDiff(brmInterp, ilmInterp, 0, oct.getLinearOctImage().getWidth() - 1));
-        UnivariateFunction diffInerp = interpolator.interpolate(diffLine[0], diffLine[1]);
-        FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);
-        UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
-        pm.setProgress(20);
-        /*
-         * collect the first derivative at each pixel in the image
-         */
-        int numFreeVariablesInFunction = 1;
-        int order = 1;
-        DerivativeStructure xd;
-        DerivativeStructure yd;
-        ArrayList<LinePoint> firstDeriv = new ArrayList<>(oct.getLinearOctImage().getWidth() - 1);
-        IntStream.range(0, oct.getLinearOctImage().getWidth() - 1).forEach((int i) -> {
-            firstDeriv.add(new LinePoint(0, 0));
         });
-        for (int xRealValue = 1; xRealValue <= oct.getLinearOctImage().getWidth() - 2; xRealValue++) {
-            xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, xRealValue);
-            yd = difFunc.value(xd);
-            firstDeriv.set(xRealValue, new LinePoint(xRealValue, yd.getPartialDerivative(1)));
-        }
-        pm.setProgress(40);
-        List<LinePoint> peaks = Util.findMaxAndMins(firstDeriv);
-        LinePoint prevPeak = null;
-        LinkedList<Diff> diffs = new LinkedList<>();
-        for (LinePoint curPeak : peaks) {
-            if (prevPeak != null) {
-                diffs.add(new Diff(prevPeak, curPeak));
-            }
-            prevPeak = curPeak;
-        }
-        pm.setProgress(60);
-        Diff maxDiff = diffs.stream().max(Comparator.comparingDouble((Diff diff) -> diff.getYDiff())).get();
-        double sign = Math.signum(maxDiff.getLinePoint1().getY());
-        int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
-        pm.setProgress(80);
-        while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
-            signChangeXPos++;
-        }
-        //add the most likely fovea position to list first
-        int foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
-        LinkedList<Integer> positionList = new LinkedList<>();
-        positionList.add(foveaCenterXPosition);
-        //find other zero crossings
-        for (LinePoint curPeak : peaks) {
-            if (prevPeak != null && !prevPeak.equals(maxDiff.getLinePoint1())) {
-                sign = Math.signum(prevPeak.getY());
-                signChangeXPos = prevPeak.getX() + 1;
-                try {
-                    while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
-                        signChangeXPos++;
-                    }
-                    //add other possible fovea site to list
-                    foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
-                    positionList.add(foveaCenterXPosition);
-                } catch (IndexOutOfBoundsException ie) {
-                    //caused because the first derivative line is shorter than the original
-                    //fail sillently
-                }
-            }
-            prevPeak = curPeak;
-        }
-        return positionList;
+        fvtask.execute();
     }
 
     private static class OCTAnalysisMetricsHolder {
@@ -824,43 +686,202 @@ public class OCTAnalysisManager {
         WEST;
     }
 
-    private class FoveaFindingTask extends SwingWorker<Integer, Integer> {
+    private class FoveaFindingTask extends SwingWorker<List<Integer>, Integer> {
 
-        private final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+        private final boolean interactiveMode;
+        private final Component glassPane;
 
-        private Integer fx = null;
+        public FoveaFindingTask(boolean interactiveMode, Component glassWindow) {
+            this.interactiveMode = interactiveMode;
+            this.glassPane = glassWindow;
+        }
 
         @Override
-        protected Integer doInBackground() throws Exception {
-            //add mouse listener to determine where the click was and act accordingly
-            imgPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-                @Override
-                public void mouseClicked(java.awt.event.MouseEvent evt) {
-                    //determine if click was over one of the possible fovea selections
-                    OCTSelection selection = selMngr.getOverlappingSelection(evt.getX(), evt.getY(), imgPanel.getImageOffsetX(), imgPanel.getImageOffsetY());
-                    if (selection == null) {
-                        //user decided that none of the automated selections was correct and made their own selection
-                        //check that new selection is what they want
-                        do {
-                            //clear all selections from being displayed
-                            selMngr.removeSelections(true);
-                            selection = new OCTLine(evt.getX(), 0, oct.getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "Potential Fovea");
-                            selMngr.addOrUpdateSelection(selection);
-                            imgPanel.repaint();
-                        } while (JOptionPane.showConfirmDialog(imgPanel, "Is this the location of the center of the fovea? If not hit 'No' and click on the image where you believe the center of the fovea resides.", "Center of Fovea?", JOptionPane.YES_NO_OPTION) == JOptionPane.NO_OPTION);
-                    }
-                    //user selected a selection to represent the fovea
-                    //set x position of selected selection as center of fovea
-                    fx = selection.getXPositionOnOct();
-                    //clear out the selection for the time being
-                    selMngr.removeSelections(true);
-                }
+        protected List<Integer> doInBackground() throws Exception {
+            return findPotentialFoveaSites();
+        }
+
+        private List<Integer> findPotentialFoveaSites() {
+            //find the fovea since it hasn't been found/defined yet
+            UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
+            Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
+            double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
+            UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
+            double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));
+            UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
+            double[][] diffLine = Util.getXYArraysFromLinePoints(findAbsoluteDiff(brmInterp, ilmInterp, 0, oct.getLinearOctImage().getWidth() - 1));
+            UnivariateFunction diffInerp = interpolator.interpolate(diffLine[0], diffLine[1]);
+            FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);
+            UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
+            setProgress(20);
+            /*
+             * collect the first derivative at each pixel in the image
+             */
+            int numFreeVariablesInFunction = 1;
+            int order = 1;
+            DerivativeStructure xd;
+            DerivativeStructure yd;
+            ArrayList<LinePoint> firstDeriv = new ArrayList<>(oct.getLinearOctImage().getWidth() - 1);
+            IntStream.range(0, oct.getLinearOctImage().getWidth() - 1).forEach((int i) -> {
+                firstDeriv.add(new LinePoint(0, 0));
             });
-            
-            while(fx == null){
-                Thread.sleep(200);
+            for (int xRealValue = 1; xRealValue <= oct.getLinearOctImage().getWidth() - 2; xRealValue++) {
+                xd = new DerivativeStructure(numFreeVariablesInFunction, order, 0, xRealValue);
+                yd = difFunc.value(xd);
+                firstDeriv.set(xRealValue, new LinePoint(xRealValue, yd.getPartialDerivative(1)));
             }
-            return fx;
+            setProgress(40);
+            List<LinePoint> peaks = Util.findMaxAndMins(firstDeriv);
+            LinePoint prevPeak = null;
+            LinkedList<Diff> diffs = new LinkedList<>();
+            for (LinePoint curPeak : peaks) {
+                if (prevPeak != null) {
+                    diffs.add(new Diff(prevPeak, curPeak));
+                }
+                prevPeak = curPeak;
+            }
+            setProgress(60);
+            Diff maxDiff = diffs.stream().max(Comparator.comparingDouble((Diff diff) -> diff.getYDiff())).get();
+            double sign = Math.signum(maxDiff.getLinePoint1().getY());
+            int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
+            setProgress(80);
+            while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
+                signChangeXPos++;
+            }
+            //add the most likely fovea position to list first
+            int foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
+            LinkedList<Integer> positionList = new LinkedList<>();
+            positionList.add(foveaCenterXPosition);
+            //find other zero crossings
+            for (LinePoint curPeak : peaks) {
+                if (prevPeak != null && !prevPeak.equals(maxDiff.getLinePoint1())) {
+                    sign = Math.signum(prevPeak.getY());
+                    signChangeXPos = prevPeak.getX() + 1;
+                    try {
+                        while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
+                            signChangeXPos++;
+                        }
+                        //add other possible fovea site to list
+                        foveaCenterXPosition = (Math.abs(firstDeriv.get(signChangeXPos).getY()) < Math.abs(firstDeriv.get(signChangeXPos - 1).getY())) ? signChangeXPos : signChangeXPos - 1;
+                        positionList.add(foveaCenterXPosition);
+                    } catch (IndexOutOfBoundsException ie) {
+                        //caused because the first derivative line is shorter than the original
+                        //fail sillently
+                    }
+                }
+                prevPeak = curPeak;
+            }
+            setProgress(100);
+            return positionList;
+        }
+
+        @Override
+        protected void done() {
+            SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+
+            //grab findings
+            List<Integer> sites = null;
+            try {
+                sites = get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(OCTAnalysisManager.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+            //process based of of fovea finding user interaction mode
+            if (interactiveMode) {
+                //since the glass pane is blocking user interation with the UI add
+                //a listener that will only pass through clicks over the image panel
+                JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(imgPanel);
+                glassPane.addMouseListener(new MouseAdapter() {
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        /*
+                         With the glasspane up we have to listen for click events 
+                         and forward them if they fit with this process. In this case
+                         we will only forward clicks to the JPanel that displays the
+                         OCT.
+                         */
+                        Point glassPanePoint = e.getPoint();
+                        Container container = topFrame.getContentPane();
+                        Point containerPoint = SwingUtilities.convertPoint(
+                                glassPane,
+                                glassPanePoint,
+                                container);
+                        if (containerPoint.y > 0) {
+                            //The mouse event is probably over the content pane.
+                            //Find out exactly which component it's over.  
+                            Component component
+                                    = SwingUtilities.getDeepestComponentAt(
+                                            container,
+                                            containerPoint.x,
+                                            containerPoint.y);
+
+                            if ((component != null)
+                                    && (component.equals(imgPanel))) {
+                                //process where user clicked over the JPanel that displays the OCT to the panel to process.
+                                Point componentPoint = SwingUtilities.convertPoint(
+                                        glassPane,
+                                        glassPanePoint,
+                                        component);
+                                //determine if click was over one of the possible fovea selections
+                                OCTSelection selection = selMngr.getOverlappingSelection(componentPoint.x, componentPoint.y, imgPanel.getImageOffsetX(), imgPanel.getImageOffsetY());
+                                if (selection == null) {
+                                    //user decided that none of the automated selections was correct and made their own selection
+                                    //check that new selection is what they want
+                                    //clear all selections from being displayed
+                                    selMngr.removeSelections(true);
+                                    selection = new OCTLine(componentPoint.x, 0, oct.getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "Potential Fovea");
+                                    selMngr.addOrUpdateSelection(selection);
+                                    imgPanel.repaint();
+                                    if (JOptionPane.showConfirmDialog(imgPanel, "Is this the location of the center of the fovea? If not hit 'No' and click on the image where you believe the center of the fovea resides.", "Center of Fovea?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                                        glassPane.removeMouseListener(this);
+                                        glassPane.setVisible(false);
+                                        setFoveaCenterXPosition(selection.getXPositionOnOct());
+                                        selMngr.removeSelections(true);
+                                        imgPanel.repaint();
+                                    }
+                                } else {
+                                    glassPane.removeMouseListener(this);
+                                    glassPane.setVisible(false);
+                                    setFoveaCenterXPosition(selection.getXPositionOnOct());
+                                    selMngr.removeSelections(true);
+                                    imgPanel.repaint();
+                                }
+                            }
+                        }
+                    }
+                });
+
+                //draw potential fovea selections to screen for user to choose from
+                if (sites == null) {
+                    sites = new LinkedList<>();
+                }
+                if (sites.isEmpty()) {
+                    sites.add(oct.getImageWidth() / 2);
+                }
+                sites.forEach(x -> {
+                    selMngr.addOrUpdateSelection(new OCTLine(x, 0, oct.getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "Potential Fovea @ " + x));
+                });
+                imgPanel.repaint();
+
+                //notify user of how they can select the selection that is the fovea or make a new selection
+                JOptionPane.showMessageDialog(imgPanel,
+                        "Please select (by clicking one of the gray boxes at the top of a selection)\n"
+                        + " the selection that you believe is the fovea. If none of the\n"
+                        + " presented seletions look like the location of the fovea click\n"
+                        + " anywhere on the image to assign the location manually.",
+                        "Select Fovea",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+            } else {
+                //auto identification process returns most likely result without user interaction
+                if (sites == null || sites.isEmpty()) {
+                    setFoveaCenterXPosition(oct.getImageWidth() / 2);
+                } else {
+                    setFoveaCenterXPosition(sites.get(0));
+                }
+            }
         }
 
     }

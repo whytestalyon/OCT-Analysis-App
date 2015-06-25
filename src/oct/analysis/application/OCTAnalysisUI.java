@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -125,7 +128,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        appMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
@@ -683,7 +686,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(Exit);
 
-        jMenuBar1.add(fileMenu);
+        appMenuBar.add(fileMenu);
 
         analysisMenu.setText("Analysis");
         analysisMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -740,7 +743,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(interactiveFindFoveaMenuItem);
 
-        jMenuBar1.add(analysisMenu);
+        appMenuBar.add(analysisMenu);
 
         toolsMenu.setText("Tools");
         toolsMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -776,7 +779,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         toolsMenu.add(lrpMenuItem);
 
-        jMenuBar1.add(toolsMenu);
+        appMenuBar.add(toolsMenu);
 
         toolbarsMenu.setText("Toolbars");
 
@@ -798,9 +801,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         toolbarsMenu.add(ModesTBMenuItem);
 
-        jMenuBar1.add(toolbarsMenu);
+        appMenuBar.add(toolbarsMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(appMenuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -1012,7 +1015,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisMode = AnalysisMode.EZ;
         //first automatically find the center of the fovea and add line at location
         SwingUtilities.invokeLater(() -> {
-            int fv = analysisMetrics.getFoveaXPosition();
+            int fv = analysisMetrics.getFoveaCenterXPosition();
             System.out.println("Fovea X position: " + fv);
             OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
             selectionLRPManager.addOrUpdateSelection(foveaSelection);
@@ -1235,15 +1238,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
     private void autoFoveaFindMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoFoveaFindMenuItemActionPerformed
-        int fovea_coord = analysisMetrics.findCenterOfFovea(true);
-        selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getFoveaSelection(fovea_coord));
-        octAnalysisPanel.repaint();
+        try {
+            analysisMetrics.findCenterOfFovea(true);
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+//        selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getFoveaSelection(fovea_coord));
+//        octAnalysisPanel.repaint();
     }//GEN-LAST:event_autoFoveaFindMenuItemActionPerformed
 
     private void interactiveFindFoveaMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveFindFoveaMenuItemActionPerformed
-        int fovea_coord = analysisMetrics.findCenterOfFovea(false);
-        selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getFoveaSelection(fovea_coord));
-        octAnalysisPanel.repaint();
+        try {
+            analysisMetrics.findCenterOfFovea(false);
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_interactiveFindFoveaMenuItemActionPerformed
 
     public void enableAnalysisTools() {
@@ -1353,6 +1362,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
     private javax.swing.JToolBar analysisTypeToolbar;
+    private javax.swing.JMenuBar appMenuBar;
     private javax.swing.JMenuItem autoFoveaFindMenuItem;
     private javax.swing.ButtonGroup drawLinesButtonGroup;
     private javax.swing.JRadioButton drawLinesRadioBtn;
@@ -1368,7 +1378,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JRadioButton hideLinesRadioBtn;
     private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
-    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

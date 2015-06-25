@@ -22,7 +22,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="drawSelBtnGroup">
     </Component>
-    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
+    <Menu class="javax.swing.JMenuBar" name="appMenuBar">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
@@ -175,7 +175,7 @@
     <Property name="locationByPlatform" type="boolean" value="true"/>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="appMenuBar"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
