@@ -28,6 +28,10 @@ public class OCTImagePanel extends JPanel {
 
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
     private final SelectionLRPManager selectionLrpMngr = SelectionLRPManager.getInstance();
+    /*
+     Image offsets must be tracked to manage drawing the selections in the same place
+     over the OCT despite the image panel resizing.
+     */
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
     private Point drawPoint = null;
@@ -76,12 +80,12 @@ public class OCTImagePanel extends JPanel {
             int imageWidth = oct.getImageWidth();
             int panelWidth = this.getWidth();
             if (panelWidth > imageWidth) {
-                imageOffsetX = panelWidth / 2 - imageWidth / 2;
+                imageOffsetX = (panelWidth - imageWidth) / 2;
             }
             int imageHeight = oct.getImageHeight();
             int panelHeight = this.getHeight();
             if (panelHeight > imageHeight) {
-                imageOffsetY = panelHeight / 2 - imageHeight / 2;
+                imageOffsetY = (panelHeight - imageHeight) / 2;
             }
             //draw OCT to the JPanel
             grphcs.drawImage(analysisData.getOctImage(), imageOffsetX, imageOffsetY, null);
@@ -191,5 +195,22 @@ public class OCTImagePanel extends JPanel {
      */
     public boolean coordinateOverlapsOCT(Point p) {
         return coordinateOverlapsOCT(p.x, p.y);
+    }
+
+    /**
+     * Utility method used to translate a point (i.e. the location of an event,
+     * like a mouse click) in the coordinate space of this panel to the
+     * coordinate space of the OCT being displayed in the panel.
+     *
+     * @param p The point to be translated
+     * @return translated point from Panel coordinates -> OCT coordinates, or
+     * null if the OCT isn't present
+     */
+    public Point translatePanelPointToOctPoint(Point p) {
+        if (analysisData.getOct() == null) {
+            return null;
+        } else {
+            return new Point(p.x - imageOffsetX, p.y - imageOffsetY);
+        }
     }
 }

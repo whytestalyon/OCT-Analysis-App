@@ -7,6 +7,7 @@ package oct.analysis.application;
 
 import java.awt.Color;
 import java.awt.Graphics;
+import oct.analysis.application.dat.SelectionType;
 
 /**
  *
@@ -14,8 +15,8 @@ import java.awt.Graphics;
  */
 public class OCTLine extends OCTSelection {
 
-    public OCTLine(int xPositionOnOct, int yPositionOnOct, int height, int selectionType, String selectionName) {
-        super(xPositionOnOct, yPositionOnOct, 1, height, selectionType, selectionName);
+    public OCTLine(int xPositionOnOct, int yPositionOnOct, int height, SelectionType selectionType, String selectionName, boolean moveable) {
+        super(xPositionOnOct, yPositionOnOct, 1, height, selectionType, selectionName, moveable);
     }
 
     @Override

@@ -16,6 +16,7 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -55,6 +56,11 @@ import org.apache.commons.math3.exception.OutOfRangeException;
  */
 public class OCTAnalysisManager {
 
+    /*
+     property change support
+     */
+    public static final String PROP_FOVEA_CENTER_X_POSITION = "foveaCenterXPosition";
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private double scale;
     private int micronsBetweenSelections = 0;
     private OCT oct = null;
@@ -91,7 +97,9 @@ public class OCTAnalysisManager {
      * @param foveaCenterXPosition
      */
     public void setFoveaCenterXPosition(int foveaCenterXPosition) {
+        int oldval = this.foveaCenterXPosition;
         this.foveaCenterXPosition = foveaCenterXPosition;
+        propertyChangeSupport.firePropertyChange(PROP_FOVEA_CENTER_X_POSITION, oldval, foveaCenterXPosition);
     }
 
     /**
@@ -831,7 +839,9 @@ public class OCTAnalysisManager {
                                     //check that new selection is what they want
                                     //clear all selections from being displayed
                                     selMngr.removeSelections(true);
-                                    selection = new OCTLine(componentPoint.x, 0, oct.getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "Potential Fovea");
+                                    //translate component coordinates to OCT coordinates
+                                    Point p = imgPanel.translatePanelPointToOctPoint(componentPoint);
+                                    selection = new OCTLine(p.x, 0, oct.getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
                                     selMngr.addOrUpdateSelection(selection);
                                     imgPanel.repaint();
                                     if (JOptionPane.showConfirmDialog(imgPanel, "Is this the location of the center of the fovea? If not hit 'No' and click on the image where you believe the center of the fovea resides.", "Center of Fovea?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -861,7 +871,7 @@ public class OCTAnalysisManager {
                     sites.add(oct.getImageWidth() / 2);
                 }
                 sites.forEach(x -> {
-                    selMngr.addOrUpdateSelection(new OCTLine(x, 0, oct.getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "Potential Fovea @ " + x));
+                    selMngr.addOrUpdateSelection(new OCTLine(x, 0, oct.getImageHeight(), SelectionType.FOVEAL, "Potential Fovea @ " + x, false));
                 });
                 imgPanel.repaint();
 
@@ -885,4 +895,23 @@ public class OCTAnalysisManager {
         }
 
     }
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
 }

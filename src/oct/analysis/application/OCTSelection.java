@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
+import oct.analysis.application.dat.SelectionType;
 import oct.util.Util;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -35,25 +36,25 @@ import org.jfree.data.xy.XYSeriesCollection;
  */
 public class OCTSelection {
 
-    public static final int FOVEAL_SELECTION = 0;
-    public static final int PERIPHERAL_SELECTION = 1;
     protected static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
     protected final String selectionName;
-    protected final int selectionType;
+    protected final SelectionType selectionType;
     protected int xPositionOnOct;
     protected int yPositionOnOct;
     protected int width;
     protected final int height;
     protected boolean highlighted = false;
     protected boolean drawn = false;
+    protected final boolean moveable;
 
-    public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, int selectionType, String selectionName) {
+    public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, SelectionType selectionType, String selectionName, boolean moveable) {
         this.xPositionOnOct = xPositionOnOct;
         this.yPositionOnOct = yPositionOnOct;
         this.width = width;
         this.height = height;
         this.selectionType = selectionType;
         this.selectionName = selectionName;
+        this.moveable = moveable;
     }
 
     public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
@@ -142,12 +143,16 @@ public class OCTSelection {
         this.drawn = drawn;
     }
 
-    public int getSelectionType() {
+    public String getSelectionName() {
+        return selectionName;
+    }
+
+    public SelectionType getSelectionType() {
         return selectionType;
     }
 
-    public String getSelectionName() {
-        return selectionName;
+    public boolean isMoveable() {
+        return moveable;
     }
 
     public JPanel createLRPPanel() {
@@ -370,10 +375,6 @@ public class OCTSelection {
 //        System.out.println("    Y-int: " + yint);
         //return 
         return (y - yint) / slope;
-    }
-
-    public boolean positionOverlapsSelection(int xpos) {
-        return xpos <= xPositionOnOct + width && xpos >= xPositionOnOct - 1;
     }
 
     public int getCenterX() {
