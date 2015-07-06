@@ -142,7 +142,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         autoEzMenuItem = new javax.swing.JMenuItem();
         interactiveEzMenuItem = new javax.swing.JMenuItem();
         singleLRPAnalysisMenuItem = new javax.swing.JMenuItem();
-        mirrorAnalysisMenuItem = new javax.swing.JMenuItem();
+        autoMirrorMenuItem = new javax.swing.JMenuItem();
+        interactiveMirrorMenuItem = new javax.swing.JCheckBoxMenuItem();
         autoFoveaFindMenuItem = new javax.swing.JMenuItem();
         interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
@@ -369,7 +370,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisTypeToolbar.add(spatialAnalysisToggleButton);
 
-        mirrorAnalysisToggleButton.setAction(mirrorAnalysisMenuItem.getAction());
+        mirrorAnalysisToggleButton.setAction(autoMirrorMenuItem.getAction());
         analysisToolBarBtnGroup.add(mirrorAnalysisToggleButton);
         mirrorAnalysisToggleButton.setText("Mirror");
         mirrorAnalysisToggleButton.setToolTipText("Mirror Around Fovea Analysis");
@@ -741,13 +742,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(singleLRPAnalysisMenuItem);
 
-        mirrorAnalysisMenuItem.setText("Mirror");
-        mirrorAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        autoMirrorMenuItem.setText("Mirror (automatic)");
+        autoMirrorMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mirrorAnalysisMenuItemActionPerformed(evt);
+                autoMirrorMenuItemActionPerformed(evt);
             }
         });
-        analysisMenu.add(mirrorAnalysisMenuItem);
+        analysisMenu.add(autoMirrorMenuItem);
+
+        interactiveMirrorMenuItem.setSelected(true);
+        interactiveMirrorMenuItem.setText("Mirror (interactive)");
+        interactiveMirrorMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interactiveMirrorMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(interactiveMirrorMenuItem);
 
         autoFoveaFindMenuItem.setText("Find Fovea (automatic)");
         autoFoveaFindMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -1018,11 +1028,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         performAnalysis(AnalysisMode.SINGLE, true);
     }//GEN-LAST:event_singleLRPAnalysisMenuItemActionPerformed
 
-    private void mirrorAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mirrorAnalysisMenuItemActionPerformed
-        restartAnalysis();
-        enableAnalysisTools();
-        analysisMode = AnalysisMode.MIRROR;
-    }//GEN-LAST:event_mirrorAnalysisMenuItemActionPerformed
+    private void autoMirrorMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoMirrorMenuItemActionPerformed
+        performAnalysis(AnalysisMode.MIRROR, false);
+    }//GEN-LAST:event_autoMirrorMenuItemActionPerformed
 
     private void singleSelectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleSelectMenuItemActionPerformed
         toolMode = (toolMode == ToolMode.SELECT_SINGLE) ? ToolMode.NONE : ToolMode.SELECT_SINGLE;
@@ -1225,6 +1233,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         performAnalysis(AnalysisMode.EQUIDISTANT, true);
     }//GEN-LAST:event_equidistantInteractiveMenuItemActionPerformed
 
+    private void interactiveMirrorMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveMirrorMenuItemActionPerformed
+        performAnalysis(AnalysisMode.MIRROR, true);
+    }//GEN-LAST:event_interactiveMirrorMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1262,6 +1274,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 Analysis.findFovea(interactive);
                 break;
             case MIRROR:
+                Analysis.performMirror(interactive);
             case SINGLE:
             default:
                 break;
@@ -1338,6 +1351,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuBar appMenuBar;
     private javax.swing.JMenuItem autoEzMenuItem;
     private javax.swing.JMenuItem autoFoveaFindMenuItem;
+    private javax.swing.JMenuItem autoMirrorMenuItem;
     private javax.swing.ButtonGroup drawLinesButtonGroup;
     private javax.swing.JRadioButton drawLinesRadioBtn;
     private javax.swing.ButtonGroup drawSelBtnGroup;
@@ -1354,6 +1368,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton hideLinesRadioBtn;
     private javax.swing.JMenuItem interactiveEzMenuItem;
     private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
+    private javax.swing.JCheckBoxMenuItem interactiveMirrorMenuItem;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1366,7 +1381,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel lrpSmoothingPanel;
     private javax.swing.JSlider lrpSmoothingSlider;
     private javax.swing.JRadioButton micronModeButton;
-    private javax.swing.JMenuItem mirrorAnalysisMenuItem;
     private javax.swing.JToggleButton mirrorAnalysisToggleButton;
     private javax.swing.JPanel modesPanel;
     private javax.swing.JToolBar modesToolbar;

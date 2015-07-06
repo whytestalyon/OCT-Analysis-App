@@ -331,9 +331,9 @@ public class OCTAnalysisManager {
         ProgressMonitor pm = new ProgressMonitor(imgPanel,
                 "Analyzing OCT for fovea...",
                 "", 0, 100);
+        pm.setMillisToDecideToPopup(0);
+        pm.setMillisToPopup(100);
         pm.setProgress(0);
-        pm.setMillisToDecideToPopup(100);
-        pm.setMillisToPopup(200);
         FoveaFindingTask fvtask = new FoveaFindingTask(!fullAutoMode, glassPane);
         fvtask.addPropertyChangeListener((PropertyChangeEvent evt) -> {
             if ("progress".equals(evt.getPropertyName())) {
@@ -716,7 +716,9 @@ public class OCTAnalysisManager {
         private List<Integer> findPotentialFoveaSites() {
             //find the fovea since it hasn't been found/defined yet
             UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
+            setProgress(5);
             Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
+            setProgress(10);
             double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
             UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
             double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));

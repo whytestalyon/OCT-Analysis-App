@@ -95,12 +95,21 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="singleLRPAnalysisMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="mirrorAnalysisMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="autoMirrorMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Mirror"/>
+                <Property name="text" type="java.lang.String" value="Mirror (automatic)"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mirrorAnalysisMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoMirrorMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="interactiveMirrorMenuItem">
+              <Properties>
+                <Property name="selected" type="boolean" value="true"/>
+                <Property name="text" type="java.lang.String" value="Mirror (interactive)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="interactiveMirrorMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="autoFoveaFindMenuItem">
@@ -555,7 +564,7 @@
         <Component class="javax.swing.JToggleButton" name="mirrorAnalysisToggleButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection component="mirrorAnalysisMenuItem" name="getAction" type="method"/>
+              <Connection component="autoMirrorMenuItem" name="getAction" type="method"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="analysisToolBarBtnGroup"/>
