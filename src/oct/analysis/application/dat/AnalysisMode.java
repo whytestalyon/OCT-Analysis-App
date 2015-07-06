@@ -13,5 +13,6 @@ public enum AnalysisMode {
     EZ,
     SINGLE,
     MIRROR,
-    SPATIAL;
+    EQUIDISTANT,
+    FIND_FOVEA;
 }

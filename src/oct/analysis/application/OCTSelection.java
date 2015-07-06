@@ -45,6 +45,7 @@ public class OCTSelection {
     protected final int height;
     protected boolean highlighted = false;
     protected boolean drawn = false;
+    protected boolean resizable = true;
     protected final boolean moveable;
 
     public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, SelectionType selectionType, String selectionName, boolean moveable) {
@@ -87,8 +88,8 @@ public class OCTSelection {
         g.setColor(Color.DARK_GRAY);
         g.drawPolygon(button);
     }
-    
-    public Polygon getSelectionButtonShape(){
+
+    public Polygon getSelectionButtonShape() {
         int x = getCenterX();
         Polygon buttonOutline = new Polygon();
         buttonOutline.addPoint(x - 6, -1);
@@ -116,7 +117,9 @@ public class OCTSelection {
     }
 
     public void setXPositionOnOct(int xPositionOnOct) {
-        this.xPositionOnOct = xPositionOnOct;
+        if (moveable) {
+            this.xPositionOnOct = xPositionOnOct;
+        }
     }
 
     public void setYPositionOnOct(int yPositionOnOct) {
@@ -124,7 +127,9 @@ public class OCTSelection {
     }
 
     public void setWidth(int width) {
-        this.width = width;
+        if (resizable) {
+            this.width = width;
+        }
     }
 
     public int getWidth() {

@@ -81,6 +81,10 @@ public class OCTAnalysisManager {
         this.imgPanel = imjPanel;
     }
 
+    public OCTImagePanel getImgPanel() {
+        return imgPanel;
+    }
+
     /**
      * Obtain the X coordinate (relative to the OCT image) of the center of the
      * fovea.

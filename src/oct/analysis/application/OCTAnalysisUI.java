@@ -28,6 +28,7 @@ import javax.swing.JSlider;
 import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import oct.analysis.application.comp.Analysis;
 import oct.analysis.application.comp.ToolbarFloatListener;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.ImageOperationManager;
@@ -136,7 +137,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         fileOpenMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
-        spatialAnalysisMenuItem = new javax.swing.JMenuItem();
+        equidistantAutoMenuItem = new javax.swing.JMenuItem();
+        equidistantInteractiveMenuItem = new javax.swing.JMenuItem();
         autoEzMenuItem = new javax.swing.JMenuItem();
         interactiveEzMenuItem = new javax.swing.JMenuItem();
         singleLRPAnalysisMenuItem = new javax.swing.JMenuItem();
@@ -353,7 +355,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisTypeToolbar.add(ezAnalysisToggleButton);
 
-        spatialAnalysisToggleButton.setAction(spatialAnalysisMenuItem.getAction());
+        spatialAnalysisToggleButton.setAction(equidistantAutoMenuItem.getAction());
         analysisToolBarBtnGroup.add(spatialAnalysisToggleButton);
         spatialAnalysisToggleButton.setText("Spatial");
         spatialAnalysisToggleButton.setToolTipText("Spatial Analysis");
@@ -699,13 +701,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
 
-        spatialAnalysisMenuItem.setText("Spatial");
-        spatialAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        equidistantAutoMenuItem.setText("Equidistant (automatic)");
+        equidistantAutoMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                spatialAnalysisMenuItemActionPerformed(evt);
+                equidistantAutoMenuItemActionPerformed(evt);
             }
         });
-        analysisMenu.add(spatialAnalysisMenuItem);
+        analysisMenu.add(equidistantAutoMenuItem);
+
+        equidistantInteractiveMenuItem.setText("Equidistant (interactive)");
+        equidistantInteractiveMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                equidistantInteractiveMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(equidistantInteractiveMenuItem);
 
         autoEzMenuItem.setText("EZ (automatic)");
         autoEzMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -739,7 +749,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(mirrorAnalysisMenuItem);
 
-        autoFoveaFindMenuItem.setText("Find Fovea (auto)");
+        autoFoveaFindMenuItem.setText("Find Fovea (automatic)");
         autoFoveaFindMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 autoFoveaFindMenuItemActionPerformed(evt);
@@ -950,43 +960,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                         case MIRROR:
                             break;
                         case EZ:
-                            OCTSelection selection = null;
+                            //allow user to select and change position of the EZ edge selections after the fact
                             switch (toolMode) {
-                                case SELECT_SINGLE:
-                                    //check that fovea has been selected already
-                                    int fvp = selectionLRPManager.getFoveaCenterXPosition();
-                                    if (fvp < 0) {
-                                        JOptionPane.showMessageDialog(this, "The fovea must be identified before EZ selections can be made!", "EZ Analysis Error", JOptionPane.ERROR_MESSAGE);
-                                        break;
-                                    }
-                                    //add new selections and redraw panel
-                                    String selName = "EZ " + ((evt.getX() > fvp) ? "Right" : "Left");
-                                    selection = selectionLRPManager.getSelection(evt.getX(), selName, SelectionType.NONFOVEAL, true);
-                                    break;
-                                case SELECT_FOVEA:
-                                    //set fovea selection
-                                    selection = selectionLRPManager.getFoveaSelection(evt.getX(), true);
-                                    break;
                                 case SCREEN_SELECT:
                                     selectSelection(evt.getX(), evt.getY());
+                                default:
                                     break;
                             }
-                            if (selection != null) {
-                                //clear out any current analysis selection
-                                selectionLRPManager.removeSelection(selection, false);
-                                octAnalysisPanel.repaint();
-                                //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSelection(selection);
-                                octAnalysisPanel.repaint();
-                            }
                             break;
-                        case SPATIAL:
+                        case EQUIDISTANT:
+                            //allow user to change placement of fovea after the fact
                             if (toolMode == ToolMode.SELECT_FOVEA) {
                                 //clear out any current analysis information
                                 selectionLRPManager.removeSelections(true);
                                 octAnalysisPanel.repaint();
                                 //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX());
+                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX(), analysisMetrics.getMicronsBetweenSelections());
                                 octAnalysisPanel.repaint();
                             }
                             break;
@@ -1013,22 +1002,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
-    private void spatialAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spatialAnalysisMenuItemActionPerformed
-        setAnalysisMode(AnalysisMode.SPATIAL);
-    }//GEN-LAST:event_spatialAnalysisMenuItemActionPerformed
+    private void equidistantAutoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_equidistantAutoMenuItemActionPerformed
+        performAnalysis(AnalysisMode.EQUIDISTANT, false);
+    }//GEN-LAST:event_equidistantAutoMenuItemActionPerformed
 
     private void analysisMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analysisMenuActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_analysisMenuActionPerformed
 
     private void autoEzMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoEzMenuItemActionPerformed
-        findEZ(false);
+        performAnalysis(AnalysisMode.EZ, false);
     }//GEN-LAST:event_autoEzMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
-        restartAnalysis();
-        enableAnalysisTools();
-        analysisMode = AnalysisMode.SINGLE;
+        performAnalysis(AnalysisMode.SINGLE, true);
     }//GEN-LAST:event_singleLRPAnalysisMenuItemActionPerformed
 
     private void mirrorAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mirrorAnalysisMenuItemActionPerformed
@@ -1073,11 +1060,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_singleSelectButtonActionPerformed
 
     private void ezAnalysisToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ezAnalysisToggleButtonActionPerformed
-        findEZ(false);
+        performAnalysis(AnalysisMode.EZ, false);
     }//GEN-LAST:event_ezAnalysisToggleButtonActionPerformed
 
     private void spatialAnalysisToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spatialAnalysisToggleButtonActionPerformed
-        setAnalysisMode(AnalysisMode.SPATIAL);
+        performAnalysis(AnalysisMode.EQUIDISTANT, false);
     }//GEN-LAST:event_spatialAnalysisToggleButtonActionPerformed
 
     private void octAnalysisPanelKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_octAnalysisPanelKeyTyped
@@ -1135,28 +1122,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lrpSmoothingSliderStateChanged
 
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
-        switch (analysisMode) {
-            case SINGLE:
-            case MIRROR:
-            case EZ:
-                //update the selection width
-                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-                //redraw current selections on the image panel
-                octAnalysisPanel.repaint();
-                //update the LRPs for all of the selections (if they are being presented)
-                selectionLRPManager.updateLRPs();
-                break;
-            case SPATIAL:
-                //update the selection width
-                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-                //recalculate all of the selections with new widths and update LRPs if present
-                selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition());
-                //repaint selections on OCT image panel
-                octAnalysisPanel.repaint();
-                break;
-            default:
-                break;
+        //update the selection width (will only affect those selections that are resizable (OCTLines are NOT resizable)
+        selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+        if (analysisMode == AnalysisMode.EQUIDISTANT) {
+            //recalculate all of the selections with new widths and update LRPs if present
+            selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition(), analysisMetrics.getMicronsBetweenSelections());
         }
+        //redraw current selections on the image panel
+        octAnalysisPanel.repaint();
+        //update the LRPs for all of the selections (if they are being presented)
+        selectionLRPManager.updateLRPs();
     }//GEN-LAST:event_widthSliderStateChanged
 
     private void micronModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micronModeButtonActionPerformed
@@ -1235,16 +1210,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
     private void autoFoveaFindMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoFoveaFindMenuItemActionPerformed
-        findFovea(false);
+        performAnalysis(AnalysisMode.FIND_FOVEA, false);
     }//GEN-LAST:event_autoFoveaFindMenuItemActionPerformed
 
     private void interactiveFindFoveaMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveFindFoveaMenuItemActionPerformed
-        findFovea(true);
+        performAnalysis(AnalysisMode.FIND_FOVEA, true);
     }//GEN-LAST:event_interactiveFindFoveaMenuItemActionPerformed
 
     private void interactiveEzMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveEzMenuItemActionPerformed
-        findEZ(true);
+        performAnalysis(AnalysisMode.EZ, true);
     }//GEN-LAST:event_interactiveEzMenuItemActionPerformed
+
+    private void equidistantInteractiveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_equidistantInteractiveMenuItemActionPerformed
+        performAnalysis(AnalysisMode.EQUIDISTANT, true);
+    }//GEN-LAST:event_equidistantInteractiveMenuItemActionPerformed
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
@@ -1268,66 +1247,25 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.setFoveaCenterXPosition(-1);
     }
 
-    private void setAnalysisMode(AnalysisMode am) {
+    private void performAnalysis(AnalysisMode am, boolean interactive) {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = am;
         switch (am) {
-            case SPATIAL:
-                //ask for the desired distance between selections
-                double micronsBetweenSelections = oct.util.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
-                analysisMetrics.setMicronsBetweenSelections((int) micronsBetweenSelections);
+            case EQUIDISTANT:
+                Analysis.performEquidistant(interactive);
                 break;
             case EZ:
+                Analysis.findEZ(interactive);
+                break;
+            case FIND_FOVEA:
+                Analysis.findFovea(interactive);
+                break;
             case MIRROR:
             case SINGLE:
             default:
                 break;
         }
-    }
-
-    private void findEZ(boolean interactive) {
-        restartAnalysis();
-        enableAnalysisTools();
-        analysisMode = AnalysisMode.EZ;
-        //based off of interactive mode specified, find the fovea, and then trigger EZ edge detection
-        try {
-            analysisMetrics.findCenterOfFovea(!interactive);
-        } catch (InterruptedException | ExecutionException ex) {
-            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        analysisMetrics.addPropertyChangeListener((PropertyChangeEvent evt) -> {
-            //if the change that occured was the setting (or update ) of the position of the fovea
-            //then trigger the identification of the EZ edges
-            if (OCTAnalysisManager.PROP_FOVEA_CENTER_X_POSITION.equals(evt.getPropertyName())) {
-                SwingUtilities.invokeLater(() -> {
-                    int fv = analysisMetrics.getFoveaCenterXPosition();
-                    OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-                    selectionLRPManager.addOrUpdateSelection(foveaSelection);
-                    octAnalysisPanel.repaint();
-                    //second, automatically find the X position of each EZ edge
-                    int[] ez = analysisMetrics.getEZEdgeCoords();
-                    selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
-                    selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
-                    octAnalysisPanel.repaint();
-                });
-            }
-        });
-    }
-
-    private void findFovea(boolean interactive) {
-        analysisMetrics.addPropertyChangeListener((PropertyChangeEvent evt) -> {
-            //if the change that occured was the setting (or update ) of the position of the fovea
-            //then trigger the identification of the EZ edges
-            if (OCTAnalysisManager.PROP_FOVEA_CENTER_X_POSITION.equals(evt.getPropertyName())) {
-                SwingUtilities.invokeLater(() -> {
-                    int fv = analysisMetrics.getFoveaCenterXPosition();
-                    OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-                    selectionLRPManager.addOrUpdateSelection(foveaSelection);
-                    octAnalysisPanel.repaint();
-                });
-            }
-        });
     }
 
     /**
@@ -1403,6 +1341,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup drawLinesButtonGroup;
     private javax.swing.JRadioButton drawLinesRadioBtn;
     private javax.swing.ButtonGroup drawSelBtnGroup;
+    private javax.swing.JMenuItem equidistantAutoMenuItem;
+    private javax.swing.JMenuItem equidistantInteractiveMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
@@ -1450,7 +1390,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton singleLRPAnalysisToggleButton;
     private javax.swing.JToggleButton singleSelectButton;
     private javax.swing.JCheckBoxMenuItem singleSelectMenuItem;
-    private javax.swing.JMenuItem spatialAnalysisMenuItem;
     private javax.swing.JToggleButton spatialAnalysisToggleButton;
     private javax.swing.JMenu toolbarsMenu;
     private javax.swing.JMenu toolsMenu;

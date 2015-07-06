@@ -55,12 +55,20 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="analysisMenuActionPerformed"/>
           </Events>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="spatialAnalysisMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="equidistantAutoMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Spatial"/>
+                <Property name="text" type="java.lang.String" value="Equidistant (automatic)"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="spatialAnalysisMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="equidistantAutoMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="equidistantInteractiveMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Equidistant (interactive)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="equidistantInteractiveMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="autoEzMenuItem">
@@ -97,7 +105,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="autoFoveaFindMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Find Fovea (auto)"/>
+                <Property name="text" type="java.lang.String" value="Find Fovea (automatic)"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoFoveaFindMenuItemActionPerformed"/>
@@ -529,7 +537,7 @@
         <Component class="javax.swing.JToggleButton" name="spatialAnalysisToggleButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection component="spatialAnalysisMenuItem" name="getAction" type="method"/>
+              <Connection component="equidistantAutoMenuItem" name="getAction" type="method"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="analysisToolBarBtnGroup"/>

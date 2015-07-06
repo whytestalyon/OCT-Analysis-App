@@ -17,6 +17,7 @@ public class OCTLine extends OCTSelection {
 
     public OCTLine(int xPositionOnOct, int yPositionOnOct, int height, SelectionType selectionType, String selectionName, boolean moveable) {
         super(xPositionOnOct, yPositionOnOct, 1, height, selectionType, selectionName, moveable);
+        resizable = false;
     }
 
     @Override
