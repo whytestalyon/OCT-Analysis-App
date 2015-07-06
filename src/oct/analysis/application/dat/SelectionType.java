@@ -9,10 +9,7 @@ package oct.analysis.application.dat;
  *
  * @author Brandon
  */
-public enum AnalysisMode {
-    EZ,
-    SINGLE,
-    MIRROR,
-    EQUIDISTANT,
-    FIND_FOVEA;
+public enum SelectionType {
+    FOVEAL,
+    NONFOVEAL;
 }

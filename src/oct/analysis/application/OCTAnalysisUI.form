@@ -22,7 +22,7 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="drawSelBtnGroup">
     </Component>
-    <Menu class="javax.swing.JMenuBar" name="jMenuBar1">
+    <Menu class="javax.swing.JMenuBar" name="appMenuBar">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMenu">
           <Properties>
@@ -55,20 +55,36 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="analysisMenuActionPerformed"/>
           </Events>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="spatialAnalysisMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="equidistantAutoMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Spatial"/>
+                <Property name="text" type="java.lang.String" value="Equidistant (automatic)"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="spatialAnalysisMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="equidistantAutoMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="ezAnalysisMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="equidistantInteractiveMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="EZ"/>
+                <Property name="text" type="java.lang.String" value="Equidistant (interactive)"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ezAnalysisMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="equidistantInteractiveMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="autoEzMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="EZ (automatic)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoEzMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="interactiveEzMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="EZ (interactive)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="interactiveEzMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="singleLRPAnalysisMenuItem">
@@ -85,6 +101,22 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mirrorAnalysisMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="autoFoveaFindMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Find Fovea (automatic)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoFoveaFindMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="interactiveFindFoveaMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Find Fovea (interactive)"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="interactiveFindFoveaMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
@@ -159,7 +191,7 @@
     <Property name="locationByPlatform" type="boolean" value="true"/>
   </Properties>
   <SyntheticProperties>
-    <SyntheticProperty name="menuBar" type="java.lang.String" value="jMenuBar1"/>
+    <SyntheticProperty name="menuBar" type="java.lang.String" value="appMenuBar"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
     <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
@@ -186,13 +218,13 @@
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="analysisToolsToolBar" max="32767" attributes="0"/>
           </Group>
-          <Group type="102" alignment="0" attributes="0">
+          <Group type="102" alignment="1" attributes="0">
               <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="octAnalysisPanel" max="32767" attributes="0"/>
                   <Component id="positionPanel" max="32767" attributes="0"/>
+                  <Component id="octAnalysisPanel" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="modesPanel" pref="0" max="32767" attributes="0"/>
+              <Component id="modesPanel" max="32767" attributes="0"/>
           </Group>
           <Component id="filterPanel" alignment="0" max="32767" attributes="0"/>
       </Group>
@@ -360,7 +392,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="octSmoothingSlider" alignment="0" pref="448" max="32767" attributes="0"/>
+                          <Component id="octSmoothingSlider" alignment="0" pref="503" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -399,7 +431,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="octSharpRadiusSlider" alignment="0" pref="469" max="32767" attributes="0"/>
+                          <Component id="octSharpRadiusSlider" alignment="0" pref="503" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -487,7 +519,7 @@
         <Component class="javax.swing.JToggleButton" name="ezAnalysisToggleButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection component="ezAnalysisMenuItem" name="getAction" type="method"/>
+              <Connection component="autoEzMenuItem" name="getAction" type="method"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="analysisToolBarBtnGroup"/>
@@ -505,7 +537,7 @@
         <Component class="javax.swing.JToggleButton" name="spatialAnalysisToggleButton">
           <Properties>
             <Property name="action" type="javax.swing.Action" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-              <Connection component="spatialAnalysisMenuItem" name="getAction" type="method"/>
+              <Connection component="equidistantAutoMenuItem" name="getAction" type="method"/>
             </Property>
             <Property name="buttonGroup" type="javax.swing.ButtonGroup" editor="org.netbeans.modules.form.RADComponent$ButtonGroupPropertyEditor">
               <ComponentRef name="analysisToolBarBtnGroup"/>
@@ -655,7 +687,7 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Component id="posListTextArea" alignment="0" pref="600" max="32767" attributes="0"/>
+              <Component id="posListTextArea" alignment="0" pref="660" max="32767" attributes="0"/>
           </Group>
         </DimensionLayout>
         <DimensionLayout dim="1">
@@ -673,6 +705,11 @@
       </SubComponents>
     </Container>
     <Container class="javax.swing.JPanel" name="modesPanel">
+      <Properties>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[400, 400]"/>
+        </Property>
+      </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
       <SubComponents>
@@ -685,6 +722,7 @@
             </Property>
             <Property name="orientation" type="int" value="1"/>
             <Property name="rollover" type="boolean" value="true"/>
+            <Property name="alignmentX" type="float" value="0.5"/>
             <Property name="name" type="java.lang.String" value="OCT Modes Toolbar" noResource="true"/>
           </Properties>
           <AuxValues>
@@ -719,7 +757,7 @@
                           <Component id="linearOCTModeButton" min="-2" pref="109" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="logModeOCTButton" min="-2" pref="109" max="-2" attributes="0"/>
-                          <EmptySpace pref="91" max="32767" attributes="0"/>
+                          <EmptySpace pref="120" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -784,7 +822,7 @@
                           <Component id="pixelModeButton" min="-2" pref="121" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
                           <Component id="micronModeButton" min="-2" pref="121" max="-2" attributes="0"/>
-                          <EmptySpace min="0" pref="73" max="32767" attributes="0"/>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -845,7 +883,7 @@
               <Layout>
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="widthSlider" alignment="0" pref="317" max="32767" attributes="0"/>
+                      <Component id="widthSlider" alignment="0" pref="346" max="32767" attributes="0"/>
                   </Group>
                 </DimensionLayout>
                 <DimensionLayout dim="1">
@@ -894,10 +932,10 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="drawLinesRadioBtn" pref="130" max="32767" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
-                          <Component id="hideLinesRadioBtn" pref="175" max="32767" attributes="0"/>
-                          <EmptySpace min="-2" max="-2" attributes="0"/>
+                          <Component id="drawLinesRadioBtn" max="32767" attributes="0"/>
+                          <EmptySpace min="-2" pref="59" max="-2" attributes="0"/>
+                          <Component id="hideLinesRadioBtn" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="97" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -959,11 +997,10 @@
                 <DimensionLayout dim="0">
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
-                          <EmptySpace max="-2" attributes="0"/>
-                          <Component id="jRadioButton1" min="-2" pref="130" max="-2" attributes="0"/>
-                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="jRadioButton1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="67" max="-2" attributes="0"/>
                           <Component id="jRadioButton2" min="-2" max="-2" attributes="0"/>
-                          <EmptySpace pref="132" max="32767" attributes="0"/>
+                          <EmptySpace pref="181" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                 </DimensionLayout>
@@ -987,6 +1024,7 @@
                     </Property>
                     <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="Show"/>
+                    <Property name="alignmentX" type="float" value="0.5"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jRadioButton1ActionPerformed"/>
@@ -998,6 +1036,7 @@
                       <ComponentRef name="drawSelBtnGroup"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Hide"/>
+                    <Property name="alignmentX" type="float" value="0.5"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jRadioButton2ActionPerformed"/>

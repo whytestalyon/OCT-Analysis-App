@@ -64,7 +64,7 @@ public class SelectionLRPManager {
 
     public void setSelectionWidth(int selectionWidth) {
         this.selectionWidth = selectionWidth;
-        selectionMap.forEachValue(1000, (selection) -> {
+        selectionMap.forEach((key, selection) -> {
             selection.setWidth(selectionWidth);
         });
     }
@@ -78,9 +78,19 @@ public class SelectionLRPManager {
         private static final SelectionLRPManager INSTANCE = new SelectionLRPManager();
     }
 
-    public void addOrUpdateSpatialSelections(int foveaXPosition) {
+    /**
+     * Adds a selection for the fovea as well as the equidistant (from the
+     * fovea) selections based on the supplied center position of the fovea. All
+     * selections will be equal distant from each other and be generated outward
+     * from the position of the center of the fovea.
+     *
+     * @param foveaXPosition center position of he fovea
+     * @param micronsBetweenSelections the number of microns between each
+     * selection
+     */
+    public void addOrUpdateSpatialSelections(int foveaXPosition, int micronsBetweenSelections) {
         foveaCenterXPosition = foveaXPosition;
-        addOrUpdateSelections(getSpatialSelections(foveaXPosition));
+        addOrUpdateSelections(getEquidistantSelections(foveaXPosition, micronsBetweenSelections));
     }
 
     public void addOrUpdateSelections(List<OCTSelection> selections) {
@@ -185,40 +195,47 @@ public class SelectionLRPManager {
      * (including one centered on the fovea) based on the user supplied scale
      * and desired width of each selection.
      *
-     * @param foveaXPosition the X position corresponding to the center of the
+     * @param xPositionOnOCT the X position corresponding to the center of the
      * fovea relative to the top left corner of the OCT image (NOT the top left
      * corner of the window)
+     * @param micronsBetweenSelections the number of microns between each
+     * selection
      * @return list containing all of the OCT image selections based on the
      * foveal selection and the desired distance between selections
      */
-    private List<OCTSelection> getSpatialSelections(int foveaXPosition) {
-        OCTSelection fovealSel = getFoveaSelection(foveaXPosition);
-        return getSelectionsFromFoveaSelection(fovealSel);
+    private List<OCTSelection> getEquidistantSelections(int xPositionOnOCT, int micronsBetweenSelections) {
+        OCTSelection fovealSel = getFoveaSelection(xPositionOnOCT, false);
+        return getSelectionsFromFoveaSelection(fovealSel, micronsBetweenSelections);
     }
 
     /**
      * Given an X coordinate return a selection centered around the supplied
-     * position.
+     * position on the OCT.
      *
-     * @param position the X position corresponding to the center of the desired
-     * selection
+     * @param xPositionOnOCT the X position corresponding to the center of the
+     * desired selection
      * @param selectionName
      * @return a selection centered around the supplied position
      */
-    public OCTSelection getSelection(int position, String selectionName) {
-        return new OCTSelection(position - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, selectionName);
+    public OCTSelection getSelection(int xPositionOnOCT, String selectionName, SelectionType selType, boolean moveable) {
+        if (selType == SelectionType.FOVEAL) {
+            return getFoveaSelection(xPositionOnOCT, moveable);
+        } else {
+            return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), selType, selectionName, moveable);
+        }
     }
 
     /**
      * Given an X coordinate of the fovea return single selection centered
      * around the supplied position.
      *
-     * @param position the X position corresponding to the center of the fovea
+     * @param xPositionOnOCT the X position corresponding to the center of the
+     * fovea on the OCT
      * @return fovea selection
      */
-    public OCTSelection getFoveaSelection(int position) {
-        foveaCenterXPosition = position;
-        return new OCTSelection(position - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
+    public OCTSelection getFoveaSelection(int xPositionOnOCT, boolean moveable) {
+        foveaCenterXPosition = xPositionOnOCT;
+        return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), SelectionType.FOVEAL, "FV", moveable);
     }
 
     /**
@@ -229,20 +246,24 @@ public class SelectionLRPManager {
      * continue until the edge of the OCT image is reached in each direction.
      *
      * @param foveaSelection initial selection denoting the fovea on the OCT
+     * @param micronsBetweenSelections the number of microns between each
+     * selection
      * @return list containing all of the OCT image selections based on the
      * foveal selection and the desired distance between selections
      */
-    private List<OCTSelection> getSelectionsFromFoveaSelection(OCTSelection foveaSelection) {
+    private List<OCTSelection> getSelectionsFromFoveaSelection(OCTSelection foveaSelection, int micronsBetweenSelections) {
+        //set the microns between selections so we can calculate distance (in pixels) between selections
+        analysisData.setMicronsBetweenSelections(micronsBetweenSelections);
         LinkedList<OCTSelection> selections = new LinkedList<>();
         //add foveal selction to list of selections
         selections.add(foveaSelection);
         //build selection list to the right of center
         for (int selX = foveaSelection.getXPositionOnOct() + analysisData.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisData.getOct().getImageWidth(); selX += analysisData.getDistanceBetweenSelections(), selCnt++) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "R" + selCnt));
+            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), SelectionType.NONFOVEAL, "R" + selCnt, false));
         }
         //build selection list to the left of the center
         for (int selX = foveaSelection.getXPositionOnOct() - analysisData.getDistanceBetweenSelections(), selCnt = 1; selX >= 0; selX -= analysisData.getDistanceBetweenSelections(), selCnt++) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), OCTSelection.PERIPHERAL_SELECTION, "L" + selCnt));
+            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), SelectionType.NONFOVEAL, "L" + selCnt, false));
         }
 
         return selections;

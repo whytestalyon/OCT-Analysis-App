@@ -10,11 +10,16 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -23,6 +28,7 @@ import javax.swing.JSlider;
 import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import oct.analysis.application.comp.Analysis;
 import oct.analysis.application.comp.ToolbarFloatListener;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.ImageOperationManager;
@@ -30,6 +36,7 @@ import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
+import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.dat.ToolMode;
 import oct.io.TiffReader;
 import oct.util.Util;
@@ -125,15 +132,19 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        appMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
-        spatialAnalysisMenuItem = new javax.swing.JMenuItem();
-        ezAnalysisMenuItem = new javax.swing.JMenuItem();
+        equidistantAutoMenuItem = new javax.swing.JMenuItem();
+        equidistantInteractiveMenuItem = new javax.swing.JMenuItem();
+        autoEzMenuItem = new javax.swing.JMenuItem();
+        interactiveEzMenuItem = new javax.swing.JMenuItem();
         singleLRPAnalysisMenuItem = new javax.swing.JMenuItem();
         mirrorAnalysisMenuItem = new javax.swing.JMenuItem();
+        autoFoveaFindMenuItem = new javax.swing.JMenuItem();
+        interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -237,7 +248,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSmoothingPanel.setLayout(octSmoothingPanelLayout);
         octSmoothingPanelLayout.setHorizontalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 448, Short.MAX_VALUE)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
         );
         octSmoothingPanelLayout.setVerticalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -264,7 +275,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
         sharpRadiusPanelLayout.setHorizontalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 503, Short.MAX_VALUE)
         );
         sharpRadiusPanelLayout.setVerticalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -330,7 +341,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisTypeToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         analysisTypeToolbar.setRollover(true);
 
-        ezAnalysisToggleButton.setAction(ezAnalysisMenuItem.getAction());
+        ezAnalysisToggleButton.setAction(autoEzMenuItem.getAction());
         analysisToolBarBtnGroup.add(ezAnalysisToggleButton);
         ezAnalysisToggleButton.setText("EZ");
         ezAnalysisToggleButton.setToolTipText("Elipsoid Zone Analysis");
@@ -344,7 +355,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisTypeToolbar.add(ezAnalysisToggleButton);
 
-        spatialAnalysisToggleButton.setAction(spatialAnalysisMenuItem.getAction());
+        spatialAnalysisToggleButton.setAction(equidistantAutoMenuItem.getAction());
         analysisToolBarBtnGroup.add(spatialAnalysisToggleButton);
         spatialAnalysisToggleButton.setText("Spatial");
         spatialAnalysisToggleButton.setToolTipText("Spatial Analysis");
@@ -439,18 +450,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         positionPanel.setLayout(positionPanelLayout);
         positionPanelLayout.setHorizontalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
         );
         positionPanelLayout.setVerticalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
         );
 
+        modesPanel.setMaximumSize(new java.awt.Dimension(400, 400));
         modesPanel.setLayout(new java.awt.BorderLayout());
 
         modesToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         modesToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
         modesToolbar.setRollover(true);
+        modesToolbar.setAlignmentX(0.5F);
         modesToolbar.setName("OCT Modes Toolbar"); // NOI18N
 
         octModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Mode"));
@@ -483,7 +496,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(linearOCTModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(logModeOCTButton, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(91, Short.MAX_VALUE))
+                .addContainerGap(120, Short.MAX_VALUE))
         );
         octModePanelLayout.setVerticalGroup(
             octModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -526,7 +539,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(pixelModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(micronModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 73, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         selectionWidthModePanelLayout.setVerticalGroup(
             selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -561,7 +574,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
         selectionWidthSliderPanelLayout.setHorizontalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 317, Short.MAX_VALUE)
+            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 346, Short.MAX_VALUE)
         );
         selectionWidthSliderPanelLayout.setVerticalGroup(
             selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -599,10 +612,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(drawLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(hideLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(drawLinesRadioBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(59, 59, 59)
+                .addComponent(hideLinesRadioBtn)
+                .addGap(97, 97, 97))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -621,6 +634,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         drawSelBtnGroup.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         jRadioButton1.setText("Show");
+        jRadioButton1.setAlignmentX(0.5F);
         jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButton1ActionPerformed(evt);
@@ -629,6 +643,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         drawSelBtnGroup.add(jRadioButton2);
         jRadioButton2.setText("Hide");
+        jRadioButton2.setAlignmentX(0.5F);
         jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jRadioButton2ActionPerformed(evt);
@@ -640,11 +655,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jRadioButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jRadioButton1)
+                .addGap(67, 67, 67)
                 .addComponent(jRadioButton2)
-                .addContainerGap(132, Short.MAX_VALUE))
+                .addContainerGap(181, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -678,7 +692,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(Exit);
 
-        jMenuBar1.add(fileMenu);
+        appMenuBar.add(fileMenu);
 
         analysisMenu.setText("Analysis");
         analysisMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -687,21 +701,37 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
 
-        spatialAnalysisMenuItem.setText("Spatial");
-        spatialAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        equidistantAutoMenuItem.setText("Equidistant (automatic)");
+        equidistantAutoMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                spatialAnalysisMenuItemActionPerformed(evt);
+                equidistantAutoMenuItemActionPerformed(evt);
             }
         });
-        analysisMenu.add(spatialAnalysisMenuItem);
+        analysisMenu.add(equidistantAutoMenuItem);
 
-        ezAnalysisMenuItem.setText("EZ");
-        ezAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        equidistantInteractiveMenuItem.setText("Equidistant (interactive)");
+        equidistantInteractiveMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ezAnalysisMenuItemActionPerformed(evt);
+                equidistantInteractiveMenuItemActionPerformed(evt);
             }
         });
-        analysisMenu.add(ezAnalysisMenuItem);
+        analysisMenu.add(equidistantInteractiveMenuItem);
+
+        autoEzMenuItem.setText("EZ (automatic)");
+        autoEzMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoEzMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(autoEzMenuItem);
+
+        interactiveEzMenuItem.setText("EZ (interactive)");
+        interactiveEzMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interactiveEzMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(interactiveEzMenuItem);
 
         singleLRPAnalysisMenuItem.setText("Single");
         singleLRPAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -719,7 +749,23 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(mirrorAnalysisMenuItem);
 
-        jMenuBar1.add(analysisMenu);
+        autoFoveaFindMenuItem.setText("Find Fovea (automatic)");
+        autoFoveaFindMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                autoFoveaFindMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(autoFoveaFindMenuItem);
+
+        interactiveFindFoveaMenuItem.setText("Find Fovea (interactive)");
+        interactiveFindFoveaMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                interactiveFindFoveaMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(interactiveFindFoveaMenuItem);
+
+        appMenuBar.add(analysisMenu);
 
         toolsMenu.setText("Tools");
         toolsMenu.addActionListener(new java.awt.event.ActionListener() {
@@ -755,7 +801,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         toolsMenu.add(lrpMenuItem);
 
-        jMenuBar1.add(toolsMenu);
+        appMenuBar.add(toolsMenu);
 
         toolbarsMenu.setText("Toolbars");
 
@@ -777,9 +823,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         toolbarsMenu.add(ModesTBMenuItem);
 
-        jMenuBar1.add(toolbarsMenu);
+        appMenuBar.add(toolbarsMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(appMenuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -789,12 +835,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 .addComponent(analysisTypeToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(positionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(positionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(modesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -903,7 +949,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     selectionLRPManager.removeSelections(false);
                                     octAnalysisPanel.repaint();
                                     //add new selections and redraw panel
-                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(evt.getX(), "Selection"));
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x, "Selection", SelectionType.NONFOVEAL, true));
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:
@@ -914,43 +960,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                         case MIRROR:
                             break;
                         case EZ:
-                            OCTSelection selection = null;
+                            //allow user to select and change position of the EZ edge selections after the fact
                             switch (toolMode) {
-                                case SELECT_SINGLE:
-                                    //check that fovea has been selected already
-                                    int fvp = selectionLRPManager.getFoveaCenterXPosition();
-                                    if (fvp < 0) {
-                                        JOptionPane.showMessageDialog(this, "The fovea must be identified before EZ selections can be made!", "EZ Analysis Error", JOptionPane.ERROR_MESSAGE);
-                                        break;
-                                    }
-                                    //add new selections and redraw panel
-                                    String selName = "EZ " + ((evt.getX() > fvp) ? "Right" : "Left");
-                                    selection = selectionLRPManager.getSelection(evt.getX(), selName);
-                                    break;
-                                case SELECT_FOVEA:
-                                    //set fovea selection
-                                    selection = selectionLRPManager.getFoveaSelection(evt.getX());
-                                    break;
                                 case SCREEN_SELECT:
                                     selectSelection(evt.getX(), evt.getY());
+                                default:
                                     break;
                             }
-                            if (selection != null) {
-                                //clear out any current analysis selection
-                                selectionLRPManager.removeSelection(selection, false);
-                                octAnalysisPanel.repaint();
-                                //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSelection(selection);
-                                octAnalysisPanel.repaint();
-                            }
                             break;
-                        case SPATIAL:
+                        case EQUIDISTANT:
+                            //allow user to change placement of fovea after the fact
                             if (toolMode == ToolMode.SELECT_FOVEA) {
                                 //clear out any current analysis information
                                 selectionLRPManager.removeSelections(true);
                                 octAnalysisPanel.repaint();
                                 //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX());
+                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX(), analysisMetrics.getMicronsBetweenSelections());
                                 octAnalysisPanel.repaint();
                             }
                             break;
@@ -977,37 +1002,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.displayLRPs(this);
     }//GEN-LAST:event_lrpMenuItemActionPerformed
 
-    private void spatialAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spatialAnalysisMenuItemActionPerformed
-        setAnalysisMode(AnalysisMode.SPATIAL);
-    }//GEN-LAST:event_spatialAnalysisMenuItemActionPerformed
+    private void equidistantAutoMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_equidistantAutoMenuItemActionPerformed
+        performAnalysis(AnalysisMode.EQUIDISTANT, false);
+    }//GEN-LAST:event_equidistantAutoMenuItemActionPerformed
 
     private void analysisMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analysisMenuActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_analysisMenuActionPerformed
 
-    private void ezAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ezAnalysisMenuItemActionPerformed
-        restartAnalysis();
-        enableAnalysisTools();
-        analysisMode = AnalysisMode.EZ;
-        //first automatically find the center of the fovea and add line at location
-        SwingUtilities.invokeLater(() -> {
-            int fv = analysisMetrics.getFoveaXPosition();
-            System.out.println("Fovea X position: " + fv);
-            OCTLine foveaSelection = new OCTLine(fv, 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.FOVEAL_SELECTION, "FV");
-            selectionLRPManager.addOrUpdateSelection(foveaSelection);
-            //second, automatically find the X position of each EZ edge
-            int[] ez = analysisMetrics.getEZEdgeCoords();
-            System.out.println("Got EZ: " + Arrays.toString(ez));
-            selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Left"));
-            selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, analysisMetrics.getOct().getImageHeight(), OCTSelection.PERIPHERAL_SELECTION, "EZ Right"));
-            octAnalysisPanel.repaint();
-        });
-    }//GEN-LAST:event_ezAnalysisMenuItemActionPerformed
+    private void autoEzMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoEzMenuItemActionPerformed
+        performAnalysis(AnalysisMode.EZ, false);
+    }//GEN-LAST:event_autoEzMenuItemActionPerformed
 
     private void singleLRPAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_singleLRPAnalysisMenuItemActionPerformed
-        restartAnalysis();
-        enableAnalysisTools();
-        analysisMode = AnalysisMode.SINGLE;
+        performAnalysis(AnalysisMode.SINGLE, true);
     }//GEN-LAST:event_singleLRPAnalysisMenuItemActionPerformed
 
     private void mirrorAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mirrorAnalysisMenuItemActionPerformed
@@ -1052,11 +1060,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_singleSelectButtonActionPerformed
 
     private void ezAnalysisToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ezAnalysisToggleButtonActionPerformed
-        ezAnalysisMenuItemActionPerformed(evt);
+        performAnalysis(AnalysisMode.EZ, false);
     }//GEN-LAST:event_ezAnalysisToggleButtonActionPerformed
 
     private void spatialAnalysisToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_spatialAnalysisToggleButtonActionPerformed
-        setAnalysisMode(AnalysisMode.SPATIAL);
+        performAnalysis(AnalysisMode.EQUIDISTANT, false);
     }//GEN-LAST:event_spatialAnalysisToggleButtonActionPerformed
 
     private void octAnalysisPanelKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_octAnalysisPanelKeyTyped
@@ -1114,28 +1122,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_lrpSmoothingSliderStateChanged
 
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
-        switch (analysisMode) {
-            case SINGLE:
-            case MIRROR:
-            case EZ:
-                //update the selection width
-                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-                //redraw current selections on the image panel
-                octAnalysisPanel.repaint();
-                //update the LRPs for all of the selections (if they are being presented)
-                selectionLRPManager.updateLRPs();
-                break;
-            case SPATIAL:
-                //update the selection width
-                selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-                //recalculate all of the selections with new widths and update LRPs if present
-                selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition());
-                //repaint selections on OCT image panel
-                octAnalysisPanel.repaint();
-                break;
-            default:
-                break;
+        //update the selection width (will only affect those selections that are resizable (OCTLines are NOT resizable)
+        selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
+        if (analysisMode == AnalysisMode.EQUIDISTANT) {
+            //recalculate all of the selections with new widths and update LRPs if present
+            selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition(), analysisMetrics.getMicronsBetweenSelections());
         }
+        //redraw current selections on the image panel
+        octAnalysisPanel.repaint();
+        //update the LRPs for all of the selections (if they are being presented)
+        selectionLRPManager.updateLRPs();
     }//GEN-LAST:event_widthSliderStateChanged
 
     private void micronModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micronModeButtonActionPerformed
@@ -1213,6 +1209,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octAnalysisPanel.hideSelections();
     }//GEN-LAST:event_jRadioButton2ActionPerformed
 
+    private void autoFoveaFindMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_autoFoveaFindMenuItemActionPerformed
+        performAnalysis(AnalysisMode.FIND_FOVEA, false);
+    }//GEN-LAST:event_autoFoveaFindMenuItemActionPerformed
+
+    private void interactiveFindFoveaMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveFindFoveaMenuItemActionPerformed
+        performAnalysis(AnalysisMode.FIND_FOVEA, true);
+    }//GEN-LAST:event_interactiveFindFoveaMenuItemActionPerformed
+
+    private void interactiveEzMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveEzMenuItemActionPerformed
+        performAnalysis(AnalysisMode.EZ, true);
+    }//GEN-LAST:event_interactiveEzMenuItemActionPerformed
+
+    private void equidistantInteractiveMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_equidistantInteractiveMenuItemActionPerformed
+        performAnalysis(AnalysisMode.EQUIDISTANT, true);
+    }//GEN-LAST:event_equidistantInteractiveMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1235,17 +1247,20 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.setFoveaCenterXPosition(-1);
     }
 
-    private void setAnalysisMode(AnalysisMode am) {
+    private void performAnalysis(AnalysisMode am, boolean interactive) {
         restartAnalysis();
         enableAnalysisTools();
         analysisMode = am;
         switch (am) {
-            case SPATIAL:
-                //ask for the desired distance between selections
-                double micronsBetweenSelections = oct.util.Util.parseNumberFromInput((String) JOptionPane.showInputDialog(this, "Enter the desired distance between selections(microns):", "Distance between selections", JOptionPane.QUESTION_MESSAGE));
-                analysisMetrics.setMicronsBetweenSelections((int) micronsBetweenSelections);
+            case EQUIDISTANT:
+                Analysis.performEquidistant(interactive);
                 break;
             case EZ:
+                Analysis.findEZ(interactive);
+                break;
+            case FIND_FOVEA:
+                Analysis.findFovea(interactive);
+                break;
             case MIRROR:
             case SINGLE:
             default:
@@ -1320,10 +1335,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
     private javax.swing.JToolBar analysisTypeToolbar;
+    private javax.swing.JMenuBar appMenuBar;
+    private javax.swing.JMenuItem autoEzMenuItem;
+    private javax.swing.JMenuItem autoFoveaFindMenuItem;
     private javax.swing.ButtonGroup drawLinesButtonGroup;
     private javax.swing.JRadioButton drawLinesRadioBtn;
     private javax.swing.ButtonGroup drawSelBtnGroup;
-    private javax.swing.JMenuItem ezAnalysisMenuItem;
+    private javax.swing.JMenuItem equidistantAutoMenuItem;
+    private javax.swing.JMenuItem equidistantInteractiveMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem fileOpenMenuItem;
@@ -1333,7 +1352,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton foveaSelectButton;
     private javax.swing.JCheckBoxMenuItem foveaSelectMenuItem;
     private javax.swing.JRadioButton hideLinesRadioBtn;
-    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem interactiveEzMenuItem;
+    private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1370,7 +1390,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton singleLRPAnalysisToggleButton;
     private javax.swing.JToggleButton singleSelectButton;
     private javax.swing.JCheckBoxMenuItem singleSelectMenuItem;
-    private javax.swing.JMenuItem spatialAnalysisMenuItem;
     private javax.swing.JToggleButton spatialAnalysisToggleButton;
     private javax.swing.JMenu toolbarsMenu;
     private javax.swing.JMenu toolsMenu;
