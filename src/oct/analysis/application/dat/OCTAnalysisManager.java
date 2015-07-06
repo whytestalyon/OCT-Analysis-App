@@ -12,7 +12,6 @@ import java.awt.Container;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,9 +66,6 @@ public class OCTAnalysisManager {
     private OCTMode displayMode = OCTMode.LOG; //default display mode of image is assumed to be a Log OCT image
     private int foveaCenterXPosition = -1;
     private OCTImagePanel imgPanel;
-    private String progressMessage = "";
-    private int progress = 0;
-
     private OCTAnalysisManager() {
     }
 
@@ -680,14 +676,6 @@ public class OCTAnalysisManager {
             retLine.add(new LinePoint(pointA.getX(), Math.abs(pointA.getY() - pointB.getY())));
         }
         return retLine;
-    }
-
-    public String getProgressMessage() {
-        return progressMessage;
-    }
-
-    public int getProgress() {
-        return progress;
     }
 
     private enum Cardinality {

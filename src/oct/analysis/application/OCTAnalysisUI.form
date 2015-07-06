@@ -2,14 +2,6 @@
 
 <Form version="1.5" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
-    <Component class="javax.swing.JFileChooser" name="openFileChooser">
-      <Properties>
-        <Property name="dialogTitle" type="java.lang.String" value="Select OCT..."/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openFileChooserActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.ButtonGroup" name="lrpButtonGroup">
     </Component>
     <Component class="javax.swing.ButtonGroup" name="selModeButtonGroup">
@@ -35,6 +27,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileOpenMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="saveAnalysisMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Save Analysis"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="saveAnalysisMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="Exit">

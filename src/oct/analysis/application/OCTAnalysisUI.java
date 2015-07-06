@@ -38,6 +38,7 @@ import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.dat.ToolMode;
+import oct.io.AnalysisSaver;
 import oct.io.TiffReader;
 import oct.util.Util;
 import oct.util.ip.BlurOperation;
@@ -86,7 +87,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        openFileChooser = new javax.swing.JFileChooser();
         lrpButtonGroup = new javax.swing.ButtonGroup();
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
@@ -135,6 +135,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         appMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         fileOpenMenuItem = new javax.swing.JMenuItem();
+        saveAnalysisMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
         equidistantAutoMenuItem = new javax.swing.JMenuItem();
@@ -153,13 +154,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         toolbarsMenu = new javax.swing.JMenu();
         filtersTBMenuItem = new javax.swing.JCheckBoxMenuItem();
         ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
-
-        openFileChooser.setDialogTitle("Select OCT...");
-        openFileChooser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openFileChooserActionPerformed(evt);
-            }
-        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationByPlatform(true);
@@ -685,6 +679,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(fileOpenMenuItem);
 
+        saveAnalysisMenuItem.setText("Save Analysis");
+        saveAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                saveAnalysisMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(saveAnalysisMenuItem);
+
         Exit.setText("Exit");
         Exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -877,25 +879,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void fileOpenMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileOpenMenuItemActionPerformed
-        //clear old selections 
-        selectionLRPManager.removeSelections(true);
-        //reset values
-        octSharpRadiusSlider.setValue(0);
-        octSharpWeightSlider.setValue(0);
-        octSmoothingSlider.setValue(0);
-        logModeOCTButton.setSelected(true);
-        lrpSmoothingSlider.setValue(5);
-        //clear old operations and modes
-        analysisMetrics.setOCTMode(OCTMode.LOG);
-        analysisMetrics.setFoveaCenterXPosition(-1);
-        ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
-        ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0, 0));
-        //clear old OCT
-        analysisMetrics.setOct(null);
-        analysisMetrics.setScale(0);
-        //reset display panel offsets
-        octAnalysisPanel.resetImageOffsets();
         //load new image
+        JFileChooser openFileChooser = new JFileChooser();
         openFileChooser.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
         openFileChooser.setMultiSelectionEnabled(false);
         int returnVal = openFileChooser.showOpenDialog(this);
@@ -909,6 +894,24 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 if (oct == null) {
                     throw new IOException("OCT information missing, couldn't load OCT for analysis.");
                 }
+                //clear old selections 
+                selectionLRPManager.removeSelections(true);
+                //reset values
+                octSharpRadiusSlider.setValue(0);
+                octSharpWeightSlider.setValue(0);
+                octSmoothingSlider.setValue(0);
+                logModeOCTButton.setSelected(true);
+                lrpSmoothingSlider.setValue(5);
+                //clear old operations and modes
+                analysisMetrics.setOCTMode(OCTMode.LOG);
+                analysisMetrics.setFoveaCenterXPosition(-1);
+                ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
+                ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0, 0));
+                //clear old OCT
+                analysisMetrics.setOct(null);
+                analysisMetrics.setScale(0);
+                //reset display panel offsets
+                octAnalysisPanel.resetImageOffsets();
                 //add the OCT to the analysis manager, it will take care of making it available to the OCT image panel for drawing
                 analysisMetrics.setOct(oct);
                 //display the selected image in the display
@@ -921,18 +924,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
                 );
             }
-        } else {
-//            System.out.println("File access cancelled by user.");
         }
     }//GEN-LAST:event_fileOpenMenuItemActionPerformed
 
     private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
         System.exit(0);
     }//GEN-LAST:event_ExitActionPerformed
-
-    private void openFileChooserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFileChooserActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_openFileChooserActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
         // TODO add your handling code here:
@@ -1237,6 +1234,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         performAnalysis(AnalysisMode.MIRROR, true);
     }//GEN-LAST:event_interactiveMirrorMenuItemActionPerformed
 
+    private void saveAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAnalysisMenuItemActionPerformed
+
+        AnalysisSaver.save(null, analysisMode);
+    }//GEN-LAST:event_saveAnalysisMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1391,10 +1393,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JSlider octSharpWeightSlider;
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
-    private javax.swing.JFileChooser openFileChooser;
     private javax.swing.JRadioButton pixelModeButton;
     private oct.analysis.application.comp.MouseListeningTextArea posListTextArea;
     private javax.swing.JPanel positionPanel;
+    private javax.swing.JMenuItem saveAnalysisMenuItem;
     private javax.swing.JToggleButton screenSelectButton;
     private javax.swing.ButtonGroup selModeButtonGroup;
     private javax.swing.JPanel selectionWidthModePanel;
