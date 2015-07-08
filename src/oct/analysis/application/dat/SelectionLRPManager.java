@@ -12,6 +12,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.LRPFrame;
@@ -140,6 +141,24 @@ public class SelectionLRPManager {
         selectionMap.clear();
     }
 
+    public void removeNonfovealSelections(boolean removeLRPs) {
+        if (removeLRPs) {
+            //close all active LRP Frames
+            lrpDispMap.forEach((lrpKey, lrpFrame) -> {
+                lrpFrame.dispose();
+            });
+            //reset LRP tracking map
+            lrpDispMap.clear();
+        }
+        //remove all of the selections
+        Optional<OCTSelection> f = selectionMap.values().stream().filter(sel -> sel.getSelectionType() == SelectionType.FOVEAL).findFirst();
+        selectionMap.clear();
+        if (f.isPresent()) {
+            OCTSelection fovealsel = f.get();
+            selectionMap.put(fovealsel.getSelectionName(), fovealsel);
+        }
+    }
+
     public void removeSelection(OCTSelection s, boolean removeLRP) {
         if (removeLRP) {
             if (lrpDispMap.containsKey(s.getSelectionName())) {
@@ -235,7 +254,7 @@ public class SelectionLRPManager {
      */
     public OCTSelection getFoveaSelection(int xPositionOnOCT, boolean moveable) {
         foveaCenterXPosition = xPositionOnOCT;
-        return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), SelectionType.FOVEAL, "FV", moveable);
+        return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", moveable);
     }
 
     /**
@@ -304,12 +323,10 @@ public class SelectionLRPManager {
     }
 
     private void moveSelection(OCTSelection sel, int pixelsToMoveBy) {
-        OCTSelection selection = null;
-        if (!selectedSelectionName.isEmpty()
-                && (selection = selectionMap.get(selectedSelectionName)) != null
-                && selection.getXPositionOnOct() + pixelsToMoveBy >= 0
-                && selection.getXPositionOnOct() + pixelsToMoveBy + selectionWidth - 1 < analysisData.getOct().getImageWidth()) {
-            selection.setXPositionOnOct(selection.getXPositionOnOct() + pixelsToMoveBy);
+        if (sel.getXPositionOnOct() + pixelsToMoveBy >= 0
+                && sel.getXPositionOnOct() + pixelsToMoveBy + selectionWidth - 1 < analysisData.getOct().getImageWidth()) {
+            sel.setXPositionOnOct(sel.getXPositionOnOct() + pixelsToMoveBy);
+            updateLRP(sel);
         }
     }
 

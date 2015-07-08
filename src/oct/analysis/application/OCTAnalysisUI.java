@@ -10,16 +10,10 @@ import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Hashtable;
-import java.util.concurrent.ExecutionException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -156,6 +150,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("OCT Anatomizer");
         setLocationByPlatform(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
@@ -965,6 +960,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                             }
                             break;
                         case MIRROR:
+                            switch (toolMode) {
+                                case SELECT_SINGLE:
+                                    //clear out any current analysis selection
+                                    selectionLRPManager.removeNonfovealSelections(false);
+                                    octAnalysisPanel.repaint();
+                                    //add new selections and redraw panel
+                                    int distFromFovea = Math.abs(analysisMetrics.getFoveaCenterXPosition() - octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x);
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMetrics.getFoveaCenterXPosition() - distFromFovea, "Left", SelectionType.NONFOVEAL, true));
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMetrics.getFoveaCenterXPosition() + distFromFovea, "Right", SelectionType.NONFOVEAL, true));
+                                    octAnalysisPanel.repaint();
+                                    break;
+                                case SCREEN_SELECT:
+                                    selectSelection(evt.getX(), evt.getY());
+                                    break;
+                            }
                             break;
                         case EZ:
                             //allow user to select and change position of the EZ edge selections after the fact
@@ -1039,20 +1049,64 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //determine direction to move the selection
         switch (evt.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
-                sel = selectionLRPManager.getSelectedSelection();
-                selectionLRPManager.moveSelectionRight(sel);
+                switch (analysisMode) {
+                    case MIRROR:
+                        sel = selectionLRPManager.getSelectedSelection();
+                        if (sel.getSelectionName().equals("Left")) {
+                            //move left selection to the right and right selection to the left (i.e. move them closer to fovea selection)
+                            selectionLRPManager.moveSelectionRight(sel);
+                            sel = selectionLRPManager.getSelections().stream().filter(s -> s.getSelectionName().equals("Right")).findFirst().get();
+                            selectionLRPManager.moveSelectionLeft(sel);
+                        } else {
+                            //move left selection to the left and right selection to the right (i.e. move them away from the fovea selection)
+                            selectionLRPManager.moveSelectionRight(sel);
+                            sel = selectionLRPManager.getSelections().stream().filter(s -> s.getSelectionName().equals("Left")).findFirst().get();
+                            selectionLRPManager.moveSelectionLeft(sel);
+                        }
+                        break;
+                    case SINGLE:
+                    case EZ:
+                        sel = selectionLRPManager.getSelectedSelection();
+                        if (sel.isMoveable()) {
+                            selectionLRPManager.moveSelectionRight(sel);
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case KeyEvent.VK_LEFT:
-                sel = selectionLRPManager.getSelectedSelection();
-                selectionLRPManager.moveSelectionLeft(sel);
+                switch (analysisMode) {
+                    case MIRROR:
+                        sel = selectionLRPManager.getSelectedSelection();
+                        if (sel.getSelectionName().equals("Right")) {
+                            //move left selection to the right and right selection to the left (i.e. move them closer to fovea selection)
+                            selectionLRPManager.moveSelectionLeft(sel);
+                            sel = selectionLRPManager.getSelections().stream().filter(s -> s.getSelectionName().equals("Left")).findFirst().get();
+                            selectionLRPManager.moveSelectionRight(sel);
+                        } else {
+                            //move left selection to the left and right selection to the right (i.e. move them away from the fovea selection)
+                            selectionLRPManager.moveSelectionLeft(sel);
+                            sel = selectionLRPManager.getSelections().stream().filter(s -> s.getSelectionName().equals("Right")).findFirst().get();
+                            selectionLRPManager.moveSelectionRight(sel);
+                        }
+                        break;
+                    case SINGLE:
+                    case EZ:
+                        sel = selectionLRPManager.getSelectedSelection();
+                        if (sel.isMoveable()) {
+                            selectionLRPManager.moveSelectionRight(sel);
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 break;
             default:
                 break;
         }
         //refresh the OCT analysis panel with the updated selection information
         octAnalysisPanel.repaint();
-        //refresh the LRP
-        selectionLRPManager.addOrUpdateSelection(sel);
     }//GEN-LAST:event_octAnalysisPanelKeyPressed
 
     private void mirrorAnalysisToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mirrorAnalysisToggleButtonActionPerformed

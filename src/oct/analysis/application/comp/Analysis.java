@@ -114,34 +114,7 @@ public class Analysis {
     }
 
     public static void performMirror(boolean interactive) {
-        //based off of interactive mode specified, find the fovea, and then trigger EZ edge detection
-        try {
-            octMngr.findCenterOfFovea(!interactive);
-        } catch (InterruptedException | ExecutionException ex) {
-            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        octMngr.addPropertyChangeListener(new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                //if the change that occured was the setting (or update ) of the position of the fovea
-                //then trigger the identification of the EZ edges
-                if (OCTAnalysisManager.PROP_FOVEA_CENTER_X_POSITION.equals(evt.getPropertyName())) {
-                    SwingUtilities.invokeLater(() -> {
-                        int fv = octMngr.getFoveaCenterXPosition();
-                        OCTLine foveaSelection = new OCTLine(fv, 0, octMngr.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-                        selectionLRPManager.addOrUpdateSelection(foveaSelection);
-                        octMngr.getImgPanel().repaint();
-                        //second, automatically find the X position of each EZ edge
-                        int[] ez = octMngr.getEZEdgeCoords();
-                        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, octMngr.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
-                        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, octMngr.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
-                        octMngr.getImgPanel().repaint();
-                    });
-                    //remove the listener since it's no longer needed
-                    octMngr.removePropertyChangeListener(this);
-                }
-            }
-        });
+        findFovea(interactive);
     }
+
 }
