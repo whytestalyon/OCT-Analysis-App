@@ -145,6 +145,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         newAnalysisMenuItem = new javax.swing.JMenuItem();
         openAnalysisMenuItem = new javax.swing.JMenuItem();
         saveAnalysisMenuItem = new javax.swing.JMenuItem();
+        exportAnalysisResultsMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
         equidistantAutoMenuItem = new javax.swing.JMenuItem();
@@ -631,6 +632,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(saveAnalysisMenuItem);
 
+        exportAnalysisResultsMenuItem.setText("Export Analysis Results");
+        exportAnalysisResultsMenuItem.setEnabled(false);
+        exportAnalysisResultsMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAnalysisResultsMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportAnalysisResultsMenuItem);
+
         Exit.setText("Exit");
         Exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -832,8 +842,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             try {
                 //read in image and keep track of the image for later use
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
-//                System.out.println("Read in tiff image!");
-                OCT oct = Util.getOCT(tiffBI, this);
+                OCT oct = Util.getOCT(tiffBI, this, tiffFile.getName());
                 if (oct == null) {
                     throw new IOException("OCT information missing, couldn't load OCT for analysis.");
                 }
@@ -1268,6 +1277,23 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_openAnalysisMenuItemActionPerformed
 
+    private void exportAnalysisResultsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnalysisResultsMenuItemActionPerformed
+        fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setMultiSelectionEnabled(false);
+        if (fc.getSelectedFile() != null && fc.getSelectedFile().isFile()) {
+            fc.setCurrentDirectory(fc.getSelectedFile().getParentFile());
+        }
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File saveDir = fc.getSelectedFile();
+            try {
+                AnalysisSaver.exportAnalysisData(saveDir);
+            } catch (IOException ex) {
+                Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_exportAnalysisResultsMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1433,6 +1459,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel displayPanel;
     private javax.swing.JMenuItem equidistantAutoMenuItem;
     private javax.swing.JMenuItem equidistantInteractiveMenuItem;
+    private javax.swing.JMenuItem exportAnalysisResultsMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
     private javax.swing.Box.Filler filler1;

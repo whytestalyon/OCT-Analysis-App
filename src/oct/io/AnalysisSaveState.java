@@ -6,7 +6,6 @@
 package oct.io;
 
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.util.LinkedList;
 import java.util.List;
 import oct.analysis.application.OCTLine;
@@ -43,6 +42,7 @@ public class AnalysisSaveState {
     private double scale;
     private int micronsBetweenSelections = 0;
     private byte[] logOCT = null;
+    private String octFileName = null;
     private OCTMode displayMode = null; //default display mode of image is assumed to be a Log OCT image
     private int foveaCenterXPosition = -1;
     /*
@@ -203,6 +203,14 @@ public class AnalysisSaveState {
 
     public void setSharpenWeight(float sharpenWeight) {
         this.sharpenWeight = sharpenWeight;
+    }
+
+    public String getOctFileName() {
+        return octFileName;
+    }
+
+    public void setOctFileName(String octFileName) {
+        this.octFileName = octFileName;
     }
 
 }

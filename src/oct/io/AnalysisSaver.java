@@ -49,4 +49,8 @@ public class AnalysisSaver {
         }
         return gson.fromJson(analysisJson, AnalysisSaveState.class);
     }
+    
+    public static void exportAnalysisData(File outputDir) throws IOException{
+        
+    }
 }

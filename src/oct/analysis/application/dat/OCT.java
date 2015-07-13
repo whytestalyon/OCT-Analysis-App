@@ -12,16 +12,18 @@ import oct.util.Util;
 public class OCT {
 
     private final BufferedImage logOctImage;
+    private final String fileName;
     private final BufferedImage linearOctImage;
-    private final double logScale = 255D / Math.log(255D);
+    private static final double logScale = 255D / Math.log(255D);
 
     /**
      * Creates a simple data structure for caching the log and linear versions
      * of an OCT image.
      *
      * @param octImage the log OCT image to be cached
+     * @param octFileName
      */
-    public OCT(BufferedImage octImage) {
+    public OCT(BufferedImage octImage, String octFileName) {
         //segmentation as well as some image operations can only be done on 
         //8-bit gray scale images, ensure image is in useable format for application
         ImagePlus ip = new ImagePlus("", octImage);
@@ -33,6 +35,8 @@ public class OCT {
         logOctImage = ip.getBufferedImage();
         //store liner scale version of OCT
         linearOctImage = getLinearOCT(logOctImage);
+        //store OCT image file name
+        fileName = octFileName;
     }
 
     /**
@@ -69,6 +73,10 @@ public class OCT {
      */
     public int getImageHeight() {
         return logOctImage.getHeight();
+    }
+
+    public String getFileName() {
+        return fileName;
     }
 
     /**

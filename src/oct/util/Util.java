@@ -59,19 +59,19 @@ public class Util {
         }
     }
 
-    public static OCT getOCT(BufferedImage octImage, OCTAnalysisUI octAnalysisUI) {
+    public static OCT getOCT(BufferedImage octImage, OCTAnalysisUI octAnalysisUI, String octFileName) {
         Object[] options = {"I have the scale!", "I have axial length and scan width!"};
         int n = JOptionPane.showOptionDialog(octAnalysisUI, "We need to know the scale of the OCT. What information do you have?", "Determine OCT Scale...", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         switch (n) {
             case JOptionPane.YES_OPTION:
                 double scale = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT scale (microns per pixel):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 OCTAnalysisManager.getInstance().setScale(scale);
-                return new OCT(octImage);
+                return new OCT(octImage, octFileName);
             case JOptionPane.NO_OPTION:
                 double nominalScanWidth = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT nominal scan length(millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 double axialLength = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT scale (millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
                 OCTAnalysisManager.getInstance().setScale(axialLength, nominalScanWidth, octImage.getWidth());
-                return new OCT(octImage);
+                return new OCT(octImage, octFileName);
             default:
                 break;
         }
@@ -354,11 +354,13 @@ public class Util {
         double scale = analysisMngr.getScale();
         int micronsBetweenSelections = analysisMngr.getMicronsBetweenSelections();
         OCT oct = analysisMngr.getOct();
+        String octFileName = oct.getFileName();
         OCTMode displayMode = analysisMngr.getDisplayMode(); //default display mode of image is assumed to be a Log OCT image
         int foveaCenterXPosition = analysisMngr.getFoveaCenterXPosition();
         saveObj.setScale(scale);
         saveObj.setMicronsBetweenSelections(micronsBetweenSelections);
         saveObj.setLogOCT(TiffWriter.writeTiffImageToByteArray(oct.getLogOctImage()));
+        saveObj.setOctFileName(octFileName);
         saveObj.setDisplayMode(displayMode);
         saveObj.setFoveaCenterXPosition(foveaCenterXPosition);
         /*
@@ -385,12 +387,12 @@ public class Util {
          */
         analysisMngr.setScale(saveObj.getScale());
         analysisMngr.setMicronsBetweenSelections(saveObj.getMicronsBetweenSelections());
-        OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()));
+        OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()), saveObj.getOctFileName());
         analysisMngr.setOct(oct);
         OCTMode dispmode = saveObj.getDisplayMode();
         analysisMngr.setOCTMode(dispmode);
         analysisMngr.setFoveaCenterXPosition(saveObj.getFoveaCenterXPosition());
-        
+
         /*
          Analysis info
          */
@@ -437,11 +439,11 @@ public class Util {
         analysisMngr.getImgPanel().repaint();
         ui.validate();
         ui.pack();
-        
+
         /*
-        update UI with analysis settings
-        */
-        if(dispmode == OCTMode.LINEAR){
+         update UI with analysis settings
+         */
+        if (dispmode == OCTMode.LINEAR) {
             ui.getLinearOCTModeButton().setSelected(true);
         }
         ui.getLrpSmoothingSlider().setValue(selMngr.getLrpSmoothingFactor());
@@ -449,9 +451,9 @@ public class Util {
         ui.getDispSegmentationCheckBox().setSelected(analysisMngr.getImgPanel().isDrawLines());
         ui.getDispSelectionsCheckBox().setSelected(analysisMngr.getImgPanel().isDrawSelections());
         ui.getOctSharpRadiusSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenSigma() * 10D));
-        ui.getOctSharpWeightSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenWeight()* 100F));
-        ui.getOctSmoothingSlider().setValue((int) Math.round(imageOperationMngr.getBlur().getBlurFactor()* 10D));
-        if(analysisMngr.getAnalysisMode() != null){
+        ui.getOctSharpWeightSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenWeight() * 100F));
+        ui.getOctSmoothingSlider().setValue((int) Math.round(imageOperationMngr.getBlur().getBlurFactor() * 10D));
+        if (analysisMngr.getAnalysisMode() != null) {
             ui.enableAnalysisTools();
         }
     }
