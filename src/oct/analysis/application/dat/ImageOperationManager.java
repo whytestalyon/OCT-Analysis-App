@@ -7,7 +7,6 @@ package oct.analysis.application.dat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import oct.util.ip.BlurOperation;
 import oct.util.ip.ImageOperation;
 import oct.util.ip.SharpenOperation;

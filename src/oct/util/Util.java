@@ -379,7 +379,7 @@ public class Util {
         SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
         ImageOperationManager imageOperationMngr = ImageOperationManager.getInstance();
 
-        //restore the analysis
+        //restore the analysis and update UI to reflect analysis settings
         /*
          OCT and OCT analysis manager data
          */
@@ -387,7 +387,8 @@ public class Util {
         analysisMngr.setMicronsBetweenSelections(saveObj.getMicronsBetweenSelections());
         OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()));
         analysisMngr.setOct(oct);
-        analysisMngr.setOCTMode(saveObj.getDisplayMode());
+        OCTMode dispmode = saveObj.getDisplayMode();
+        analysisMngr.setOCTMode(dispmode);
         analysisMngr.setFoveaCenterXPosition(saveObj.getFoveaCenterXPosition());
         
         /*
@@ -398,7 +399,6 @@ public class Util {
          Selection info
          */
         selMngr.setLrpSmoothingFactor(saveObj.getLrpSmoothingFactor());
-        System.out.println("lrp sf: " + selMngr.getLrpSmoothingFactor());
         selMngr.setSelectionWidth(saveObj.getSelectionWidth());
         /*
          OCT dispaly panel info
@@ -417,7 +417,6 @@ public class Util {
         } else {
             analysisMngr.getImgPanel().hideSelections();
         }
-
 
         /*
          image operations
@@ -438,5 +437,22 @@ public class Util {
         analysisMngr.getImgPanel().repaint();
         ui.validate();
         ui.pack();
+        
+        /*
+        update UI with analysis settings
+        */
+        if(dispmode == OCTMode.LINEAR){
+            ui.getLinearOCTModeButton().setSelected(true);
+        }
+        ui.getLrpSmoothingSlider().setValue(selMngr.getLrpSmoothingFactor());
+        ui.getWidthSlider().setValue(selMngr.getSelectionWidth());
+        ui.getDispSegmentationCheckBox().setSelected(analysisMngr.getImgPanel().isDrawLines());
+        ui.getDispSelectionsCheckBox().setSelected(analysisMngr.getImgPanel().isDrawSelections());
+        ui.getOctSharpRadiusSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenSigma() * 10D));
+        ui.getOctSharpWeightSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenWeight()* 100F));
+        ui.getOctSmoothingSlider().setValue((int) Math.round(imageOperationMngr.getBlur().getBlurFactor()* 10D));
+        if(analysisMngr.getAnalysisMode() != null){
+            ui.enableAnalysisTools();
+        }
     }
 }

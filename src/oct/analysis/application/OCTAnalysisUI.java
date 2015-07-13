@@ -19,10 +19,13 @@ import java.text.DecimalFormat;
 import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
 import javax.swing.MenuElement;
 import javax.swing.SwingUtilities;
@@ -57,6 +60,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private final DecimalFormat df = new DecimalFormat("#.00");
     private final JFileChooser fc = new JFileChooser();
     private ToolMode toolMode = ToolMode.NONE;
+    private BufferedImage appIcon = null;
 
     static {
         // set a chart theme using the new shadow generator feature available in
@@ -68,6 +72,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
      * Creates new form OCTAnalysisUI
      */
     public OCTAnalysisUI() {
+        try {
+            appIcon = ImageIO.read(getClass().getClassLoader().getResource("oct/rsc/img/logo_full.png"));
+        } catch (IOException ex) {
+            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
         initComponents();
         //set connection for debugin
         analysisMngr.setImjPanel(octAnalysisPanel);
@@ -156,7 +165,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("OCT Anatomizer");
+        setTitle("OCT Reflectivity Analytics");
+        setIconImage(appIcon);
         setLocationByPlatform(true);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
@@ -613,6 +623,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         fileMenu.add(openAnalysisMenuItem);
 
         saveAnalysisMenuItem.setText("Save Analysis");
+        saveAnalysisMenuItem.setEnabled(false);
         saveAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 saveAnalysisMenuItemActionPerformed(evt);
@@ -851,6 +862,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 octAnalysisPanel.repaint();
                 validate();
                 pack();
+                //enable save
+                saveAnalysisMenuItem.setEnabled(true);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Image loading failed for " + tiffFile.getAbsolutePath()
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
@@ -1247,6 +1260,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             try {
                 AnalysisSaveState readAnalysis = AnalysisSaver.readAnalysis(saveFile);
                 Util.openSavedAnalysis(this, readAnalysis);
+                //enable save
+                saveAnalysisMenuItem.setEnabled(true);
             } catch (IOException ex) {
                 Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1319,6 +1334,50 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         }
         octAnalysisPanel.repaint();
         return selection;
+    }
+
+    public JCheckBox getDispSegmentationCheckBox() {
+        return dispSegmentationCheckBox;
+    }
+
+    public JCheckBox getDispSelectionsCheckBox() {
+        return dispSelectionsCheckBox;
+    }
+
+    public JRadioButton getLinearOCTModeButton() {
+        return linearOCTModeButton;
+    }
+
+    public JRadioButton getLogModeOCTButton() {
+        return logModeOCTButton;
+    }
+
+    public JSlider getLrpSmoothingSlider() {
+        return lrpSmoothingSlider;
+    }
+
+    public JRadioButton getMicronModeButton() {
+        return micronModeButton;
+    }
+
+    public JSlider getOctSharpRadiusSlider() {
+        return octSharpRadiusSlider;
+    }
+
+    public JSlider getOctSharpWeightSlider() {
+        return octSharpWeightSlider;
+    }
+
+    public JSlider getOctSmoothingSlider() {
+        return octSmoothingSlider;
+    }
+
+    public JRadioButton getPixelModeButton() {
+        return pixelModeButton;
+    }
+
+    public JSlider getWidthSlider() {
+        return widthSlider;
     }
 
     /**
