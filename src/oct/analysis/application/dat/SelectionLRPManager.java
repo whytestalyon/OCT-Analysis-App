@@ -30,8 +30,7 @@ public class SelectionLRPManager {
     private final ConcurrentHashMap<String, LRPFrame> lrpDispMap;
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
     private String selectedSelectionName = "";
-    private int foveaCenterXPosition = -1;
-    private int selectionWidth;
+    private int selectionWidth = 5;
     private int lrpSmoothingFactor = 5;
 
     private SelectionLRPManager() {
@@ -49,14 +48,6 @@ public class SelectionLRPManager {
 
     public void setLrpSmoothingFactor(int lrpSmoothingFactor) {
         this.lrpSmoothingFactor = lrpSmoothingFactor;
-    }
-
-    public int getFoveaCenterXPosition() {
-        return foveaCenterXPosition;
-    }
-
-    public void setFoveaCenterXPosition(int foveaCenterXPosition) {
-        this.foveaCenterXPosition = foveaCenterXPosition;
     }
 
     public int getSelectionWidth() {
@@ -90,7 +81,6 @@ public class SelectionLRPManager {
      * selection
      */
     public void addOrUpdateSpatialSelections(int foveaXPosition, int micronsBetweenSelections) {
-        foveaCenterXPosition = foveaXPosition;
         addOrUpdateSelections(getEquidistantSelections(foveaXPosition, micronsBetweenSelections));
     }
 
@@ -253,16 +243,16 @@ public class SelectionLRPManager {
      * @return fovea selection
      */
     public OCTSelection getFoveaSelection(int xPositionOnOCT, boolean moveable) {
-        foveaCenterXPosition = xPositionOnOCT;
         return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", moveable);
     }
 
     /**
      * Build out the OCT selections to the right and the left of the Foveal
-     * Selection. This method will place a selection ever
-     * @code{analysisMetrics.getDistanceBetweenSelections()} pixels (center to
-     * center) to the right and left of the foveal selection. These selections
-     * continue until the edge of the OCT image is reached in each direction.
+     * Selection. This method will place a selection every
+     * {@link OCTAnalysisManager#getDistanceBetweenSelections() } pixels (center
+     * to center) to the right and left of the foveal selection. These
+     * selections continue until the edge of the OCT image is reached in each
+     * direction.
      *
      * @param foveaSelection initial selection denoting the fovea on the OCT
      * @param micronsBetweenSelections the number of microns between each
@@ -278,11 +268,11 @@ public class SelectionLRPManager {
         selections.add(foveaSelection);
         //build selection list to the right of center
         for (int selX = foveaSelection.getXPositionOnOct() + analysisData.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisData.getOct().getImageWidth(); selX += analysisData.getDistanceBetweenSelections(), selCnt++) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), SelectionType.NONFOVEAL, "R" + selCnt, false));
+            selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "R" + selCnt, false));
         }
         //build selection list to the left of the center
         for (int selX = foveaSelection.getXPositionOnOct() - analysisData.getDistanceBetweenSelections(), selCnt = 1; selX >= 0; selX -= analysisData.getDistanceBetweenSelections(), selCnt++) {
-            selections.add(new OCTSelection(selX, 0, foveaSelection.getWidth(), foveaSelection.getHeight(), SelectionType.NONFOVEAL, "L" + selCnt, false));
+            selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "L" + selCnt, false));
         }
 
         return selections;

@@ -36,17 +36,21 @@ import org.jfree.data.xy.XYSeriesCollection;
  */
 public class OCTSelection {
 
-    protected static final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
-    protected final String selectionName;
-    protected final SelectionType selectionType;
+    /*
+     listed as static so selection manager is initialized when selections are deserialized from analysis save file.
+     listed as transient to signify to the serializer that the selection manager does not need to be serialized to file
+     */
+    private static transient final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+    protected String selectionName;
+    protected SelectionType selectionType;
     protected int xPositionOnOct;
     protected int yPositionOnOct;
     protected int width;
-    protected final int height;
+    protected int height;
     protected boolean highlighted = false;
     protected boolean drawn = false;
     protected boolean resizable = true;
-    protected final boolean moveable;
+    protected boolean moveable;
 
     public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, SelectionType selectionType, String selectionName, boolean moveable) {
         this.xPositionOnOct = xPositionOnOct;

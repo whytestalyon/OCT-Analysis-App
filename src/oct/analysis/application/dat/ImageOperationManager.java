@@ -57,4 +57,13 @@ public class ImageOperationManager {
         }
         return ret;
     }
+
+    public BlurOperation getBlur() {
+        return blur;
+    }
+
+    public SharpenOperation getSharp() {
+        return sharp;
+    }
+    
 }

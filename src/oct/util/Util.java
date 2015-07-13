@@ -12,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -23,10 +24,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.OCTAnalysisUI;
-import oct.analysis.application.OCTImagePanel;
+import oct.analysis.application.OCTLine;
+import oct.analysis.application.OCTSelection;
+import oct.analysis.application.dat.AnalysisMode;
+import oct.analysis.application.dat.ImageOperationManager;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.OCTMode;
+import oct.analysis.application.dat.SelectionLRPManager;
+import oct.io.AnalysisSaveState;
+import oct.io.TiffReader;
+import oct.io.TiffWriter;
+import oct.util.ip.BlurOperation;
+import oct.util.ip.SharpenOperation;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -48,7 +59,7 @@ public class Util {
         }
     }
 
-    public static OCT getOCT(BufferedImage octImage, OCTAnalysisUI octAnalysisUI, OCTImagePanel octAnalysisPanel) {
+    public static OCT getOCT(BufferedImage octImage, OCTAnalysisUI octAnalysisUI) {
         Object[] options = {"I have the scale!", "I have axial length and scan width!"};
         int n = JOptionPane.showOptionDialog(octAnalysisUI, "We need to know the scale of the OCT. What information do you have?", "Determine OCT Scale...", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         switch (n) {
@@ -292,5 +303,140 @@ public class Util {
             y[i] = p.getY();
         }
         return new double[][]{x, y};
+    }
+
+    public static AnalysisSaveState getAnalysisSaveState() {
+        OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
+        SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+        ImageOperationManager imageOperationMngr = ImageOperationManager.getInstance();
+
+        //create save object
+        AnalysisSaveState saveObj = new AnalysisSaveState();
+
+        //populate the save object
+        /*
+         Analysis info
+         */
+        AnalysisMode analysisMode = analysisMngr.getAnalysisMode();
+        saveObj.setAnalysisMode(analysisMode);
+        /*
+         Selection info
+         */
+        List<OCTLine> lineSegs = selMngr.getSelections()
+                .stream()
+                .filter(sel -> sel instanceof OCTLine)
+                .map(sel -> (OCTLine) sel)
+                .collect(Collectors.toList());
+        List<OCTSelection> selSegs = selMngr.getSelections()
+                .stream()
+                .filter(sel -> !(sel instanceof OCTLine))
+                .collect(Collectors.toList());
+        saveObj.setLineSegs(lineSegs);
+        saveObj.setSelSegs(selSegs);
+        int selectionWidth = selMngr.getSelectionWidth();
+        int lrpSmoothingFactor = selMngr.getLrpSmoothingFactor();
+        saveObj.setSelectionWidth(selectionWidth);
+        saveObj.setLrpSmoothingFactor(lrpSmoothingFactor);
+        /*
+         OCT dispaly panel info
+         */
+        Point drawPoint = analysisMngr.getImgPanel().getDrawPoint();
+        LinkedList<List<LinePoint>> linesToDraw = analysisMngr.getImgPanel().getLinesToDraw();
+        boolean drawLines = analysisMngr.getImgPanel().isDrawLines();
+        boolean drawSelections = analysisMngr.getImgPanel().isDrawSelections();
+        saveObj.setDrawPoint(drawPoint);
+        saveObj.setLinesToDraw(linesToDraw);
+        saveObj.setDrawLines(drawLines);
+        saveObj.setDrawSelections(drawSelections);
+        /*
+         OCT and OCT analysis manager data
+         */
+        double scale = analysisMngr.getScale();
+        int micronsBetweenSelections = analysisMngr.getMicronsBetweenSelections();
+        OCT oct = analysisMngr.getOct();
+        OCTMode displayMode = analysisMngr.getDisplayMode(); //default display mode of image is assumed to be a Log OCT image
+        int foveaCenterXPosition = analysisMngr.getFoveaCenterXPosition();
+        saveObj.setScale(scale);
+        saveObj.setMicronsBetweenSelections(micronsBetweenSelections);
+        saveObj.setLogOCT(TiffWriter.writeTiffImageToByteArray(oct.getLogOctImage()));
+        saveObj.setDisplayMode(displayMode);
+        saveObj.setFoveaCenterXPosition(foveaCenterXPosition);
+        /*
+         image operations
+         */
+        BlurOperation blur = imageOperationMngr.getBlur();
+        SharpenOperation sharp = imageOperationMngr.getSharp();
+        saveObj.setBlurFactor(blur.getBlurFactor());
+        saveObj.setSharpenSigma(sharp.getSharpenSigma());
+        saveObj.setSharpenWeight(sharp.getSharpenWeight());
+
+        return saveObj;
+
+    }
+
+    public static void openSavedAnalysis(OCTAnalysisUI ui, AnalysisSaveState saveObj) throws IOException {
+        OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
+        SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+        ImageOperationManager imageOperationMngr = ImageOperationManager.getInstance();
+
+        //restore the analysis
+        /*
+         OCT and OCT analysis manager data
+         */
+        analysisMngr.setScale(saveObj.getScale());
+        analysisMngr.setMicronsBetweenSelections(saveObj.getMicronsBetweenSelections());
+        OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()));
+        analysisMngr.setOct(oct);
+        analysisMngr.setOCTMode(saveObj.getDisplayMode());
+        analysisMngr.setFoveaCenterXPosition(saveObj.getFoveaCenterXPosition());
+        
+        /*
+         Analysis info
+         */
+        analysisMngr.setAnalysisMode(saveObj.getAnalysisMode());
+        /*
+         Selection info
+         */
+        selMngr.setLrpSmoothingFactor(saveObj.getLrpSmoothingFactor());
+        System.out.println("lrp sf: " + selMngr.getLrpSmoothingFactor());
+        selMngr.setSelectionWidth(saveObj.getSelectionWidth());
+        /*
+         OCT dispaly panel info
+         */
+        analysisMngr.getImgPanel().setDrawPoint(saveObj.getDrawPoint());
+        if (saveObj.getLinesToDraw() != null) {
+            saveObj.getLinesToDraw().forEach(analysisMngr.getImgPanel()::addDrawnLine);
+        }
+        if (saveObj.isDrawLines()) {
+            analysisMngr.getImgPanel().showLines();
+        } else {
+            analysisMngr.getImgPanel().hideLines();
+        }
+        if (saveObj.isDrawSelections()) {
+            analysisMngr.getImgPanel().showSelections();
+        } else {
+            analysisMngr.getImgPanel().hideSelections();
+        }
+
+
+        /*
+         image operations
+         */
+        imageOperationMngr.updateBlurOperation(new BlurOperation(saveObj.getBlurFactor()));
+        imageOperationMngr.updateSharpenOperation(new SharpenOperation(saveObj.getSharpenSigma(), saveObj.getSharpenWeight()));
+
+        /*
+         selections
+         */
+        selMngr.addOrUpdateSelections(saveObj.getSelSegs());
+        saveObj.getLineSegs().forEach(selMngr::addOrUpdateSelection);
+
+        /*
+         render OCT (and other objects) to the screen
+         */
+        analysisMngr.getImgPanel().setSize(new Dimension(oct.getImageWidth(), oct.getImageHeight()));
+        analysisMngr.getImgPanel().repaint();
+        ui.validate();
+        ui.pack();
     }
 }

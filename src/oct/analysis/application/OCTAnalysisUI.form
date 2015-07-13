@@ -10,10 +10,6 @@
     </Component>
     <Component class="javax.swing.ButtonGroup" name="toolsToolBarBtnGroup">
     </Component>
-    <Component class="javax.swing.ButtonGroup" name="drawLinesButtonGroup">
-    </Component>
-    <Component class="javax.swing.ButtonGroup" name="drawSelBtnGroup">
-    </Component>
     <Menu class="javax.swing.JMenuBar" name="appMenuBar">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMenu">
@@ -21,12 +17,20 @@
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
           <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="fileOpenMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="newAnalysisMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Open"/>
+                <Property name="text" type="java.lang.String" value="New Analysis"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="fileOpenMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newAnalysisMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="openAnalysisMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Open Analysis"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openAnalysisMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="saveAnalysisMenuItem">
@@ -103,13 +107,12 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="autoMirrorMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JCheckBoxMenuItem" name="interactiveMirrorMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="interactiveMirrorAnalysisMenuItem">
               <Properties>
-                <Property name="selected" type="boolean" value="true"/>
                 <Property name="text" type="java.lang.String" value="Mirror (interactive)"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="interactiveMirrorMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="interactiveMirrorAnalysisMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="autoFoveaFindMenuItem">

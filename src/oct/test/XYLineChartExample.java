@@ -1,4 +1,4 @@
-package oct.analysis.application;
+package oct.test;
 
 import chuiSegmentation.CSegImage;
 import java.awt.BorderLayout;

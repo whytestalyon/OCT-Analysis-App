@@ -1,4 +1,4 @@
-package oct.analysis.application;
+package oct.test;
 
 import chuiSegmentation.CSegImage;
 import ij.ImagePlus;
@@ -33,6 +33,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import oct.analysis.application.OCTSelection;
 import oct.io.TiffReader;
 import oct.util.Segmentation;
 import oct.util.Util;

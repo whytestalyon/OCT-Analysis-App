@@ -65,7 +65,9 @@ public class OCTAnalysisManager {
     private OCT oct = null;
     private OCTMode displayMode = OCTMode.LOG; //default display mode of image is assumed to be a Log OCT image
     private int foveaCenterXPosition = -1;
+    private AnalysisMode analysisMode = null;
     private OCTImagePanel imgPanel;
+
     private OCTAnalysisManager() {
     }
 
@@ -79,6 +81,14 @@ public class OCTAnalysisManager {
 
     public OCTImagePanel getImgPanel() {
         return imgPanel;
+    }
+
+    public AnalysisMode getAnalysisMode() {
+        return analysisMode;
+    }
+
+    public void setAnalysisMode(AnalysisMode analysisMode) {
+        this.analysisMode = analysisMode;
     }
 
     /**

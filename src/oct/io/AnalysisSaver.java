@@ -5,8 +5,18 @@
  */
 package oct.io;
 
+import com.google.gson.Gson;
+import java.io.BufferedReader;
 import java.io.File;
-import oct.analysis.application.dat.AnalysisMode;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import oct.analysis.application.OCTAnalysisUI;
+import oct.util.Util;
 
 /**
  *
@@ -17,10 +27,26 @@ public class AnalysisSaver {
     /**
      * Utility method capable of writing analysis information to file.
      *
-     * @param saveDir
-     * @param mode
+     * @param saveFile
      */
-    public static void save(File saveDir, AnalysisMode mode) {
+    public static void saveAnalysis(File saveFile) {
+        AnalysisSaveState analysisSaveState = Util.getAnalysisSaveState();
+        try (PrintWriter pw = new PrintWriter(saveFile)) {
+            Gson gson = new Gson();
+            pw.append(gson.toJson(analysisSaveState));
+            pw.flush();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "Analysis save error.", ex);
+        }
+    }
 
+    public static AnalysisSaveState readAnalysis(File analysisFile) throws IOException {
+        Gson gson = new Gson();
+        String analysisJson;
+        try (BufferedReader br = new BufferedReader(new FileReader(analysisFile))) {
+            analysisJson = br.lines()
+                    .collect(Collectors.joining(""));
+        }
+        return gson.fromJson(analysisJson, AnalysisSaveState.class);
     }
 }

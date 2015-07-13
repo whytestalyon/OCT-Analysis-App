@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-
 package oct.io;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -31,36 +30,47 @@ import javax.imageio.ImageWriter;
  */
 public class TiffWriter {
 
-    
-    public static void writeTiffImage(File file, BufferedImage tiffImage){
-        
+    public static void writeTiffImage(File file, BufferedImage tiffImage) {
+
         Iterator tiffWriterFormat = ImageIO.getImageWritersByFormatName("tiff");
-        ImageWriter tiffImWriter = (ImageWriter)tiffWriterFormat.next();
-        
-        int numPages=0;
-        
+        ImageWriter tiffImWriter = (ImageWriter) tiffWriterFormat.next();
+
+        int numPages = 0;
+
         try {
             tiffImWriter.setOutput(ImageIO.createImageOutputStream(file));
-            
+
         } catch (IOException ex) {
             System.out.println("Error opening file!");
-            
+
         }
-        
-        if(numPages>1){
+
+        if (numPages > 1) {
             System.out.println("More than one image detected in this stack! Loading first image...");
         }
-        
+
         try {
             tiffImWriter.write(tiffImage);
         } catch (IOException ex) {
             System.out.println("Error writing frame number " + 0 + "!");
-            
+
         } catch (NullPointerException ex) {
             System.out.println("Null Pointer Exception!");
-            
+
         }
 
     }
-    
+
+    public static byte[] writeTiffImageToByteArray(BufferedImage tiffImage) {
+        byte[] imageInByte = null;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            ImageIO.write(tiffImage, "tiff", baos);
+            baos.flush();
+            imageInByte = baos.toByteArray();
+        } catch (IOException ie) {
+
+        }
+        return imageInByte;
+    }
+
 }

@@ -164,6 +164,22 @@ public class OCTImagePanel extends JPanel {
         return imageOffsetX;
     }
 
+    public Point getDrawPoint() {
+        return drawPoint;
+    }
+
+    public LinkedList<List<LinePoint>> getLinesToDraw() {
+        return linesToDraw;
+    }
+
+    public boolean isDrawLines() {
+        return drawLines;
+    }
+
+    public boolean isDrawSelections() {
+        return drawSelections;
+    }
+
     /**
      * Determine if the supplied coordinate overlaps with the area of this panel
      * that displays the OCT image

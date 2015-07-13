@@ -13,6 +13,8 @@ import ij.process.ImageProcessor;
 import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import javax.imageio.ImageIO;
 import oct.io.TiffReader;
 
 public class TestClass {
@@ -32,13 +34,15 @@ public class TestClass {
 //        GaussianBlur smoother = new GaussianBlur();
 //        smoother.blurGaussian(ip, 2.0, 2.0, 1e-2);
 //        imp.show();
-        getSurfaceSegment(TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif")), 10).stream().forEach((seg) -> {
-            System.out.println(seg.x + "\t" + seg.y);
-        });
+//        getSurfaceSegment(TiffReader.readTiffImage(new File("D:\\Documents\\IdependentContracting\\Carrol Lab\\LRP Analysis App\\Example Human OCTs\\DiseasedOCTs\\DH_10160_OD_L_7_0_02_529disp_fr66reg_fr47-83_AL24p11.tif")), 10).stream().forEach((seg) -> {
+//            System.out.println(seg.x + "\t" + seg.y);
+//        });
+
+        System.out.println(Arrays.toString(ImageIO.getWriterFormatNames()));
     }
 
     public static Collection<Point> getSurfaceSegment(BufferedImage image, int distanceBetweenPoints) {
-		// Only tested with BufferedImage.TYPE_BYPE_GRAY. 
+        // Only tested with BufferedImage.TYPE_BYPE_GRAY. 
         // It might work with other types but no promises. 
         CSegImage segImg = new CSegImage(image);
         segImg.getFlatImage(false);

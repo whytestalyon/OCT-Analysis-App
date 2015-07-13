@@ -2,7 +2,6 @@ package oct.analysis.application.dat;
 
 import ij.ImagePlus;
 import ij.process.ImageConverter;
-import java.awt.Point;
 import java.awt.image.BufferedImage;
 import oct.util.Util;
 

@@ -5,15 +5,20 @@
  */
 package oct.analysis.application;
 
+import com.google.gson.Gson;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -32,6 +37,7 @@ import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.dat.ToolMode;
+import oct.io.AnalysisSaveState;
 import oct.io.AnalysisSaver;
 import oct.io.TiffReader;
 import oct.util.Util;
@@ -46,10 +52,10 @@ import org.jfree.chart.StandardChartTheme;
  */
 public class OCTAnalysisUI extends javax.swing.JFrame {
 
-    private final OCTAnalysisManager analysisMetrics = OCTAnalysisManager.getInstance();
+    private final OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
     private final SelectionLRPManager selectionLRPManager = SelectionLRPManager.getInstance();
     private final DecimalFormat df = new DecimalFormat("#.00");
-    private AnalysisMode analysisMode = null;
+    private final JFileChooser fc = new JFileChooser();
     private ToolMode toolMode = ToolMode.NONE;
 
     static {
@@ -64,7 +70,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     public OCTAnalysisUI() {
         initComponents();
         //set connection for debugin
-        analysisMetrics.setImjPanel(octAnalysisPanel);
+        analysisMngr.setImjPanel(octAnalysisPanel);
         //get current selection width setting
         selectionLRPManager.setSelectionWidth(widthSlider.getValue());
         //register the oct panel with the mouse position listener
@@ -85,8 +91,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
-        drawLinesButtonGroup = new javax.swing.ButtonGroup();
-        drawSelBtnGroup = new javax.swing.ButtonGroup();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         filterPanel = new javax.swing.JPanel();
         filtersToolbar = new javax.swing.JToolBar();
@@ -129,7 +133,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         linearOCTModeButton = new javax.swing.JRadioButton();
         appMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        fileOpenMenuItem = new javax.swing.JMenuItem();
+        newAnalysisMenuItem = new javax.swing.JMenuItem();
+        openAnalysisMenuItem = new javax.swing.JMenuItem();
         saveAnalysisMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
@@ -139,7 +144,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         interactiveEzMenuItem = new javax.swing.JMenuItem();
         singleLRPAnalysisMenuItem = new javax.swing.JMenuItem();
         autoMirrorMenuItem = new javax.swing.JMenuItem();
-        interactiveMirrorMenuItem = new javax.swing.JCheckBoxMenuItem();
+        interactiveMirrorAnalysisMenuItem = new javax.swing.JMenuItem();
         autoFoveaFindMenuItem = new javax.swing.JMenuItem();
         interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
@@ -591,13 +596,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         fileMenu.setText("File");
 
-        fileOpenMenuItem.setText("Open");
-        fileOpenMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        newAnalysisMenuItem.setText("New Analysis");
+        newAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fileOpenMenuItemActionPerformed(evt);
+                newAnalysisMenuItemActionPerformed(evt);
             }
         });
-        fileMenu.add(fileOpenMenuItem);
+        fileMenu.add(newAnalysisMenuItem);
+
+        openAnalysisMenuItem.setText("Open Analysis");
+        openAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openAnalysisMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(openAnalysisMenuItem);
 
         saveAnalysisMenuItem.setText("Save Analysis");
         saveAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -672,14 +685,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(autoMirrorMenuItem);
 
-        interactiveMirrorMenuItem.setSelected(true);
-        interactiveMirrorMenuItem.setText("Mirror (interactive)");
-        interactiveMirrorMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        interactiveMirrorAnalysisMenuItem.setText("Mirror (interactive)");
+        interactiveMirrorAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                interactiveMirrorMenuItemActionPerformed(evt);
+                interactiveMirrorAnalysisMenuItemActionPerformed(evt);
             }
         });
-        analysisMenu.add(interactiveMirrorMenuItem);
+        analysisMenu.add(interactiveMirrorAnalysisMenuItem);
 
         autoFoveaFindMenuItem.setText("Find Fovea (automatic)");
         autoFoveaFindMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -798,7 +810,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void fileOpenMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileOpenMenuItemActionPerformed
+    private void newAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newAnalysisMenuItemActionPerformed
         //load new image
         JFileChooser openFileChooser = new JFileChooser();
         openFileChooser.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
@@ -810,7 +822,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 //read in image and keep track of the image for later use
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
 //                System.out.println("Read in tiff image!");
-                OCT oct = Util.getOCT(tiffBI, this, octAnalysisPanel);
+                OCT oct = Util.getOCT(tiffBI, this);
                 if (oct == null) {
                     throw new IOException("OCT information missing, couldn't load OCT for analysis.");
                 }
@@ -823,17 +835,17 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 logModeOCTButton.setSelected(true);
                 lrpSmoothingSlider.setValue(5);
                 //clear old operations and modes
-                analysisMetrics.setOCTMode(OCTMode.LOG);
-                analysisMetrics.setFoveaCenterXPosition(-1);
+                analysisMngr.setOCTMode(OCTMode.LOG);
+                analysisMngr.setFoveaCenterXPosition(-1);
                 ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
                 ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0, 0));
                 //clear old OCT
-                analysisMetrics.setOct(null);
-                analysisMetrics.setScale(0);
+                analysisMngr.setOct(null);
+                analysisMngr.setScale(0);
                 //reset display panel offsets
                 octAnalysisPanel.resetImageOffsets();
                 //add the OCT to the analysis manager, it will take care of making it available to the OCT image panel for drawing
-                analysisMetrics.setOct(oct);
+                analysisMngr.setOct(oct);
                 //display the selected image in the display
                 octAnalysisPanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
                 octAnalysisPanel.repaint();
@@ -845,7 +857,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 );
             }
         }
-    }//GEN-LAST:event_fileOpenMenuItemActionPerformed
+    }//GEN-LAST:event_newAnalysisMenuItemActionPerformed
 
     private void ExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExitActionPerformed
         System.exit(0);
@@ -864,11 +876,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void octAnalysisPanelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_octAnalysisPanelMouseClicked
         octAnalysisPanel.requestFocus();
         //only perform actions when mouse click occurs over image area
-        if (analysisMode != null
+        if (analysisMngr.getAnalysisMode() != null
                 && octAnalysisPanel.coordinateOverlapsOCT(evt.getX(), evt.getY())) {
             switch (evt.getButton()) {
                 case MouseEvent.BUTTON1:
-                    switch (analysisMode) {
+                    switch (analysisMngr.getAnalysisMode()) {
                         case SINGLE:
                             switch (toolMode) {
                                 case SELECT_SINGLE:
@@ -891,9 +903,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     selectionLRPManager.removeNonfovealSelections(false);
                                     octAnalysisPanel.repaint();
                                     //add new selections and redraw panel
-                                    int distFromFovea = Math.abs(analysisMetrics.getFoveaCenterXPosition() - octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x);
-                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMetrics.getFoveaCenterXPosition() - distFromFovea, "Left", SelectionType.NONFOVEAL, true));
-                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMetrics.getFoveaCenterXPosition() + distFromFovea, "Right", SelectionType.NONFOVEAL, true));
+                                    int distFromFovea = Math.abs(analysisMngr.getFoveaCenterXPosition() - octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x);
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMngr.getFoveaCenterXPosition() - distFromFovea, "Left", SelectionType.NONFOVEAL, true));
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMngr.getFoveaCenterXPosition() + distFromFovea, "Right", SelectionType.NONFOVEAL, true));
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:
@@ -917,7 +929,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                 selectionLRPManager.removeSelections(true);
                                 octAnalysisPanel.repaint();
                                 //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX(), analysisMetrics.getMicronsBetweenSelections());
+                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX(), analysisMngr.getMicronsBetweenSelections());
                                 octAnalysisPanel.repaint();
                             }
                             break;
@@ -974,7 +986,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //determine direction to move the selection
         switch (evt.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
-                switch (analysisMode) {
+                switch (analysisMngr.getAnalysisMode()) {
                     case MIRROR:
                         sel = selectionLRPManager.getSelectedSelection();
                         if (sel.getSelectionName().equals("Left")) {
@@ -1001,7 +1013,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 }
                 break;
             case KeyEvent.VK_LEFT:
-                switch (analysisMode) {
+                switch (analysisMngr.getAnalysisMode()) {
                     case MIRROR:
                         sel = selectionLRPManager.getSelectedSelection();
                         if (sel.getSelectionName().equals("Right")) {
@@ -1108,9 +1120,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
         //update the selection width (will only affect those selections that are resizable (OCTLines are NOT resizable)
         selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-        if (analysisMode == AnalysisMode.EQUIDISTANT) {
+        if (analysisMngr.getAnalysisMode() == AnalysisMode.EQUIDISTANT) {
             //recalculate all of the selections with new widths and update LRPs if present
-            selectionLRPManager.addOrUpdateSpatialSelections(selectionLRPManager.getFoveaCenterXPosition(), analysisMetrics.getMicronsBetweenSelections());
+            selectionLRPManager.addOrUpdateSpatialSelections(analysisMngr.getFoveaCenterXPosition(), analysisMngr.getMicronsBetweenSelections());
         }
         //redraw current selections on the image panel
         octAnalysisPanel.repaint();
@@ -1122,7 +1134,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
         for (int i = 1; i < 16; i++) {
             if (i % 2 == 1) {
-                labelTable.put(i, new JLabel(df.format((double) i * analysisMetrics.getScale())));
+                labelTable.put(i, new JLabel(df.format((double) i * analysisMngr.getScale())));
             }
         }
         widthSlider.setLabelTable(labelTable);
@@ -1133,7 +1145,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_pixelModeButtonActionPerformed
 
     private void logModeOCTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeOCTButtonActionPerformed
-        analysisMetrics.setOCTMode(OCTMode.LOG);
+        analysisMngr.setOCTMode(OCTMode.LOG);
         //redraw OCT use new mode weight
         octAnalysisPanel.repaint();
         //redraw LRPs (if applicable since they may not be open) to update with new information
@@ -1141,7 +1153,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_logModeOCTButtonActionPerformed
 
     private void linearOCTModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_linearOCTModeButtonActionPerformed
-        analysisMetrics.setOCTMode(OCTMode.LINEAR);
+        analysisMngr.setOCTMode(OCTMode.LINEAR);
         //redraw OCT use new mode weight
         octAnalysisPanel.repaint();
         //redraw LRPs (if applicable since they may not be open) to update with new information
@@ -1193,13 +1205,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         performAnalysis(AnalysisMode.EQUIDISTANT, true);
     }//GEN-LAST:event_equidistantInteractiveMenuItemActionPerformed
 
-    private void interactiveMirrorMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveMirrorMenuItemActionPerformed
-        performAnalysis(AnalysisMode.MIRROR, true);
-    }//GEN-LAST:event_interactiveMirrorMenuItemActionPerformed
-
     private void saveAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAnalysisMenuItemActionPerformed
-
-        AnalysisSaver.save(null, analysisMode);
+        //allow the user to choose where to save the analysis file
+        fc.setFileFilter(new FileNameExtensionFilter("ORA analysis file", "ora"));
+        fc.setMultiSelectionEnabled(false);
+        fc.setSelectedFile(new File("analysis.ora"));
+        int returnVal = fc.showSaveDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File saveFile = fc.getSelectedFile();
+            AnalysisSaver.saveAnalysis(saveFile);
+        }
     }//GEN-LAST:event_saveAnalysisMenuItemActionPerformed
 
     private void dispSelectionsCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_dispSelectionsCheckBoxStateChanged
@@ -1217,6 +1232,26 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             octAnalysisPanel.hideLines();
         }
     }//GEN-LAST:event_dispSegmentationCheckBoxStateChanged
+
+    private void interactiveMirrorAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_interactiveMirrorAnalysisMenuItemActionPerformed
+        performAnalysis(AnalysisMode.MIRROR, true);
+    }//GEN-LAST:event_interactiveMirrorAnalysisMenuItemActionPerformed
+
+    private void openAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openAnalysisMenuItemActionPerformed
+        //allow the user to choose where the saved analysis file is
+        fc.setFileFilter(new FileNameExtensionFilter("ORA analysis file", "ora"));
+        fc.setMultiSelectionEnabled(false);
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File saveFile = fc.getSelectedFile();
+            try {
+                AnalysisSaveState readAnalysis = AnalysisSaver.readAnalysis(saveFile);
+                Util.openSavedAnalysis(this, readAnalysis);
+            } catch (IOException ex) {
+                Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_openAnalysisMenuItemActionPerformed
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
@@ -1237,13 +1272,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         widthSlider.setValue(5);
         pixelModeButton.setSelected(true);
         logModeOCTButton.setSelected(true);
-        selectionLRPManager.setFoveaCenterXPosition(-1);
+        analysisMngr.setFoveaCenterXPosition(-1);
     }
 
     private void performAnalysis(AnalysisMode am, boolean interactive) {
         restartAnalysis();
         enableAnalysisTools();
-        analysisMode = am;
+        analysisMngr.setAnalysisMode(am);
         switch (am) {
             case EQUIDISTANT:
                 Analysis.performEquidistant(interactive);
@@ -1337,13 +1372,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JCheckBox dispSegmentationCheckBox;
     private javax.swing.JCheckBox dispSelectionsCheckBox;
     private javax.swing.JPanel displayPanel;
-    private javax.swing.ButtonGroup drawLinesButtonGroup;
-    private javax.swing.ButtonGroup drawSelBtnGroup;
     private javax.swing.JMenuItem equidistantAutoMenuItem;
     private javax.swing.JMenuItem equidistantInteractiveMenuItem;
     private javax.swing.JToggleButton ezAnalysisToggleButton;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenuItem fileOpenMenuItem;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
@@ -1355,7 +1387,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JLabel imageLabel;
     private javax.swing.JMenuItem interactiveEzMenuItem;
     private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
-    private javax.swing.JCheckBoxMenuItem interactiveMirrorMenuItem;
+    private javax.swing.JMenuItem interactiveMirrorAnalysisMenuItem;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
@@ -1367,12 +1399,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JToggleButton mirrorAnalysisToggleButton;
     private javax.swing.JPanel modesPanel;
     private javax.swing.JToolBar modesToolbar;
+    private javax.swing.JMenuItem newAnalysisMenuItem;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JSlider octSharpRadiusSlider;
     private javax.swing.JPanel octSharpWeightPanel;
     private javax.swing.JSlider octSharpWeightSlider;
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
+    private javax.swing.JMenuItem openAnalysisMenuItem;
     private javax.swing.JRadioButton pixelModeButton;
     private oct.analysis.application.comp.MouseListeningTextArea posListTextArea;
     private javax.swing.JPanel positionPanel;
