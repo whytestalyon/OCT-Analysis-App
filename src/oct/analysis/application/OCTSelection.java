@@ -70,6 +70,7 @@ public class OCTSelection {
         }
 //        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
         //draw rectangle arround the area that is the selection
+        //TODO make selections centered arround position instead of left justified to position
         g.drawRect(imageOffsetX + xPositionOnOct - 1, imageOffsetY + yPositionOnOct, width + 1, height - 1);
         //draw button for interacting with the selection
         drawSelectButton(g, imageOffsetX, imageOffsetY);
@@ -177,8 +178,8 @@ public class OCTSelection {
         //create chart panel for LRP
         JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Avg. Pixel Intensity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
         XYPlot plot = chart.getXYPlot();
-        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
-        plot.getDomainAxis().setInverted(true);
+//        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
+//        plot.getDomainAxis().setInverted(true);
         //set up rendering principles
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, true);
@@ -211,17 +212,17 @@ public class OCTSelection {
         for (int y = height - 1; y >= 0; y--) {
             int yVal = y;
             //calculate average pixel grayscale intensity
-            double avg = IntStream.range(xPositionOnOct, xPositionOnOct + width).map(x -> Util.calculateGrayScaleValue(oct.getRGB(x, yVal))).average().getAsDouble();
+            double curPixelIntensity = IntStream.range(xPositionOnOct, xPositionOnOct + width).map(x -> Util.calculateGrayScaleValue(oct.getRGB(x, yVal))).average().getAsDouble();
             //smooth the LRP to provide a higher quality LRP signal
-            if (value < -1) {
+            if (value <= -1) {
                 //initialize the first value for the smoothing filter
-                value = avg;
+                value = curPixelIntensity;
             } else {
                 //smooth the LRP signal
-                value += ((avg - value) / selMngr.getLrpSmoothingFactor());
+                value += ((curPixelIntensity - value) / selMngr.getLrpSmoothingFactor());
             }
             //add LRP value to return series
-            lrp.add(y, value);
+            lrp.add(oct.getHeight() - y, value);
         }
 
         return lrp;

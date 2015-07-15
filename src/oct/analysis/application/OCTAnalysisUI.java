@@ -833,12 +833,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     private void newAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newAnalysisMenuItemActionPerformed
         //load new image
-        JFileChooser openFileChooser = new JFileChooser();
-        openFileChooser.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
-        openFileChooser.setMultiSelectionEnabled(false);
-        int returnVal = openFileChooser.showOpenDialog(this);
+        fc.resetChoosableFileFilters();
+        fc.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
+        int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File tiffFile = openFileChooser.getSelectedFile();
+            File tiffFile = fc.getSelectedFile();
             try {
                 //read in image and keep track of the image for later use
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
@@ -873,6 +872,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 pack();
                 //enable save
                 saveAnalysisMenuItem.setEnabled(true);
+                exportAnalysisResultsMenuItem.setEnabled(true);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Image loading failed for " + tiffFile.getAbsolutePath()
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
@@ -1261,8 +1261,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     private void openAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openAnalysisMenuItemActionPerformed
         //allow the user to choose where the saved analysis file is
+        fc.resetChoosableFileFilters();
         fc.setFileFilter(new FileNameExtensionFilter("ORA analysis file", "ora"));
-        fc.setMultiSelectionEnabled(false);
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File saveFile = fc.getSelectedFile();
@@ -1271,6 +1271,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 Util.openSavedAnalysis(this, readAnalysis);
                 //enable save
                 saveAnalysisMenuItem.setEnabled(true);
+                exportAnalysisResultsMenuItem.setEnabled(true);
             } catch (IOException ex) {
                 Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -1278,8 +1279,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_openAnalysisMenuItemActionPerformed
 
     private void exportAnalysisResultsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnalysisResultsMenuItemActionPerformed
+        fc.resetChoosableFileFilters();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        fc.setMultiSelectionEnabled(false);
         if (fc.getSelectedFile() != null && fc.getSelectedFile().isFile()) {
             fc.setCurrentDirectory(fc.getSelectedFile().getParentFile());
         }
