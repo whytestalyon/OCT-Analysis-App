@@ -1143,10 +1143,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
         //update the selection width (will only affect those selections that are resizable (OCTLines are NOT resizable)
         selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-        if (analysisMngr.getAnalysisMode() == AnalysisMode.EQUIDISTANT) {
-            //recalculate all of the selections with new widths and update LRPs if present
-            selectionLRPManager.addOrUpdateSpatialSelections(analysisMngr.getFoveaCenterXPosition(), analysisMngr.getMicronsBetweenSelections());
-        }
+//        if (analysisMngr.getAnalysisMode() == AnalysisMode.EQUIDISTANT) {
+//            //recalculate all of the selections with new widths and update LRPs if present
+//            selectionLRPManager.addOrUpdateSpatialSelections(analysisMngr.getFoveaCenterXPosition(), analysisMngr.getMicronsBetweenSelections());
+//        }
         //redraw current selections on the image panel
         octAnalysisPanel.repaint();
         //update the LRPs for all of the selections (if they are being presented)

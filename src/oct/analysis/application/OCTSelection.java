@@ -22,7 +22,6 @@ import oct.util.Util;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.AxisLocation;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -68,10 +67,11 @@ public class OCTSelection {
         } else {
             g.setColor(Color.green);
         }
-//        System.out.println("Drawing selection at x: " + xPositionOnOct + ", y: " + yPositionOnOct + ", w: " + width + ", h: " + (height - 1));
-        //draw rectangle arround the area that is the selection
-        //TODO make selections centered arround position instead of left justified to position
-        g.drawRect(imageOffsetX + xPositionOnOct - 1, imageOffsetY + yPositionOnOct, width + 1, height - 1);
+        //draw lines arround the area that is the selection
+        int leftEdge = getSelectionLeftEdgeCoordinate();
+        int rightEdge = getSelectionRightEdgeCoordinate();
+        g.drawLine(imageOffsetX + leftEdge - 1, imageOffsetY + yPositionOnOct, imageOffsetX + leftEdge - 1, imageOffsetY + yPositionOnOct + height - 1);
+        g.drawLine(imageOffsetX + rightEdge + 1, imageOffsetY + yPositionOnOct, imageOffsetX + rightEdge + 1, imageOffsetY + yPositionOnOct + height - 1);
         //draw button for interacting with the selection
         drawSelectButton(g, imageOffsetX, imageOffsetY);
         drawn = true;
@@ -84,25 +84,47 @@ public class OCTSelection {
         g.drawPolygon(buttonOutline);
         g.fillPolygon(buttonOutline);
         Polygon button = new Polygon();
-        int x = getCenterX();
-        button.addPoint(imageOffsetX + x - 5, imageOffsetY);
-        button.addPoint(imageOffsetX + x - 5, imageOffsetY + 15);
-        button.addPoint(imageOffsetX + x, imageOffsetY + 20);
-        button.addPoint(imageOffsetX + x + 5, imageOffsetY + 15);
-        button.addPoint(imageOffsetX + x + 5, imageOffsetY);
+        button.addPoint(imageOffsetX + xPositionOnOct - 5, imageOffsetY);
+        button.addPoint(imageOffsetX + xPositionOnOct - 5, imageOffsetY + 15);
+        button.addPoint(imageOffsetX + xPositionOnOct, imageOffsetY + 20);
+        button.addPoint(imageOffsetX + xPositionOnOct + 5, imageOffsetY + 15);
+        button.addPoint(imageOffsetX + xPositionOnOct + 5, imageOffsetY);
         g.setColor(Color.DARK_GRAY);
         g.drawPolygon(button);
     }
 
     public Polygon getSelectionButtonShape() {
-        int x = getCenterX();
         Polygon buttonOutline = new Polygon();
-        buttonOutline.addPoint(x - 6, -1);
-        buttonOutline.addPoint(x - 6, 16);
-        buttonOutline.addPoint(x, 22);
-        buttonOutline.addPoint(x + 6, 16);
-        buttonOutline.addPoint(x + 6, -1);
+        buttonOutline.addPoint(xPositionOnOct - 6, -1);
+        buttonOutline.addPoint(xPositionOnOct - 6, 16);
+        buttonOutline.addPoint(xPositionOnOct, 22);
+        buttonOutline.addPoint(xPositionOnOct + 6, 16);
+        buttonOutline.addPoint(xPositionOnOct + 6, -1);
         return buttonOutline;
+    }
+
+    public int getSelectionLeftEdgeCoordinate() {
+        int lineOffset;
+        if (width % 2 == 0) {
+            //figure edge offset for even width (off-center)
+            lineOffset = (width / 2) - 1;
+        } else {
+            //figure edge offset for odd width (centered)
+            lineOffset = (width - 1) / 2;
+        }
+        return xPositionOnOct - lineOffset;
+    }
+
+    public int getSelectionRightEdgeCoordinate() {
+        int lineOffset;
+        if (width % 2 == 0) {
+            //figure edge offset for even width (off-center)
+            lineOffset = (width / 2);
+        } else {
+            //figure edge offset for odd width (centered)
+            lineOffset = (width - 1) / 2;
+        }
+        return xPositionOnOct + lineOffset;
     }
 
     public boolean isHighlighted() {
@@ -206,13 +228,16 @@ public class OCTSelection {
     public XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
         XYSeries lrp = new XYSeries(selectionName + " LRP");
         lrp.setKey(selectionName);
+        
+        int leftEdge = getSelectionLeftEdgeCoordinate();
+        int rightEdge = getSelectionRightEdgeCoordinate();
 
         double value = -1;
         //iterate over each row of pixels in the selection area and calculate average pixel intensity
         for (int y = height - 1; y >= 0; y--) {
             int yVal = y;
             //calculate average pixel grayscale intensity
-            double curPixelIntensity = IntStream.range(xPositionOnOct, xPositionOnOct + width).map(x -> Util.calculateGrayScaleValue(oct.getRGB(x, yVal))).average().getAsDouble();
+            double curPixelIntensity = IntStream.rangeClosed(leftEdge, rightEdge).map(x -> Util.calculateGrayScaleValue(oct.getRGB(x, yVal))).average().getAsDouble();
             //smooth the LRP to provide a higher quality LRP signal
             if (value <= -1) {
                 //initialize the first value for the smoothing filter
@@ -387,7 +412,4 @@ public class OCTSelection {
         return (y - yint) / slope;
     }
 
-    public int getCenterX() {
-        return xPositionOnOct + (width / 2);
-    }
 }
