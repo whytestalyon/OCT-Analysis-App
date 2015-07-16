@@ -387,8 +387,10 @@ public class Util {
          */
         analysisMngr.setScale(saveObj.getScale());
         analysisMngr.setMicronsBetweenSelections(saveObj.getMicronsBetweenSelections());
-        OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()), saveObj.getOctFileName());
-        analysisMngr.setOct(oct);
+        if (saveObj.getLogOCT() != null) {
+            OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()), saveObj.getOctFileName());
+            analysisMngr.setOct(oct);
+        }
         OCTMode dispmode = saveObj.getDisplayMode();
         analysisMngr.setOCTMode(dispmode);
         analysisMngr.setFoveaCenterXPosition(saveObj.getFoveaCenterXPosition());
@@ -435,7 +437,10 @@ public class Util {
         /*
          render OCT (and other objects) to the screen
          */
-        analysisMngr.getImgPanel().setSize(new Dimension(oct.getImageWidth(), oct.getImageHeight()));
+        if (saveObj.getLogOCT() != null) {
+            OCT oct = analysisMngr.getOct();
+            analysisMngr.getImgPanel().setSize(new Dimension(oct.getImageWidth(), oct.getImageHeight()));
+        }
         analysisMngr.getImgPanel().repaint();
         ui.validate();
         ui.pack();

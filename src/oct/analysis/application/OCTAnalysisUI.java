@@ -15,6 +15,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.Hashtable;
 import java.util.logging.Level;
@@ -73,18 +74,26 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
      */
     public OCTAnalysisUI() {
         try {
-            appIcon = ImageIO.read(getClass().getClassLoader().getResource("oct/rsc/img/logo_full.png"));
+            appIcon = ImageIO.read(getClass().getClassLoader().getResource("oct/rsc/img/logo.png"));
         } catch (IOException ex) {
             Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
         }
         initComponents();
         //set connection for debugin
         analysisMngr.setImjPanel(octAnalysisPanel);
-        //get current selection width setting
-        selectionLRPManager.setSelectionWidth(widthSlider.getValue());
         //register the oct panel with the mouse position listener
         posListTextArea.setOctPanel(octAnalysisPanel);
         octAnalysisPanel.addMouseMotionListener(posListTextArea);
+        try {
+            //load up default settings for analysis
+            File appConfig = new File(getClass().getClassLoader().getResource("oct/rsc/conf/default_setting.ora").toURI());
+            //set UI using loaded default settings
+            Util.openSavedAnalysis(this, AnalysisSaver.readAnalysis(appConfig));
+        } catch (URISyntaxException | IOException ex) {
+            Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "Failed to load default application settings.", ex);
+            //init default value in case of failure of loading the default config
+            selectionLRPManager.setSelectionWidth(widthSlider.getValue());
+        }
     }
 
     /**
@@ -838,6 +847,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File tiffFile = fc.getSelectedFile();
+            //reset application to fresh analysis settings
+            try {
+                //load up default settings for analysis
+                File appConfig = new File(getClass().getClassLoader().getResource("oct/rsc/conf/default_setting.ora").toURI());
+                //set UI using loaded default settings
+                Util.openSavedAnalysis(this, AnalysisSaver.readAnalysis(appConfig));
+            } catch (URISyntaxException | IOException ex) {
+                Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "Failed to load default application settings.", ex);
+            }
+
             try {
                 //read in image and keep track of the image for later use
                 BufferedImage tiffBI = TiffReader.readTiffImage(tiffFile);
@@ -845,24 +864,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 if (oct == null) {
                     throw new IOException("OCT information missing, couldn't load OCT for analysis.");
                 }
-                //clear old selections 
-                selectionLRPManager.removeSelections(true);
-                //reset values
-                octSharpRadiusSlider.setValue(0);
-                octSharpWeightSlider.setValue(0);
-                octSmoothingSlider.setValue(0);
-                logModeOCTButton.setSelected(true);
-                lrpSmoothingSlider.setValue(5);
-                //clear old operations and modes
-                analysisMngr.setOCTMode(OCTMode.LOG);
-                analysisMngr.setFoveaCenterXPosition(-1);
-                ImageOperationManager.getInstance().updateBlurOperation(new BlurOperation(0));
-                ImageOperationManager.getInstance().updateSharpenOperation(new SharpenOperation(0, 0));
-                //clear old OCT
-                analysisMngr.setOct(null);
-                analysisMngr.setScale(0);
-                //reset display panel offsets
-                octAnalysisPanel.resetImageOffsets();
                 //add the OCT to the analysis manager, it will take care of making it available to the OCT image panel for drawing
                 analysisMngr.setOct(oct);
                 //display the selected image in the display
