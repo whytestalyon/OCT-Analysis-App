@@ -16,6 +16,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.StringJoiner;
@@ -58,9 +59,13 @@ public class AnalysisSaver {
     }
 
     public static AnalysisSaveState readAnalysis(File analysisFile) throws IOException {
+        return readAnalysis(new FileReader(analysisFile));
+    }
+    
+    public static AnalysisSaveState readAnalysis(Reader analysisFileReader) throws IOException {
         Gson gson = new Gson();
         String analysisJson;
-        try (BufferedReader br = new BufferedReader(new FileReader(analysisFile))) {
+        try (BufferedReader br = new BufferedReader(analysisFileReader)) {
             analysisJson = br.lines()
                     .collect(Collectors.joining(""));
         }

@@ -59,6 +59,8 @@ public class SelectionLRPManager {
         selectionMap.forEach((key, selection) -> {
             selection.setWidth(selectionWidth);
         });
+        //update the LRPs for all of the selections (if they are being presented)
+        updateLRPs();
     }
 
     public void setSelectedSelection(OCTSelection sel) {
