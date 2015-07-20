@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
+import oct.analysis.application.err.OverOCTEdgeException;
 import oct.util.Util;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -40,6 +41,7 @@ public class OCTSelection {
      listed as transient to signify to the serializer that the selection manager does not need to be serialized to file
      */
     private static transient final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
+    private static transient final OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
     protected String selectionName;
     protected SelectionType selectionType;
     protected int xPositionOnOct;
@@ -59,6 +61,11 @@ public class OCTSelection {
         this.selectionType = selectionType;
         this.selectionName = selectionName;
         this.moveable = moveable;
+        int leftEdge = getSelectionLeftEdgeCoordinate();
+        int rightEdge = getSelectionRightEdgeCoordinate();
+        if (leftEdge < 0 || rightEdge >= analysisMngr.getOct().getImageWidth()) {
+            throw new OverOCTEdgeException("Selection past OCT edge!");
+        }
     }
 
     public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
@@ -228,7 +235,7 @@ public class OCTSelection {
     public XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
         XYSeries lrp = new XYSeries(selectionName + " LRP");
         lrp.setKey(selectionName);
-        
+
         int leftEdge = getSelectionLeftEdgeCoordinate();
         int rightEdge = getSelectionRightEdgeCoordinate();
 

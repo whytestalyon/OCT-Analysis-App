@@ -72,7 +72,12 @@ public class OCTAnalysisManager {
     }
 
     public static OCTAnalysisManager getInstance() {
-        return OCTAnalysisMetricsHolder.INSTANCE;
+        return OCTAnalysisManagerHolder.INSTANCE;
+    }
+
+    private static class OCTAnalysisManagerHolder {
+
+        private static final OCTAnalysisManager INSTANCE = new OCTAnalysisManager();
     }
 
     public void setImjPanel(OCTImagePanel imjPanel) {
@@ -350,13 +355,26 @@ public class OCTAnalysisManager {
         fvtask.execute();
     }
 
-    private static class OCTAnalysisMetricsHolder {
-
-        private static final OCTAnalysisManager INSTANCE = new OCTAnalysisManager();
-    }
-
-    public int getDistanceBetweenSelections() {
-        return (oct == null) ? -1 : (int) (micronsBetweenSelections * (1D / scale));
+    /**
+     * Using the previously supplied values for the number of microns between
+     * selections calculate the distance from the center of the fovea based on
+     * the selection order distance away from the fovea. That is, the distance
+     * returned by this method will indicate how far from the center of the
+     * fovea a selection should be placed based on the number of selections
+     * between it and the fovea.
+     *
+     * <p>
+     * For example, a multiplier of 1 indicates the first selection set a
+     * distance away from the fovea. A multiplier of 2 will be the second
+     * selection encountered when counting selections outward from the fovea.
+     * This continues for any multiplier, irrespective of direction.
+     * </p>
+     *
+     * @param multiplier
+     * @return
+     */
+    public int getPixelFromFovea(int multiplier) {
+        return (oct == null) ? -1 : (int) Math.round((double) (micronsBetweenSelections * multiplier) * (1D / scale));
     }
 
     public int getMicronsBetweenSelections() {

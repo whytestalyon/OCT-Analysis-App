@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.LRPFrame;
 import oct.analysis.application.OCTSelection;
+import oct.analysis.application.err.OverOCTEdgeException;
 
 /**
  *
@@ -82,7 +83,7 @@ public class SelectionLRPManager {
      * @param micronsBetweenSelections the number of microns between each
      * selection
      */
-    public void addOrUpdateSpatialSelections(int foveaXPosition, int micronsBetweenSelections) {
+    public void addOrUpdateEquidistantSelections(int foveaXPosition, int micronsBetweenSelections) {
         addOrUpdateSelections(getEquidistantSelections(foveaXPosition, micronsBetweenSelections));
     }
 
@@ -269,12 +270,23 @@ public class SelectionLRPManager {
         //add foveal selction to list of selections
         selections.add(foveaSelection);
         //build selection list to the right of center
-        for (int selX = foveaSelection.getXPositionOnOct() + analysisData.getDistanceBetweenSelections(), selCnt = 1; (selX + foveaSelection.getWidth()) <= analysisData.getOct().getImageWidth(); selX += analysisData.getDistanceBetweenSelections(), selCnt++) {
-            selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "R" + selCnt, false));
+        int selX;
+        for (int i = 1; (selX = analysisData.getPixelFromFovea(i)) <= analysisData.getOct().getImageWidth(); i++) {
+            try {
+                selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "R" + i, false));
+            } catch (OverOCTEdgeException oe) {
+                //just need ot fail silenty here, nothin is wrong just selection too wide to add since it would go past edge of OCT
+                break;
+            }
         }
         //build selection list to the left of the center
-        for (int selX = foveaSelection.getXPositionOnOct() - analysisData.getDistanceBetweenSelections(), selCnt = 1; selX >= 0; selX -= analysisData.getDistanceBetweenSelections(), selCnt++) {
-            selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "L" + selCnt, false));
+        for (int i = 1; (selX = analysisData.getPixelFromFovea(i)) >= 0; i++) {
+            try {
+                selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "L" + i, false));
+            } catch (OverOCTEdgeException oe) {
+                //just need ot fail silenty here, nothin is wrong just selection too wide to add since it would go past edge of OCT
+                break;
+            }
         }
 
         return selections;

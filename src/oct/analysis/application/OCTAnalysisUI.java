@@ -886,7 +886,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                 selectionLRPManager.removeSelections(true);
                                 octAnalysisPanel.repaint();
                                 //add new selections and redraw panel
-                                selectionLRPManager.addOrUpdateSpatialSelections(evt.getX(), analysisMngr.getMicronsBetweenSelections());
+                                selectionLRPManager.addOrUpdateEquidistantSelections(evt.getX(), analysisMngr.getMicronsBetweenSelections());
                                 octAnalysisPanel.repaint();
                             }
                             break;

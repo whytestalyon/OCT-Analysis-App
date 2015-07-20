@@ -103,7 +103,7 @@ public class Analysis {
                     SwingUtilities.invokeLater(() -> {
                         int fv = octMngr.getFoveaCenterXPosition();
                         //add equidistant selections from fovea (including the fovea selections)
-                        selectionLRPManager.addOrUpdateSpatialSelections(fv, micronsBetweenSelections);
+                        selectionLRPManager.addOrUpdateEquidistantSelections(fv, micronsBetweenSelections);
                         octMngr.getImgPanel().repaint();
                     });
                     //remove the listener since it's no longer needed
