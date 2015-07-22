@@ -777,6 +777,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void newAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newAnalysisMenuItemActionPerformed
         //load new image
         fc.resetChoosableFileFilters();
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setFileFilter(new FileNameExtensionFilter("TIFF files", "tiff", "tif"));
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1146,8 +1147,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     private void saveAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAnalysisMenuItemActionPerformed
         //allow the user to choose where to save the analysis file
+        fc.resetChoosableFileFilters();
         fc.setFileFilter(new FileNameExtensionFilter("ORA analysis file", "ora"));
-        fc.setMultiSelectionEnabled(false);
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setSelectedFile(new File("analysis.ora"));
         int returnVal = fc.showSaveDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1179,6 +1181,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void openAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openAnalysisMenuItemActionPerformed
         //allow the user to choose where the saved analysis file is
         fc.resetChoosableFileFilters();
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fc.setFileFilter(new FileNameExtensionFilter("ORA analysis file", "ora"));
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -1225,13 +1228,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.removeSelections(true);
         octAnalysisPanel.clearDrawnLines();
         octAnalysisPanel.repaint();
-        selectionLRPManager.setSelectionWidth(5);
-        selectionLRPManager.setLrpSmoothingFactor(5);
-        lrpSmoothingSlider.setValue(5);
-        widthSlider.setValue(5);
-        pixelModeButton.setSelected(true);
-        logModeOCTButton.setSelected(true);
-        analysisMngr.setFoveaCenterXPosition(-1);
     }
 
     private void performAnalysis(AnalysisMode am, boolean interactive) {
