@@ -118,7 +118,9 @@ public class SelectionLRPManager {
 
     private void updateLRP(OCTSelection selection) {
         LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
-        updateFrame.updateLRP(selection.createLRPPanel());
+        if (updateFrame != null) {
+            updateFrame.updateLRP(selection.createLRPPanel());
+        }
     }
 
     public void removeSelections(boolean removeLRPs) {
