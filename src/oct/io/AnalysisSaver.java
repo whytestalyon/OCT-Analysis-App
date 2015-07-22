@@ -196,10 +196,10 @@ public class AnalysisSaver {
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(statsFile)))) {
                     //print position of selection
                     selections.forEach((psel) -> {
-                        pw.println(psel.getSelectionName() + " LRP " + " distance from fovea (Pixels)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()));
-                        pw.println(psel.getSelectionName() + " LRP " + " distance from fovea (Microns)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()) * octMngr.getScale());
-                        pw.println(psel.getSelectionName() + " LRP " + " width (Pixels)," + psel.getWidth());
-                        pw.println(psel.getSelectionName() + " LRP " + " width (Microns)," + psel.getWidth() * octMngr.getScale());
+                        pw.println(psel.getSelectionName() + " LRP distance from fovea (Pixels)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()));
+                        pw.println(psel.getSelectionName() + " LRP distance from fovea (Microns)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()) * octMngr.getScale());
+                        pw.println(psel.getSelectionName() + " LRP width (Pixels)," + psel.getWidth());
+                        pw.println(psel.getSelectionName() + " LRP width (Microns)," + psel.getWidth() * octMngr.getScale());
                     });
                     pw.println("Analysis type," + octMngr.getAnalysisMode());
                     pw.println("LRP file names," + fnameList.stream().collect(Collectors.joining(",")));

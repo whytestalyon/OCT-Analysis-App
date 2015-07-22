@@ -84,6 +84,10 @@ public class SelectionLRPManager {
      * selection
      */
     public void addOrUpdateEquidistantSelections(int foveaXPosition, int micronsBetweenSelections) {
+        if (foveaXPosition != analysisData.getFoveaCenterXPosition()) {
+            System.out.println("Updating fovea position! Old: " + analysisData.getFoveaCenterXPosition() + ", New: " + foveaXPosition);
+            analysisData.setFoveaCenterXPosition(foveaXPosition);
+        }
         addOrUpdateSelections(getEquidistantSelections(foveaXPosition, micronsBetweenSelections));
     }
 
@@ -235,7 +239,7 @@ public class SelectionLRPManager {
         if (selType == SelectionType.FOVEAL) {
             return getFoveaSelection(xPositionOnOCT, moveable);
         } else {
-            return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), selType, selectionName, moveable);
+            return new OCTSelection(xPositionOnOCT, 0, selectionWidth, analysisData.getOct().getImageHeight(), selType, selectionName, moveable);
         }
     }
 
@@ -248,7 +252,7 @@ public class SelectionLRPManager {
      * @return fovea selection
      */
     public OCTSelection getFoveaSelection(int xPositionOnOCT, boolean moveable) {
-        return new OCTSelection(xPositionOnOCT - (selectionWidth / 2), 0, selectionWidth, analysisData.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", moveable);
+        return new OCTSelection(xPositionOnOCT, 0, selectionWidth, analysisData.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", moveable);
     }
 
     /**
@@ -273,18 +277,18 @@ public class SelectionLRPManager {
         selections.add(foveaSelection);
         //build selection list to the right of center
         int selX;
-        for (int i = 1; (selX = analysisData.getPixelFromFovea(i)) <= analysisData.getOct().getImageWidth(); i++) {
+        for (int i = 1; (selX = foveaSelection.getXPositionOnOct() + analysisData.getNumPixelFromFovea(i)) <= analysisData.getOct().getImageWidth(); i++) {
             try {
-                selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "R" + i, false));
+                selections.add(getSelection(selX, "R" + i, SelectionType.NONFOVEAL, false));
             } catch (OverOCTEdgeException oe) {
                 //just need ot fail silenty here, nothin is wrong just selection too wide to add since it would go past edge of OCT
                 break;
             }
         }
         //build selection list to the left of the center
-        for (int i = 1; (selX = analysisData.getPixelFromFovea(i)) >= 0; i++) {
+        for (int i = 1; (selX = foveaSelection.getXPositionOnOct() - analysisData.getNumPixelFromFovea(i)) >= 0; i++) {
             try {
-                selections.add(new OCTSelection(selX, 0, selectionWidth, foveaSelection.getHeight(), SelectionType.NONFOVEAL, "L" + i, false));
+                selections.add(getSelection(selX, "L" + i, SelectionType.NONFOVEAL, false));
             } catch (OverOCTEdgeException oe) {
                 //just need ot fail silenty here, nothin is wrong just selection too wide to add since it would go past edge of OCT
                 break;

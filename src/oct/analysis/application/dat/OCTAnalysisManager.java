@@ -373,7 +373,7 @@ public class OCTAnalysisManager {
      * @param multiplier
      * @return
      */
-    public int getPixelFromFovea(int multiplier) {
+    public int getNumPixelFromFovea(int multiplier) {
         return (oct == null) ? -1 : (int) Math.round((double) (micronsBetweenSelections * multiplier) * (1D / scale));
     }
 

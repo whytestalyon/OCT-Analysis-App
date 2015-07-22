@@ -110,7 +110,7 @@ public class OCTSelection {
         return buttonOutline;
     }
 
-    public int getSelectionLeftEdgeCoordinate() {
+    public final int getSelectionLeftEdgeCoordinate() {
         int lineOffset;
         if (width % 2 == 0) {
             //figure edge offset for even width (off-center)
@@ -122,7 +122,7 @@ public class OCTSelection {
         return xPositionOnOct - lineOffset;
     }
 
-    public int getSelectionRightEdgeCoordinate() {
+    public final int getSelectionRightEdgeCoordinate() {
         int lineOffset;
         if (width % 2 == 0) {
             //figure edge offset for even width (off-center)
