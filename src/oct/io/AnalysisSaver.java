@@ -26,7 +26,9 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import oct.analysis.application.OCTAnalysisUI;
+import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.OCTSelection;
+import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
@@ -89,11 +91,8 @@ public class AnalysisSaver {
             screenFile = new File(outputDir,
                     fileNameStub + "_" + octMngr.getAnalysisMode().toString().toLowerCase() + "_ora_v" + fnameCntr + ".png");
         } while (screenFile.exists());
-        ImageIO.write(getScreenShot(octMngr.getImgPanel()), "png", screenFile);
-        /*
-         Based on the type of analysis that was being performed export the data
-         accordingly
-         */
+        ImageIO.write(getOCTScreenShot(octMngr.getImgPanel()), "png", screenFile);
+        //define output files
         File statsFile;
         fnameCntr = 0;
         do {
@@ -103,6 +102,10 @@ public class AnalysisSaver {
         } while (statsFile.exists());
         File lrpFile;
         File lrpPeaksFile;
+        /*
+         Based on the type of analysis that was being performed export the data
+         accordingly
+         */
         switch (octMngr.getAnalysisMode()) {
             case FIND_FOVEA:
             case SINGLE:
@@ -212,8 +215,8 @@ public class AnalysisSaver {
 
     }
 
-    private static BufferedImage getScreenShot(Component component) {
-
+    private static BufferedImage getOCTScreenShot(OCTImagePanel component) {
+        OCT oct = OCTAnalysisManager.getInstance().getOct();
         BufferedImage image = new BufferedImage(
                 component.getWidth(),
                 component.getHeight(),
@@ -222,6 +225,6 @@ public class AnalysisSaver {
         // call the Component's paint method, using
         // the Graphics object of the image.
         component.paint(image.getGraphics()); // alternately use .printAll(..)
-        return image;
+        return image.getSubimage(component.getImageOffsetX(), component.getImageOffsetY(), oct.getImageWidth(), oct.getImageHeight());
     }
 }
