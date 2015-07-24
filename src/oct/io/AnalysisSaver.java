@@ -109,14 +109,14 @@ public class AnalysisSaver {
         switch (octMngr.getAnalysisMode()) {
             case FIND_FOVEA:
             case SINGLE:
-                //export CSV of LRP information
                 OCTSelection sel = selections.get(0);
-                fnameCntr = 0;
-                do {
-                    fnameCntr++;
-                    lrpFile = new File(outputDir,
-                            fileNameStub + "_" + sel.getSelectionName().toLowerCase() + "_lrp_v" + fnameCntr + ".csv");
-                } while (lrpFile.exists());
+                //name files with versioning to ensure that all files are named with same version
+                //and files from ealier analysis exports aren't overwritten
+                lrpFile = new File(outputDir,
+                        fileNameStub + "_" + sel.getSelectionName().toLowerCase() + "_lrp_v" + fnameCntr + ".csv");
+                lrpPeaksFile = new File(outputDir,
+                        fileNameStub + "_" + sel.getSelectionName().toLowerCase() + "_lrp_peaks_v" + fnameCntr + ".csv");
+                //export CSV of LRP information
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpFile)))) {
                     //grab lrp reflectivity
                     List<XYDataItem> lrp = (List<XYDataItem>) sel
@@ -128,12 +128,6 @@ public class AnalysisSaver {
                     });
                 }
                 //export CSV of LRP Peaks information
-                fnameCntr = 0;
-                do {
-                    fnameCntr++;
-                    lrpPeaksFile = new File(outputDir,
-                            fileNameStub + "_" + sel.getSelectionName().toLowerCase() + "_lrp_peaks_v" + fnameCntr + ".csv");
-                } while (lrpPeaksFile.exists());
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpPeaksFile)))) {
                     //grab lrp reflectivity peak values
                     List<XYDataItem> lrp = (List<XYDataItem>) OCTSelection.findMaximums(sel.getLrpSeriesFromOCT(octMngr.getOctImage()), "").getItems();
@@ -161,12 +155,8 @@ public class AnalysisSaver {
                 ArrayList<String> fpnameList = new ArrayList<>(selections.size());
                 for (OCTSelection selection : selections) {
                     //export CSV of LRP information for each selection
-                    fnameCntr = 0;
-                    do {
-                        fnameCntr++;
-                        lrpFile = new File(outputDir,
-                                fileNameStub + "_" + selection.getSelectionName().toLowerCase() + "_lrp_v" + fnameCntr + ".csv");
-                    } while (lrpFile.exists());
+                    lrpFile = new File(outputDir,
+                            fileNameStub + "_" + selection.getSelectionName().toLowerCase() + "_lrp_v" + fnameCntr + ".csv");
                     fnameList.add(lrpFile.getName());
                     try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpFile)))) {
                         //grab lrp reflectivity
@@ -180,11 +170,8 @@ public class AnalysisSaver {
                     }
                     //export CSV of LRP Peaks information
                     fnameCntr = 0;
-                    do {
-                        fnameCntr++;
-                        lrpPeaksFile = new File(outputDir,
-                                fileNameStub + "_" + selection.getSelectionName().toLowerCase() + "_lrp_peaks_v" + fnameCntr + ".csv");
-                    } while (lrpPeaksFile.exists());
+                    lrpPeaksFile = new File(outputDir,
+                            fileNameStub + "_" + selection.getSelectionName().toLowerCase() + "_lrp_peaks_v" + fnameCntr + ".csv");
                     fpnameList.add(lrpPeaksFile.getName());
                     try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpPeaksFile)))) {
                         //grab lrp reflectivity peak values
