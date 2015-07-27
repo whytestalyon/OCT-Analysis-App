@@ -60,22 +60,41 @@ public class Util {
     }
 
     public static OCT getOCT(BufferedImage octImage, OCTAnalysisUI octAnalysisUI, String octFileName) {
-        Object[] options = {"I have the scale!", "I have axial length and scan width!"};
-        int n = JOptionPane.showOptionDialog(octAnalysisUI, "We need to know the scale of the OCT. What information do you have?", "Determine OCT Scale...", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        switch (n) {
-            case JOptionPane.YES_OPTION:
-                double scale = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT scale (microns per pixel):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                OCTAnalysisManager.getInstance().setScale(scale);
-                return new OCT(octImage, octFileName);
-            case JOptionPane.NO_OPTION:
-                double nominalScanWidth = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT nominal scan length(millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                double axialLength = Util.parseNumberFromInput((String) JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT scale (millimeter):", "Scale input", JOptionPane.QUESTION_MESSAGE));
-                OCTAnalysisManager.getInstance().setScale(axialLength, nominalScanWidth, octImage.getWidth());
-                return new OCT(octImage, octFileName);
-            default:
-                break;
+        boolean exit = false;
+        //ask the user for the x-scale
+        double xscale = 0;
+        do {
+            String res = JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT X-axis scale (microns per pixel):", "X-Scale input", JOptionPane.QUESTION_MESSAGE);
+            if (!(res == null || res.isEmpty())) {
+                xscale = Util.parseNumberFromInput(res);
+            }
+            if(res == null || res.isEmpty() || xscale <= 0){
+                exit = JOptionPane.showConfirmDialog(octAnalysisUI, "Bad scale value. Would you like to enter it again?\nNOTE: OCT won't load without the scale data.", "Input Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) != JOptionPane.YES_OPTION;
+            }
+        } while (!exit && xscale <= 0);
+        if (exit) {
+            return null;
         }
-        return null;
+        //ask the user for the y-scale
+        double yscale = 0;
+        do {
+            String res = JOptionPane.showInputDialog(octAnalysisUI, "Enter OCT Y-axis scale (microns per pixel):", "Y-Scale input", JOptionPane.QUESTION_MESSAGE);
+            if (!(res == null || res.isEmpty())) {
+                yscale = Util.parseNumberFromInput(res);
+            }
+            if(res == null || res.isEmpty() || yscale <= 0){
+                exit = JOptionPane.showConfirmDialog(octAnalysisUI, "Bad scale value. Would you like to enter it again?\nNOTE: OCT won't load without the scale data.", "Input Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) != JOptionPane.YES_OPTION;
+            }
+        } while (!exit && yscale <= 0);
+        if (exit) {
+            return null;
+        }
+
+        //store values and return OCT object
+        OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
+        octMngr.setXScale(xscale);
+        octMngr.setYscale(yscale);
+        return new OCT(octImage, octFileName);
     }
 
     public static BufferedImage deepCopyBufferedImage(BufferedImage bi) {
@@ -351,7 +370,7 @@ public class Util {
         /*
          OCT and OCT analysis manager data
          */
-        double scale = analysisMngr.getScale();
+        double scale = analysisMngr.getXScale();
         int micronsBetweenSelections = analysisMngr.getMicronsBetweenSelections();
         OCT oct = analysisMngr.getOct();
         String octFileName = oct.getFileName();
@@ -385,7 +404,7 @@ public class Util {
         /*
          OCT and OCT analysis manager data
          */
-        analysisMngr.setScale(saveObj.getScale());
+        analysisMngr.setXScale(saveObj.getScale());
         analysisMngr.setMicronsBetweenSelections(saveObj.getMicronsBetweenSelections());
         if (saveObj.getLogOCT() != null) {
             OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()), saveObj.getOctFileName());

@@ -10,11 +10,15 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.swing.JPanel;
+import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
@@ -54,17 +58,42 @@ public class OCTSelection {
     protected boolean moveable;
 
     public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, SelectionType selectionType, String selectionName, boolean moveable) {
-        this.xPositionOnOct = xPositionOnOct;
-        this.yPositionOnOct = yPositionOnOct;
-        this.width = width;
-        this.height = height;
-        this.selectionType = selectionType;
-        this.selectionName = selectionName;
-        this.moveable = moveable;
         int leftEdge = getSelectionLeftEdgeCoordinate();
         int rightEdge = getSelectionRightEdgeCoordinate();
         if (leftEdge < 0 || rightEdge >= analysisMngr.getOct().getImageWidth()) {
             throw new OverOCTEdgeException("Selection past OCT edge!");
+        }
+        this.xPositionOnOct = xPositionOnOct;
+        this.width = width;
+        this.selectionType = selectionType;
+        this.selectionName = selectionName;
+        this.moveable = moveable;
+        if (height == analysisMngr.getOct().getImageHeight() || height == 0) {
+            //calculate the y position and height of selection based on LRP
+            List<LinePoint> lrp = getLrpAcrossOCT(analysisMngr.getOctImage());
+            int maxReflectivity = lrp
+                    .stream()
+                    .mapToInt(LinePoint::getX)
+                    .max()
+                    .getAsInt();
+            //window LRP to 20px above and below the points in the LRP where the
+            //reflectivity is 65% of the maximum
+            //get top of window
+            this.yPositionOnOct = lrp.stream()
+                    .filter(p -> p.getX() >= (0.75D * (double) maxReflectivity))
+                    .mapToInt(p -> (int) Math.round(p.getY()))
+                    .min()
+                    .getAsInt() - 20;
+            //get bottom of window
+            int lastypos = lrp.stream()
+                    .filter(p -> p.getX() >= (0.75D * (double) maxReflectivity))
+                    .mapToInt(p -> (int) Math.round(p.getY()))
+                    .max()
+                    .getAsInt();
+            this.height = (lastypos - this.yPositionOnOct + 1) + 20;
+        } else {
+            this.yPositionOnOct = yPositionOnOct;
+            this.height = height;
         }
     }
 
@@ -77,8 +106,15 @@ public class OCTSelection {
         //draw lines arround the area that is the selection
         int leftEdge = getSelectionLeftEdgeCoordinate();
         int rightEdge = getSelectionRightEdgeCoordinate();
+//        g.drawRect(imageOffsetX + leftEdge - 1, imageOffsetY + yPositionOnOct - 1, width + 2, height + 2);
+        //draw left line
         g.drawLine(imageOffsetX + leftEdge - 1, imageOffsetY + yPositionOnOct, imageOffsetX + leftEdge - 1, imageOffsetY + yPositionOnOct + height - 1);
+        //draw right line
         g.drawLine(imageOffsetX + rightEdge + 1, imageOffsetY + yPositionOnOct, imageOffsetX + rightEdge + 1, imageOffsetY + yPositionOnOct + height - 1);
+        //draw top line
+        g.drawLine(imageOffsetX + leftEdge, imageOffsetY + yPositionOnOct, imageOffsetX + rightEdge, imageOffsetY + yPositionOnOct);
+        //draw bottom line
+        g.drawLine(imageOffsetX + leftEdge, imageOffsetY + yPositionOnOct + height, imageOffsetX + rightEdge, imageOffsetY + yPositionOnOct + height);
         //draw button for interacting with the selection
         drawSelectButton(g, imageOffsetX, imageOffsetY);
         drawn = true;
@@ -232,19 +268,40 @@ public class OCTSelection {
         return panel;
     }
 
-    public XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
+    public final List<LinePoint> getLrpAcrossOCT(BufferedImage oct) {
+        LinkedList<LinePoint> lrp = new LinkedList<>();
+        int leftEdge = getSelectionLeftEdgeCoordinate();
+
+        //iterate over each row of pixels across the OCT and calculate average pixel intensity
+        for (int y = oct.getHeight() - 1; y >= 0; y--) {
+            int yVal = y;
+            //calculate average pixel grayscale intensity
+            int avgReflectivity = (int) Math.round(Arrays.stream(oct.getRGB(leftEdge, yVal, width, 1, null, 0, width))
+                    .map(Util::calculateGrayScaleValue)
+                    .average()
+                    .getAsDouble());
+            //add LRP value to return series
+            lrp.add(new LinePoint(avgReflectivity, y));
+        }
+
+        return lrp;
+    }
+
+    public final XYSeries getLrpSeriesFromOCT(BufferedImage oct) {
         XYSeries lrp = new XYSeries(selectionName + " LRP");
         lrp.setKey(selectionName);
 
         int leftEdge = getSelectionLeftEdgeCoordinate();
-        int rightEdge = getSelectionRightEdgeCoordinate();
 
         double value = -1;
         //iterate over each row of pixels in the selection area and calculate average pixel intensity
-        for (int y = height - 1; y >= 0; y--) {
+        for (int y = yPositionOnOct + height - 1; y >= yPositionOnOct; y--) {
             int yVal = y;
             //calculate average pixel grayscale intensity
-            double curPixelIntensity = IntStream.rangeClosed(leftEdge, rightEdge).map(x -> Util.calculateGrayScaleValue(oct.getRGB(x, yVal))).average().getAsDouble();
+            double curPixelIntensity = Arrays.stream(oct.getRGB(leftEdge, yVal, width, 1, null, 0, width))
+                    .map(Util::calculateGrayScaleValue)
+                    .average()
+                    .getAsDouble();
             //smooth the LRP to provide a higher quality LRP signal
             if (value <= -1) {
                 //initialize the first value for the smoothing filter

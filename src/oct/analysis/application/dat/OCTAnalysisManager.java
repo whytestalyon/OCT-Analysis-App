@@ -60,7 +60,8 @@ public class OCTAnalysisManager {
      */
     public static final String PROP_FOVEA_CENTER_X_POSITION = "foveaCenterXPosition";
     private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private double scale;
+    private double xscale;
+    private double yscale;
     private int micronsBetweenSelections = 0;
     private OCT oct = null;
     private OCTMode displayMode = OCTMode.LOG; //default display mode of image is assumed to be a Log OCT image
@@ -78,6 +79,14 @@ public class OCTAnalysisManager {
     private static class OCTAnalysisManagerHolder {
 
         private static final OCTAnalysisManager INSTANCE = new OCTAnalysisManager();
+    }
+
+    public double getYscale() {
+        return yscale;
+    }
+
+    public void setYscale(double yscale) {
+        this.yscale = yscale;
     }
 
     public void setImjPanel(OCTImagePanel imjPanel) {
@@ -374,7 +383,7 @@ public class OCTAnalysisManager {
      * @return
      */
     public int getNumPixelFromFovea(int multiplier) {
-        return (oct == null) ? -1 : (int) Math.round((double) (micronsBetweenSelections * multiplier) * (1D / scale));
+        return (oct == null) ? -1 : (int) Math.round((double) (micronsBetweenSelections * multiplier) * (1D / xscale));
     }
 
     public int getMicronsBetweenSelections() {
@@ -395,11 +404,11 @@ public class OCTAnalysisManager {
 
     public void setScale(double axialLength, double nominalScanWidth, int octWidth) {
         double scanLength = (nominalScanWidth * axialLength) / 24D;
-        setScale(((scanLength * 1000D) / (double) octWidth));
+        setXScale(((scanLength * 1000D) / (double) octWidth));
     }
 
-    public void setScale(double scale) {
-        this.scale = scale;
+    public void setXScale(double xscale) {
+        this.xscale = xscale;
     }
 
     /**
@@ -413,8 +422,8 @@ public class OCTAnalysisManager {
         this.displayMode = mode;
     }
 
-    public double getScale() {
-        return scale;
+    public double getXScale() {
+        return xscale;
     }
 
     public OCTMode getDisplayMode() {
@@ -448,7 +457,7 @@ public class OCTAnalysisManager {
      * @return segmentation of the OCT
      */
     public Segmentation getSegmentation(ImageOperation optionalOp) {
-        //segmentation and image operations can only be done on 8-bit gray scale images, using the OCT we ensure 
+        //segmentation and image operations can only be done on 8-bit gray xscale images, using the OCT we ensure 
         //the image is in useable format which handles this upon creation
         BufferedImage segImg;
         if (optionalOp != null) {
@@ -734,16 +743,25 @@ public class OCTAnalysisManager {
             UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
             setProgress(5);
             Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
-            setProgress(10);
+            setProgress(50);
             double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
             UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);
+            LinkedList<LinePoint> ilmLine = new LinkedList<>();
+            IntStream.range(0, oct.getImageWidth() - 1).forEach((int i) -> {
+                ilmLine.add(new LinePoint(i, ilmInterp.value(i)));
+            });
             double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.BrM_SEGMENT)));
             UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
+            LinkedList<LinePoint> brmLine = new LinkedList<>();
+            IntStream.range(0, oct.getImageWidth() - 1).forEach((int i) -> {
+                brmLine.add(new LinePoint(i, brmInterp.value(i)));
+            });
+            imgPanel.addDrawnLine(ilmLine, brmLine);
             double[][] diffLine = Util.getXYArraysFromLinePoints(findAbsoluteDiff(brmInterp, ilmInterp, 0, oct.getLinearOctImage().getWidth() - 1));
             UnivariateFunction diffInerp = interpolator.interpolate(diffLine[0], diffLine[1]);
             FiniteDifferencesDifferentiator differ = new FiniteDifferencesDifferentiator(4, 0.25);
             UnivariateDifferentiableFunction difFunc = differ.differentiate(diffInerp);
-            setProgress(20);
+            setProgress(80);
             /*
              * collect the first derivative at each pixel in the image
              */
@@ -760,7 +778,7 @@ public class OCTAnalysisManager {
                 yd = difFunc.value(xd);
                 firstDeriv.set(xRealValue, new LinePoint(xRealValue, yd.getPartialDerivative(1)));
             }
-            setProgress(40);
+            setProgress(90);
             List<LinePoint> peaks = Util.findMaxAndMins(firstDeriv);
             LinePoint prevPeak = null;
             LinkedList<Diff> diffs = new LinkedList<>();
@@ -770,11 +788,9 @@ public class OCTAnalysisManager {
                 }
                 prevPeak = curPeak;
             }
-            setProgress(60);
             Diff maxDiff = diffs.stream().max(Comparator.comparingDouble((Diff diff) -> diff.getYDiff())).get();
             double sign = Math.signum(maxDiff.getLinePoint1().getY());
             int signChangeXPos = maxDiff.getLinePoint1().getX() + 1;
-            setProgress(80);
             while (sign == Math.signum(firstDeriv.get(signChangeXPos).getY())) {
                 signChangeXPos++;
             }

@@ -35,7 +35,7 @@ public class OCTImagePanel extends JPanel {
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
     private Point drawPoint = null;
-    private LinkedList<List<LinePoint>> linesToDraw = null;
+    private LinkedList<List<LinePoint>> linesToDraw = new LinkedList<>();
     private boolean drawLines;
     private boolean drawSelections = true;
 
@@ -121,7 +121,10 @@ public class OCTImagePanel extends JPanel {
         addDrawnLine(linesToDraw);
     }
 
-    public void addDrawnLine(List<LinePoint>... linesToDraw) {
+    public synchronized void addDrawnLine(List<LinePoint>... linesToDraw) {
+        if(this.linesToDraw == null){
+            this.linesToDraw = new LinkedList<>();
+        }
         Arrays.stream(linesToDraw).forEach(r -> {
             this.linesToDraw.add(r);
         });

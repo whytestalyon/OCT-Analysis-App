@@ -140,9 +140,9 @@ public class AnalysisSaver {
                 try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(statsFile)))) {
                     //print position of selection
                     pw.println("LRP distance from left edge of OCT (Pixels)," + sel.getXPositionOnOct());
-                    pw.println("LRP distance from left edge of OCT (Microns)," + sel.getXPositionOnOct() * octMngr.getScale());
+                    pw.println("LRP distance from left edge of OCT (Microns)," + sel.getXPositionOnOct() * octMngr.getXScale());
                     pw.println("LRP width (Pixels)," + sel.getWidth());
-                    pw.println("LRP width (Microns)," + sel.getWidth() * octMngr.getScale());
+                    pw.println("LRP width (Microns)," + sel.getWidth() * octMngr.getXScale());
                     pw.println("Analysis type," + octMngr.getAnalysisMode());
                     pw.println("LRP file names," + lrpFile.getName());
                     pw.println("LRP Peaks file names," + lrpPeaksFile.getName());
@@ -187,9 +187,9 @@ public class AnalysisSaver {
                     //print position of selection
                     selections.forEach((psel) -> {
                         pw.println(psel.getSelectionName() + " LRP distance from fovea (Pixels)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()));
-                        pw.println(psel.getSelectionName() + " LRP distance from fovea (Microns)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()) * octMngr.getScale());
+                        pw.println(psel.getSelectionName() + " LRP distance from fovea (Microns)," + Math.abs(psel.getXPositionOnOct() - octMngr.getFoveaCenterXPosition()) * octMngr.getXScale());
                         pw.println(psel.getSelectionName() + " LRP width (Pixels)," + psel.getWidth());
-                        pw.println(psel.getSelectionName() + " LRP width (Microns)," + psel.getWidth() * octMngr.getScale());
+                        pw.println(psel.getSelectionName() + " LRP width (Microns)," + psel.getWidth() * octMngr.getXScale());
                     });
                     pw.println("Analysis type," + octMngr.getAnalysisMode());
                     pw.println("LRP file names," + fnameList.stream().collect(Collectors.joining(",")));

@@ -525,6 +525,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 dispSegmentationCheckBoxStateChanged(evt);
             }
         });
+        dispSegmentationCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dispSegmentationCheckBoxActionPerformed(evt);
+            }
+        });
         dispControlPanel.add(dispSegmentationCheckBox);
         dispControlPanel.add(filler3);
 
@@ -556,6 +561,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         fileMenu.setText("File");
 
+        newAnalysisMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newAnalysisMenuItem.setText("New Analysis");
         newAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -564,6 +570,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(newAnalysisMenuItem);
 
+        openAnalysisMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         openAnalysisMenuItem.setText("Open Analysis");
         openAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -572,6 +579,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(openAnalysisMenuItem);
 
+        saveAnalysisMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         saveAnalysisMenuItem.setText("Save Analysis");
         saveAnalysisMenuItem.setEnabled(false);
         saveAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -581,6 +589,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(saveAnalysisMenuItem);
 
+        exportAnalysisResultsMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         exportAnalysisResultsMenuItem.setText("Export Analysis Results");
         exportAnalysisResultsMenuItem.setEnabled(false);
         exportAnalysisResultsMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -590,7 +599,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         fileMenu.add(exportAnalysisResultsMenuItem);
 
-        Exit.setText("Exit");
+        Exit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        Exit.setText("Quit");
         Exit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ExitActionPerformed(evt);
@@ -1074,7 +1084,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
         for (int i = 1; i < 16; i++) {
             if (i % 2 == 1) {
-                labelTable.put(i, new JLabel(df.format((double) i * analysisMngr.getScale())));
+                labelTable.put(i, new JLabel(df.format((double) i * analysisMngr.getXScale())));
             }
         }
         widthSlider.setLabelTable(labelTable);
@@ -1214,6 +1224,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_exportAnalysisResultsMenuItemActionPerformed
+
+    private void dispSegmentationCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dispSegmentationCheckBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_dispSegmentationCheckBoxActionPerformed
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
