@@ -65,7 +65,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private final DecimalFormat df = new DecimalFormat("#.00");
     private final JFileChooser fc = new JFileChooser();
     private ToolMode toolMode = ToolMode.NONE;
-    private BufferedImage appIcon = null;
 
     static {
         // set a chart theme using the new shadow generator feature available in
@@ -83,6 +82,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //register the oct panel with the mouse position listener
         posListTextArea.setOctPanel(octAnalysisPanel);
         octAnalysisPanel.addMouseMotionListener(posListTextArea);
+        //init the app with the default settings
+        loadAppConfig();
+    }
+
+    private void loadAppConfig() {
         try {
             //load up default settings for analysis as stream
             InputStreamReader appConfig = new InputStreamReader(getClass().getResourceAsStream("/oct/rsc/conf/default_setting.ora"));
@@ -214,7 +218,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpSmoothingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("LRP Smoothing Factor"));
 
         lrpSmoothingSlider.setMajorTickSpacing(5);
-        lrpSmoothingSlider.setMaximum(50);
+        lrpSmoothingSlider.setMaximum(51);
+        lrpSmoothingSlider.setMinimum(1);
         lrpSmoothingSlider.setMinorTickSpacing(1);
         lrpSmoothingSlider.setPaintLabels(true);
         lrpSmoothingSlider.setPaintTicks(true);
@@ -793,14 +798,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File tiffFile = fc.getSelectedFile();
             //reset application to fresh analysis settings
-            try {
-                //load up default settings for analysis
-                File appConfig = new File(getClass().getClassLoader().getResource("oct/rsc/conf/default_setting.ora").toURI());
-                //set UI using loaded default settings
-                Util.openSavedAnalysis(this, AnalysisSaver.readAnalysis(appConfig));
-            } catch (URISyntaxException | IOException ex) {
-                Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "Failed to load default application settings.", ex);
-            }
+            loadAppConfig();
 
             try {
                 //read in image and keep track of the image for later use

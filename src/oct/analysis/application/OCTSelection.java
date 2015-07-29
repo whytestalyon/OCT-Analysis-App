@@ -79,18 +79,19 @@ public class OCTSelection {
             //window LRP to 20px above and below the points in the LRP where the
             //reflectivity is 65% of the maximum
             //get top of window
-            this.yPositionOnOct = lrp.stream()
+            int tmpy = lrp.stream()
                     .filter(p -> p.getX() >= (0.75D * (double) maxReflectivity))
                     .mapToInt(p -> (int) Math.round(p.getY()))
                     .min()
                     .getAsInt() - 20;
+            this.yPositionOnOct = (tmpy < 0) ? 0 : tmpy;
             //get bottom of window
-            int lastypos = lrp.stream()
+            int tmpHeight = lrp.stream()
                     .filter(p -> p.getX() >= (0.75D * (double) maxReflectivity))
                     .mapToInt(p -> (int) Math.round(p.getY()))
                     .max()
-                    .getAsInt();
-            this.height = (lastypos - this.yPositionOnOct + 1) + 20;
+                    .getAsInt() - this.yPositionOnOct + 21;
+            this.height = (this.yPositionOnOct + tmpHeight >= analysisMngr.getOct().getImageHeight()) ? analysisMngr.getOct().getImageHeight() - this.yPositionOnOct : tmpHeight;
         } else {
             this.yPositionOnOct = yPositionOnOct;
             this.height = height;
@@ -241,7 +242,7 @@ public class OCTSelection {
             lrp.addSeries(fwhmSeries);
         });
         //create chart panel for LRP
-        JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Avg. Pixel Intensity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
+        JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Reflectivity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
         XYPlot plot = chart.getXYPlot();
 //        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
 //        plot.getDomainAxis().setInverted(true);

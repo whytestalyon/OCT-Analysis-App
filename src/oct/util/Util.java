@@ -68,7 +68,7 @@ public class Util {
             if (!(res == null || res.isEmpty())) {
                 xscale = Util.parseNumberFromInput(res);
             }
-            if(res == null || res.isEmpty() || xscale <= 0){
+            if (res == null || res.isEmpty() || xscale <= 0) {
                 exit = JOptionPane.showConfirmDialog(octAnalysisUI, "Bad scale value. Would you like to enter it again?\nNOTE: OCT won't load without the scale data.", "Input Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) != JOptionPane.YES_OPTION;
             }
         } while (!exit && xscale <= 0);
@@ -82,7 +82,7 @@ public class Util {
             if (!(res == null || res.isEmpty())) {
                 yscale = Util.parseNumberFromInput(res);
             }
-            if(res == null || res.isEmpty() || yscale <= 0){
+            if (res == null || res.isEmpty() || yscale <= 0) {
                 exit = JOptionPane.showConfirmDialog(octAnalysisUI, "Bad scale value. Would you like to enter it again?\nNOTE: OCT won't load without the scale data.", "Input Error", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE) != JOptionPane.YES_OPTION;
             }
         } while (!exit && yscale <= 0);
@@ -399,6 +399,8 @@ public class Util {
         OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
         SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
         ImageOperationManager imageOperationMngr = ImageOperationManager.getInstance();
+        //clear out any old selection and LRP data
+        selMngr.removeSelections(true);
 
         //restore the analysis and update UI to reflect analysis settings
         /*
