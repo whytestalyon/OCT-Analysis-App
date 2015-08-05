@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTLine;
 import oct.analysis.application.dat.Cardinality;
@@ -42,7 +43,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
 
     private final OCTAnalysisManager analysisManager = OCTAnalysisManager.getInstance();
     private final SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
-    private final boolean debug = true;
+    private final boolean debug = false;
+    private final int debug_sleep = 50;
+    private final int depthThreshold = 6000;
 
     @Override
     protected EZEdgeCoord doInBackground() throws Exception {
@@ -53,7 +56,8 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          out imperfetions in the segmentation line.
          */
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
-        double[][] brmSeg = Util.getXYArraysFromPoints(new ArrayList<>(analysisManager.getSegmentation(new SharpenOperation(15, 0.5F)).getSegment(Segmentation.BrM_SEGMENT)));
+        ArrayList<Point> rawBrmPoints = new ArrayList<>(analysisManager.getSegmentation(new SharpenOperation(15, 0.5F)).getSegment(Segmentation.BrM_SEGMENT));
+        double[][] brmSeg = Util.getXYArraysFromPoints(rawBrmPoints);
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
         BufferedImage sharpOCT = analysisManager.getSharpenedOctImage(8.5D, 1.0F);
         setProgress(10);
@@ -76,7 +80,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
         LinkedList<Point> contour = new LinkedList<>();
         Point startPoint = new Point(foveaCenterXPosition, searchY);
         //find contour by searching for white pixel boundary to te right of the fovea
-        contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+        contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT, 0));
         //search until open black area found (ie. if the search algorithm arrives back at
         //the starting pixel keep moving north to next black area to search)
         while (contour.get(0).equals(startPoint)) {
@@ -88,7 +92,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                 searchY--;
             } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
             startPoint = new Point(foveaCenterXPosition, searchY);
-            contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
+            contour.add(findContourRight(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT, 0));
         }
         setProgress(20);
         //open balck space found, complete contour to left of fovea
@@ -129,25 +133,49 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
         } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
         contour = new LinkedList<>();
         startPoint = new Point(foveaCenterXPosition, searchY);
-        //find contour by searching for white pixel boundary to te right of the fovea
-        contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
-        //search until open black area found (ie. if the search algorithm arrives back at
-        //the starting pixel keep moving south to next black area to search)
-        while (contour.get(0).equals(startPoint)) {
+        /*
+         Find contour by searching for white pixel boundary to te right of the fovea.
+         Sometimes the crap below the Bruchs membrane causes too much interferance for the
+         algorithm to work properly so we must tweak some of the parameters of the 
+         sharpening performed on the image until the algorithm succedes or we can no longer
+         tweak parameters. In the case of the later event we can use the raw segmented
+         Bruchs membrane as a substitute to keep the method from failing.
+         */
+        contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, 0));
+        double filtValue = 8.5D;
+        boolean tweakFailed = false;
+        while (contour.contains(null)) {
             contour = new LinkedList<>();
-            do {
-                searchY++;
-            } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) == 0);
-            do {
-                searchY++;
-            } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
-            startPoint = new Point(foveaCenterXPosition, searchY);
-            contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
+            filtValue -= 0.5D;
+            System.out.println("Reducing sigma to " + filtValue);
+            if (filtValue <= 0D) {
+                tweakFailed = true;
+                break;
+            }
+            sharpOCT = analysisManager.getSharpenedOctImage(8.5D, 1.0F);
+            contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, 0));
         }
-        setProgress(45);
-        //open balck space found, complete contour to left of fovea
-        System.out.println("OCT width: " + sharpOCT.getWidth());
-        contour.add(findContourLeft(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
+
+        if (tweakFailed) {
+            contour = new LinkedList<>(rawBrmPoints);
+        } else {
+            //search until open black area found (ie. if the search algorithm arrives back at
+            //the starting pixel keep moving south to next black area to search)
+            while (contour.get(0).equals(startPoint)) {
+                contour = new LinkedList<>();
+                do {
+                    searchY++;
+                } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) == 0);
+                do {
+                    searchY++;
+                } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || isSurroundedByWhite(foveaCenterXPosition, searchY, sharpOCT));
+                startPoint = new Point(foveaCenterXPosition, searchY);
+                contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, 0));
+            }
+            setProgress(45);
+            //open balck space found, complete contour to left of fovea
+            contour.add(findContourLeft(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
+        }
         setProgress(55);
         /*
          since the contour can snake around due to aberations and low image density 
@@ -241,7 +269,6 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                     .mapToInt(LinePoint::getX).min();
             crossingThreshold += 0.25D;
         } while (!ezRightEdge.isPresent());
-        setProgress(100);
         //return findings
         return new EZEdgeCoord(ezLeftEdge.getAsInt(), ezRightEdge.getAsInt());
     }
@@ -255,17 +282,20 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
 
     @Override
     protected void done() {
-        //place selection at the center of the fovea
-        int fv = analysisManager.getFoveaCenterXPosition();
-        OCTLine foveaSelection = new OCTLine(fv, 0, analysisManager.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-        selMngr.addOrUpdateSelection(foveaSelection);
-        //second, automatically find the X position of each EZ edge
+        setProgress(100);
+        //only add selections to screen if the EZ edge detection algorithm succeded
         try {
+            //place selection showing each EZ edge
             EZEdgeCoord ez = get();
             selMngr.addOrUpdateSelection(new OCTLine(ez.getLeftXCoord(), 0, analysisManager.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
             selMngr.addOrUpdateSelection(new OCTLine(ez.getRightXCoord(), 0, analysisManager.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
+            //place selection at the center of the fovea
+            int fv = analysisManager.getFoveaCenterXPosition();
+            OCTLine foveaSelection = new OCTLine(fv, 0, analysisManager.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
+            selMngr.addOrUpdateSelection(foveaSelection);
         } catch (InterruptedException | ExecutionException ex) {
             Logger.getLogger(EZWorker.class.getName()).log(Level.SEVERE, "Automatic detection of EZ edges failed!", ex);
+            JOptionPane.showMessageDialog(analysisManager.getImgPanel(), "Detection of the edges of the EZ can't be determined automatically by the application.\nYou will have to manually find the edges of the EZ.", "Can't Analyze Image", JOptionPane.ERROR_MESSAGE);
         }
         analysisManager.getImgPanel().repaint();
     }
@@ -307,10 +337,15 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
      * @param sharpOCT OCT to find the contour in
      * @return the next point in the contour after the search point
      */
-    public Point findContourRight(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT) throws InterruptedException {
+    public Point findContourRight(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT, int depth) throws InterruptedException {
         if (debug) {
             publish(searchPoint);
-            Thread.sleep(200);
+            Thread.sleep(debug_sleep);
+        }
+        depth++;
+        if (depth > depthThreshold) {
+            //the recursive search has gone awry, we must terminate it before causing the stack to overflow
+            return null;
         }
         Point nextPoint;
         Cardinality nextDirection;
@@ -369,8 +404,8 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                 nextDirection = Cardinality.EAST;
                 break;
         }
-        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 20 || nextPoint.x >= sharpOCT.getWidth() - 20)) {
-            contourList.add(findContourRight(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT));
+        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.y < 100 || nextPoint.y > sharpOCT.getHeight() - 20 || nextPoint.x <= 20 || nextPoint.x >= sharpOCT.getWidth() - 20)) {
+            contourList.add(findContourRight(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT, depth));
         }
         return nextPoint;
     }
@@ -390,7 +425,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
     public Point findContourLeft(Point searchPoint, Cardinality searchDirection, Point startPoint, Cardinality startDirection, LinkedList<Point> contourList, BufferedImage sharpOCT) throws InterruptedException {
         if (debug) {
             publish(searchPoint);
-            Thread.sleep(200);
+            Thread.sleep(debug_sleep);
         }
         Point nextPoint;
         Cardinality nextDirection;
@@ -449,7 +484,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                 nextDirection = Cardinality.EAST;
                 break;
         }
-        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.x <= 20 || nextPoint.x >= sharpOCT.getWidth() - 20)) {
+        if (!((nextPoint.equals(startPoint) && nextDirection == startDirection) || nextPoint.y < 100 || nextPoint.y > sharpOCT.getHeight() - 20 || nextPoint.x <= 20 || nextPoint.x >= sharpOCT.getWidth() - 20)) {
             contourList.add(findContourLeft(nextPoint, nextDirection, startPoint, startDirection, contourList, sharpOCT));
         }
         return nextPoint;
