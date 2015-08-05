@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTLine;
@@ -41,17 +42,35 @@ public class Analysis {
                 //if the change that occured was the setting (or update ) of the position of the fovea
                 //then trigger the identification of the EZ edges
                 if (OCTAnalysisManager.PROP_FOVEA_CENTER_X_POSITION.equals(evt.getPropertyName())) {
-                    SwingUtilities.invokeLater(() -> {
-                        int fv = octMngr.getFoveaCenterXPosition();
-                        OCTLine foveaSelection = new OCTLine(fv, 0, octMngr.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-                        selectionLRPManager.addOrUpdateSelection(foveaSelection);
-                        octMngr.getImgPanel().repaint();
-                        //second, automatically find the X position of each EZ edge
-                        int[] ez = octMngr.getEZEdgeCoords();
-                        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, octMngr.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
-                        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, octMngr.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
-                        octMngr.getImgPanel().repaint();
+//                    SwingUtilities.invokeLater(() -> {
+//                        int fv = octMngr.getFoveaCenterXPosition();
+//                        OCTLine foveaSelection = new OCTLine(fv, 0, octMngr.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
+//                        selectionLRPManager.addOrUpdateSelection(foveaSelection);
+//                        octMngr.getImgPanel().repaint();
+//                        //second, automatically find the X position of each EZ edge
+//                        int[] ez = octMngr.getEZEdgeCoords();
+//                        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[0], 0, octMngr.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
+//                        selectionLRPManager.addOrUpdateSelection(new OCTLine(ez[1], 0, octMngr.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
+//                        octMngr.getImgPanel().repaint();
+//                    });
+
+                    //execute the EZ edge detection as a seperate thread that will update the UI when the edges of the EZ are found
+                    //monitor progress of finding the fovea
+                    ProgressMonitor pm = new ProgressMonitor(octMngr.getImgPanel(),
+                            "Analyzing OCT for edge of EZ...",
+                            "", 0, 100);
+                    pm.setMillisToDecideToPopup(0);
+                    pm.setMillisToPopup(100);
+                    pm.setProgress(0);
+                    EZWorker ezw = new EZWorker();
+                    ezw.addPropertyChangeListener((PropertyChangeEvent ev) -> {
+                        if ("progress".equals(ev.getPropertyName())) {
+                            int progress1 = (Integer) ev.getNewValue();
+                            pm.setProgress(progress1);
+                        }
                     });
+                    ezw.execute();
+
                     //remove the listener since it's no longer needed
                     octMngr.removePropertyChangeListener(this);
                 }
