@@ -28,6 +28,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
@@ -39,6 +40,7 @@ import oct.analysis.application.comp.Analysis;
 import oct.analysis.application.comp.ToolbarFloatListener;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.ImageOperationManager;
+import oct.analysis.application.dat.LRPSelectionWidthBean;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTMode;
@@ -107,11 +109,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         lrpButtonGroup = new javax.swing.ButtonGroup();
         selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
+        lrpSelectionWidthBean = new oct.analysis.application.dat.LRPSelectionWidthBean();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         filterPanel = new javax.swing.JPanel();
         filtersToolbar = new javax.swing.JToolBar();
@@ -128,6 +132,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         foveaSelectButton = new javax.swing.JToggleButton();
         singleSelectButton = new javax.swing.JToggleButton();
         screenSelectButton = new javax.swing.JToggleButton();
+        jLabel1 = new javax.swing.JLabel();
+        lrpWidthTextField = new javax.swing.JFormattedTextField();
         modesPanel = new javax.swing.JPanel();
         modesToolbar = new javax.swing.JToolBar();
         selectionWidthModePanel = new javax.swing.JPanel();
@@ -171,6 +177,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         toolbarsMenu = new javax.swing.JMenu();
         filtersTBMenuItem = new javax.swing.JCheckBoxMenuItem();
         ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
+
+        org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, lrpWidthTextField, org.jdesktop.beansbinding.ELProperty.create("${value}"), lrpSelectionWidthBean, org.jdesktop.beansbinding.BeanProperty.create("lrpSelectionWidth"));
+        bindingGroup.addBinding(binding);
+
+        lrpSelectionWidthBean.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                lrpSelectionWidthBeanPropertyChange(evt);
+            }
+        });
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("OCT Reflectivity Analytics");
@@ -403,6 +418,24 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisToolsToolBar.add(screenSelectButton);
 
+        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jLabel1.setLabelFor(lrpWidthTextField);
+        jLabel1.setText("LRP Selection Width:");
+        jLabel1.setToolTipText("Width (in pixels) of the LRP selections on the OCT");
+        jLabel1.setFocusable(false);
+        jLabel1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jLabel1.setMaximumSize(new java.awt.Dimension(105, 14));
+        analysisToolsToolBar.add(jLabel1);
+
+        lrpWidthTextField.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
+        lrpWidthTextField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        lrpWidthTextField.setText("5");
+        lrpWidthTextField.setToolTipText("Set the width of the LRP selections (in pixels)");
+        lrpWidthTextField.setMaximumSize(new java.awt.Dimension(35, 25));
+        lrpWidthTextField.setMinimumSize(new java.awt.Dimension(35, 25));
+        lrpWidthTextField.setPreferredSize(new java.awt.Dimension(35, 25));
+        analysisToolsToolBar.add(lrpWidthTextField);
+
         modesPanel.setMaximumSize(new java.awt.Dimension(400, 400));
         modesPanel.setLayout(new java.awt.BorderLayout());
 
@@ -515,7 +548,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         dispControlPanel.setLayout(new javax.swing.BoxLayout(dispControlPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         dispSelectionsCheckBox.setSelected(true);
-        dispSelectionsCheckBox.setText("Selections");
+        dispSelectionsCheckBox.setText("LRP Selections");
         dispSelectionsCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 dispSelectionsCheckBoxStateChanged(evt);
@@ -785,6 +818,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         );
 
         analysisToolsToolBar.setFloatable(false);
+
+        bindingGroup.bind();
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1227,6 +1262,30 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_dispSegmentationCheckBoxActionPerformed
 
+    private void lrpSelectionWidthBeanPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_lrpSelectionWidthBeanPropertyChange
+        if (LRPSelectionWidthBean.LRP_SELECTION_WIDTH_PROPERTY.equals(evt.getPropertyName())) {
+            //update the selection width (will only affect those selections that are resizable (OCTLines are NOT resizable)
+            selectionLRPManager.setSelectionWidth((int) evt.getNewValue());
+            //update display with new values
+            octAnalysisPanel.repaint();
+            //ensure the value in the input box is bounded to possible values for selection width
+            JFormattedTextField widthInput = getLrpWidthTextField();
+            Object value = widthInput.getValue();
+            int lrpw;
+            if (value instanceof Long) {
+                lrpw = (int) ((long) value);
+            } else if (value instanceof Integer) {
+                lrpw = (int) value;
+            } else {
+                lrpw = 5;
+            }
+            if (lrpw != selectionLRPManager.getSelectionWidth()) {
+                //update UI to reflect bounded input value
+                widthInput.setValue(selectionLRPManager.getSelectionWidth());
+            }
+        }
+    }//GEN-LAST:event_lrpSelectionWidthBeanPropertyChange
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1332,6 +1391,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         return widthSlider;
     }
 
+    public JFormattedTextField getLrpWidthTextField() {
+        return lrpWidthTextField;
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -1398,13 +1461,16 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem interactiveEzMenuItem;
     private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
     private javax.swing.JMenuItem interactiveMirrorAnalysisMenuItem;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
     private javax.swing.JMenuItem lrpMenuItem;
+    private oct.analysis.application.dat.LRPSelectionWidthBean lrpSelectionWidthBean;
     private javax.swing.JPanel lrpSmoothingPanel;
     private javax.swing.JSlider lrpSmoothingSlider;
+    private javax.swing.JFormattedTextField lrpWidthTextField;
     private javax.swing.JRadioButton micronModeButton;
     private javax.swing.JPanel modesPanel;
     private javax.swing.JToolBar modesToolbar;
@@ -1432,5 +1498,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu toolsMenu;
     private javax.swing.ButtonGroup toolsToolBarBtnGroup;
     private javax.swing.JSlider widthSlider;
+    private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 }

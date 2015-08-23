@@ -473,7 +473,8 @@ public class Util {
             ui.getLinearOCTModeButton().setSelected(true);
         }
         ui.getLrpSmoothingSlider().setValue(selMngr.getLrpSmoothingFactor());
-        ui.getWidthSlider().setValue(selMngr.getSelectionWidth());
+//        ui.getWidthSlider().setValue(selMngr.getSelectionWidth());
+        ui.getLrpWidthTextField().setValue(selMngr.getSelectionWidth());
         ui.getDispSegmentationCheckBox().setSelected(analysisMngr.getImgPanel().isDrawLines());
         ui.getDispSelectionsCheckBox().setSelected(analysisMngr.getImgPanel().isDrawSelections());
         ui.getOctSharpRadiusSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenSigma() * 10D));

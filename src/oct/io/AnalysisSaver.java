@@ -6,7 +6,6 @@
 package oct.io;
 
 import com.google.gson.Gson;
-import java.awt.Component;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,7 +19,6 @@ import java.io.Reader;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -30,7 +28,6 @@ import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
-import oct.analysis.application.dat.OCTMode;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.util.Util;
 import org.jfree.data.xy.XYDataItem;
