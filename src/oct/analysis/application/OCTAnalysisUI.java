@@ -97,7 +97,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "Failed to load default application settings.", ex);
             //init default value in case of failure of loading the default config
-            selectionLRPManager.setSelectionWidth(widthSlider.getValue());
+            int lrpw = 5;
+            Object value = getLrpWidthTextField().getValue();
+            if (value instanceof Long) {
+                lrpw = (int) ((long) value);
+            } else if (value instanceof Integer) {
+                lrpw = (int) value;
+            }
+            selectionLRPManager.setSelectionWidth(lrpw);
         }
     }
 
@@ -112,7 +119,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         bindingGroup = new org.jdesktop.beansbinding.BindingGroup();
 
         lrpButtonGroup = new javax.swing.ButtonGroup();
-        selModeButtonGroup = new javax.swing.ButtonGroup();
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
         lrpSelectionWidthBean = new oct.analysis.application.dat.LRPSelectionWidthBean();
@@ -134,13 +140,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         screenSelectButton = new javax.swing.JToggleButton();
         jLabel1 = new javax.swing.JLabel();
         lrpWidthTextField = new javax.swing.JFormattedTextField();
-        modesPanel = new javax.swing.JPanel();
-        modesToolbar = new javax.swing.JToolBar();
-        selectionWidthModePanel = new javax.swing.JPanel();
-        pixelModeButton = new javax.swing.JRadioButton();
-        micronModeButton = new javax.swing.JRadioButton();
-        selectionWidthSliderPanel = new javax.swing.JPanel();
-        widthSlider = new javax.swing.JSlider();
         displayPanel = new javax.swing.JPanel();
         positionPanel = new javax.swing.JPanel();
         posListTextArea = new oct.analysis.application.comp.MouseListeningTextArea();
@@ -176,7 +175,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpMenuItem = new javax.swing.JMenuItem();
         toolbarsMenu = new javax.swing.JMenu();
         filtersTBMenuItem = new javax.swing.JCheckBoxMenuItem();
-        ModesTBMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, lrpWidthTextField, org.jdesktop.beansbinding.ELProperty.create("${value}"), lrpSelectionWidthBean, org.jdesktop.beansbinding.BeanProperty.create("lrpSelectionWidth"));
         bindingGroup.addBinding(binding);
@@ -278,7 +276,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSmoothingPanel.setLayout(octSmoothingPanelLayout);
         octSmoothingPanelLayout.setHorizontalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 563, Short.MAX_VALUE)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
         );
         octSmoothingPanelLayout.setVerticalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -305,7 +303,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
         sharpRadiusPanelLayout.setHorizontalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
         );
         sharpRadiusPanelLayout.setVerticalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -435,93 +433,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpWidthTextField.setMinimumSize(new java.awt.Dimension(35, 25));
         lrpWidthTextField.setPreferredSize(new java.awt.Dimension(35, 25));
         analysisToolsToolBar.add(lrpWidthTextField);
-
-        modesPanel.setMaximumSize(new java.awt.Dimension(400, 400));
-        modesPanel.setLayout(new java.awt.BorderLayout());
-
-        modesToolbar.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-        modesToolbar.setOrientation(javax.swing.SwingConstants.VERTICAL);
-        modesToolbar.setRollover(true);
-        modesToolbar.setAlignmentX(0.5F);
-        modesToolbar.setName("OCT Modes Toolbar"); // NOI18N
-
-        selectionWidthModePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Selection Width"));
-
-        selModeButtonGroup.add(pixelModeButton);
-        pixelModeButton.setSelected(true);
-        pixelModeButton.setText("Pixels");
-        pixelModeButton.setToolTipText("Display selection widths in terms of Pixels");
-        pixelModeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                pixelModeButtonActionPerformed(evt);
-            }
-        });
-
-        selModeButtonGroup.add(micronModeButton);
-        micronModeButton.setText("Microns");
-        micronModeButton.setToolTipText("Display selection width in terms of Microns");
-        micronModeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                micronModeButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout selectionWidthModePanelLayout = new javax.swing.GroupLayout(selectionWidthModePanel);
-        selectionWidthModePanel.setLayout(selectionWidthModePanelLayout);
-        selectionWidthModePanelLayout.setHorizontalGroup(
-            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
-                .addComponent(pixelModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(micronModeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 121, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        selectionWidthModePanelLayout.setVerticalGroup(
-            selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(selectionWidthModePanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(selectionWidthModePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(pixelModeButton)
-                    .addComponent(micronModeButton))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        modesToolbar.add(selectionWidthModePanel);
-
-        selectionWidthSliderPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "OCT Selection Width"));
-
-        widthSlider.setMajorTickSpacing(2);
-        widthSlider.setMaximum(15);
-        widthSlider.setMinimum(1);
-        widthSlider.setMinorTickSpacing(1);
-        widthSlider.setPaintLabels(true);
-        widthSlider.setPaintTicks(true);
-        widthSlider.setSnapToTicks(true);
-        widthSlider.setToolTipText("Adjust the width of the OCT selections");
-        widthSlider.setValue(5);
-        widthSlider.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                widthSliderStateChanged(evt);
-            }
-        });
-
-        javax.swing.GroupLayout selectionWidthSliderPanelLayout = new javax.swing.GroupLayout(selectionWidthSliderPanel);
-        selectionWidthSliderPanel.setLayout(selectionWidthSliderPanelLayout);
-        selectionWidthSliderPanelLayout.setHorizontalGroup(
-            selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(widthSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 457, Short.MAX_VALUE)
-        );
-        selectionWidthSliderPanelLayout.setVerticalGroup(
-            selectionWidthSliderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, selectionWidthSliderPanelLayout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(widthSlider, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        modesToolbar.add(selectionWidthSliderPanel);
-
-        modesPanel.add(modesToolbar, java.awt.BorderLayout.NORTH);
-        modesToolbar.addAncestorListener(new ToolbarFloatListener(modesToolbar,this));
 
         displayPanel.setLayout(new javax.swing.BoxLayout(displayPanel, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -776,15 +687,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         toolbarsMenu.add(filtersTBMenuItem);
 
-        ModesTBMenuItem.setSelected(true);
-        ModesTBMenuItem.setText("OCT Modes Toolbar");
-        ModesTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                ModesTBMenuItemActionPerformed(evt);
-            }
-        });
-        toolbarsMenu.add(ModesTBMenuItem);
-
         appMenuBar.add(toolbarsMenu);
 
         setJMenuBar(appMenuBar);
@@ -793,12 +695,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(displayPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 682, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(displayPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 682, Short.MAX_VALUE))
             .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -807,12 +706,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(displayPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(modesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 344, Short.MAX_VALUE))
+                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(displayPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
@@ -1106,27 +1002,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         selectionLRPManager.updateLRPs();
     }//GEN-LAST:event_lrpSmoothingSliderStateChanged
 
-    private void widthSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_widthSliderStateChanged
-        //update the selection width (will only affect those selections that are resizable (OCTLines are NOT resizable)
-        selectionLRPManager.setSelectionWidth(((JSlider) evt.getSource()).getValue());
-        //update display with new values
-        octAnalysisPanel.repaint();
-    }//GEN-LAST:event_widthSliderStateChanged
-
-    private void micronModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_micronModeButtonActionPerformed
-        Hashtable<Integer, JLabel> labelTable = new Hashtable<>();
-        for (int i = 1; i < 16; i++) {
-            if (i % 2 == 1) {
-                labelTable.put(i, new JLabel(df.format((double) i * analysisMngr.getXScale())));
-            }
-        }
-        widthSlider.setLabelTable(labelTable);
-    }//GEN-LAST:event_micronModeButtonActionPerformed
-
-    private void pixelModeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pixelModeButtonActionPerformed
-        widthSlider.setLabelTable(widthSlider.createStandardLabels(2));
-    }//GEN-LAST:event_pixelModeButtonActionPerformed
-
     private void logModeOCTButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logModeOCTButtonActionPerformed
         analysisMngr.setOCTMode(OCTMode.LOG);
         //redraw OCT use new mode weight
@@ -1155,14 +1030,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             selectionLRPManager.updateLRPs();
         });
     }//GEN-LAST:event_octSharpWeightSliderStateChanged
-
-    private void ModesTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ModesTBMenuItemActionPerformed
-        SwingUtilities.invokeLater(() -> {
-            //toggle display of OCT modes toolbar
-            modesToolbar.setVisible(ModesTBMenuItem.isSelected());
-            pack();
-        });
-    }//GEN-LAST:event_ModesTBMenuItemActionPerformed
 
     private void filtersTBMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filtersTBMenuItemActionPerformed
         SwingUtilities.invokeLater(() -> {
@@ -1367,10 +1234,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         return lrpSmoothingSlider;
     }
 
-    public JRadioButton getMicronModeButton() {
-        return micronModeButton;
-    }
-
     public JSlider getOctSharpRadiusSlider() {
         return octSharpRadiusSlider;
     }
@@ -1381,14 +1244,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     public JSlider getOctSmoothingSlider() {
         return octSmoothingSlider;
-    }
-
-    public JRadioButton getPixelModeButton() {
-        return pixelModeButton;
-    }
-
-    public JSlider getWidthSlider() {
-        return widthSlider;
     }
 
     public JFormattedTextField getLrpWidthTextField() {
@@ -1433,7 +1288,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem Exit;
-    private javax.swing.JCheckBoxMenuItem ModesTBMenuItem;
     private javax.swing.JMenu analysisMenu;
     private javax.swing.ButtonGroup analysisToolBarBtnGroup;
     private javax.swing.JToolBar analysisToolsToolBar;
@@ -1471,9 +1325,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel lrpSmoothingPanel;
     private javax.swing.JSlider lrpSmoothingSlider;
     private javax.swing.JFormattedTextField lrpWidthTextField;
-    private javax.swing.JRadioButton micronModeButton;
-    private javax.swing.JPanel modesPanel;
-    private javax.swing.JToolBar modesToolbar;
     private javax.swing.JMenuItem newAnalysisMenuItem;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JSlider octSharpRadiusSlider;
@@ -1482,14 +1333,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JMenuItem openAnalysisMenuItem;
-    private javax.swing.JRadioButton pixelModeButton;
     private oct.analysis.application.comp.MouseListeningTextArea posListTextArea;
     private javax.swing.JPanel positionPanel;
     private javax.swing.JMenuItem saveAnalysisMenuItem;
     private javax.swing.JToggleButton screenSelectButton;
-    private javax.swing.ButtonGroup selModeButtonGroup;
-    private javax.swing.JPanel selectionWidthModePanel;
-    private javax.swing.JPanel selectionWidthSliderPanel;
     private javax.swing.JPanel sharpRadiusPanel;
     private javax.swing.JMenuItem singleLRPAnalysisMenuItem;
     private javax.swing.JToggleButton singleSelectButton;
@@ -1497,7 +1344,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu toolbarsMenu;
     private javax.swing.JMenu toolsMenu;
     private javax.swing.ButtonGroup toolsToolBarBtnGroup;
-    private javax.swing.JSlider widthSlider;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 }
