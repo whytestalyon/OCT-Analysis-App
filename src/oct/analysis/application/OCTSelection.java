@@ -58,13 +58,13 @@ public class OCTSelection {
     protected boolean moveable;
 
     public OCTSelection(int xPositionOnOct, int yPositionOnOct, int width, int height, SelectionType selectionType, String selectionName, boolean moveable) {
+        this.xPositionOnOct = xPositionOnOct;
+        this.width = width;
         int leftEdge = getSelectionLeftEdgeCoordinate();
         int rightEdge = getSelectionRightEdgeCoordinate();
         if (leftEdge < 0 || rightEdge >= analysisMngr.getOct().getImageWidth()) {
             throw new OverOCTEdgeException("Selection past OCT edge!");
         }
-        this.xPositionOnOct = xPositionOnOct;
-        this.width = width;
         this.selectionType = selectionType;
         this.selectionName = selectionName;
         this.moveable = moveable;
@@ -278,9 +278,9 @@ public class OCTSelection {
             int yVal = y;
             //calculate average pixel grayscale intensity
             int avgReflectivity = (int) Math.round(Arrays.stream(oct.getRGB(leftEdge, yVal, width, 1, null, 0, width))
-                    .map(Util::calculateGrayScaleValue)
-                    .average()
-                    .getAsDouble());
+                        .map(Util::calculateGrayScaleValue)
+                        .average()
+                        .getAsDouble());
             //add LRP value to return series
             lrp.add(new LinePoint(avgReflectivity, y));
         }
