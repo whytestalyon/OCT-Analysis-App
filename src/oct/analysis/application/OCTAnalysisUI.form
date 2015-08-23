@@ -253,7 +253,7 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="103" groupAlignment="0" max="-2" attributes="0">
               <Component id="octAnalysisPanel" max="32767" attributes="0"/>
-              <Component id="displayPanel" pref="682" max="32767" attributes="0"/>
+              <Component id="displayPanel" pref="736" max="32767" attributes="0"/>
           </Group>
           <Component id="filterPanel" alignment="0" max="32767" attributes="0"/>
           <Component id="analysisToolsToolBar" alignment="0" max="32767" attributes="0"/>
@@ -415,7 +415,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="octSmoothingSlider" alignment="0" pref="326" max="32767" attributes="0"/>
+                          <Component id="octSmoothingSlider" alignment="0" pref="353" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -454,7 +454,7 @@
                   <Layout>
                     <DimensionLayout dim="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="octSharpRadiusSlider" alignment="0" pref="326" max="32767" attributes="0"/>
+                          <Component id="octSharpRadiusSlider" alignment="0" pref="353" max="32767" attributes="0"/>
                       </Group>
                     </DimensionLayout>
                     <DimensionLayout dim="1">
@@ -665,17 +665,17 @@
           <Layout>
             <DimensionLayout dim="0">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="posListTextArea" alignment="0" max="32767" attributes="0"/>
+                  <Component id="mousePositionLabel" alignment="0" pref="99" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
             <DimensionLayout dim="1">
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="posListTextArea" alignment="0" pref="25" max="32767" attributes="0"/>
+                  <Component id="mousePositionLabel" alignment="0" pref="24" max="32767" attributes="0"/>
               </Group>
             </DimensionLayout>
           </Layout>
           <SubComponents>
-            <Component class="oct.analysis.application.comp.MouseListeningTextArea" name="posListTextArea">
+            <Component class="oct.analysis.application.comp.MousePositionListeningLabel" name="mousePositionLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Mouse Position"/>
               </Properties>
@@ -683,6 +683,52 @@
           </SubComponents>
         </Container>
         <Component class="javax.swing.Box$Filler" name="filler1">
+          <Properties>
+            <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[32767, 0]"/>
+            </Property>
+          </Properties>
+          <AuxValues>
+            <AuxValue name="classDetails" type="java.lang.String" value="Box.Filler.HorizontalGlue"/>
+          </AuxValues>
+        </Component>
+        <Container class="javax.swing.JPanel" name="jPanel2">
+          <Properties>
+            <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+              <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+                <TitledBorder title="To Fovea">
+                  <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">
+                    <EtchetBorder/>
+                  </Border>
+                </TitledBorder>
+              </Border>
+            </Property>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[60, 47]"/>
+            </Property>
+          </Properties>
+
+          <Layout>
+            <DimensionLayout dim="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="mouseDistanceToFoveaLabel" alignment="1" pref="79" max="32767" attributes="0"/>
+              </Group>
+            </DimensionLayout>
+            <DimensionLayout dim="1">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="mouseDistanceToFoveaLabel" alignment="0" pref="24" max="32767" attributes="0"/>
+              </Group>
+            </DimensionLayout>
+          </Layout>
+          <SubComponents>
+            <Component class="oct.analysis.application.comp.MouseDistanceToFoveaListeningLabel" name="mouseDistanceToFoveaLabel">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Distance"/>
+              </Properties>
+            </Component>
+          </SubComponents>
+        </Container>
+        <Component class="javax.swing.Box$Filler" name="filler4">
           <Properties>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[32767, 0]"/>

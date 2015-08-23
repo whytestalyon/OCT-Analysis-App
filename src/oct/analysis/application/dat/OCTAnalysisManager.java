@@ -112,6 +112,22 @@ public class OCTAnalysisManager {
     }
 
     /**
+     * Get the distance from the supplied X position on the OCT to the fovea (in
+     * microns).
+     *
+     * @param xPos X position on OCT
+     * @return distance between xPos and center of fovea in microns, returns -1
+     * if the center of fovea hasn't be identified yet.
+     */
+    public double getDistanceFromFovea(int xPos) {
+        if (foveaCenterXPosition < 0) {
+            return -1D;
+        } else {
+            return (double) Math.abs(xPos - foveaCenterXPosition) * xscale;
+        }
+    }
+
+    /**
      * Define where the center of the fovea is.
      *
      * @param foveaCenterXPosition
@@ -307,7 +323,6 @@ public class OCTAnalysisManager {
         }
         return retLine;
     }
-
 
     private class FoveaFindingTask extends SwingWorker<List<Integer>, Integer> {
 

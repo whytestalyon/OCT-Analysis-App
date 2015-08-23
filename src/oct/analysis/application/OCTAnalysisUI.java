@@ -82,8 +82,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //set connection for debugin
         analysisMngr.setImjPanel(octAnalysisPanel);
         //register the oct panel with the mouse position listener
-        posListTextArea.setOctPanel(octAnalysisPanel);
-        octAnalysisPanel.addMouseMotionListener(posListTextArea);
+        mousePositionLabel.setOctPanel(octAnalysisPanel);
+        octAnalysisPanel.addMouseMotionListener(mousePositionLabel);
+        //rgister the oct panel with the mouse listener that determines the distance b/w the fovea and the mouse
+        mouseDistanceToFoveaLabel.setOctPanel(octAnalysisPanel);
+        octAnalysisPanel.addMouseMotionListener(mouseDistanceToFoveaLabel);
         //init the app with the default settings
         loadAppConfig();
     }
@@ -142,8 +145,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpWidthTextField = new javax.swing.JFormattedTextField();
         displayPanel = new javax.swing.JPanel();
         positionPanel = new javax.swing.JPanel();
-        posListTextArea = new oct.analysis.application.comp.MouseListeningTextArea();
+        mousePositionLabel = new oct.analysis.application.comp.MousePositionListeningLabel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        jPanel2 = new javax.swing.JPanel();
+        mouseDistanceToFoveaLabel = new oct.analysis.application.comp.MouseDistanceToFoveaListeningLabel();
+        filler4 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
         dispControlPanel = new javax.swing.JPanel();
         dispSelectionsCheckBox = new javax.swing.JCheckBox();
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
@@ -276,7 +282,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         octSmoothingPanel.setLayout(octSmoothingPanelLayout);
         octSmoothingPanelLayout.setHorizontalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+            .addComponent(octSmoothingSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
         );
         octSmoothingPanelLayout.setVerticalGroup(
             octSmoothingPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -303,7 +309,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         sharpRadiusPanel.setLayout(sharpRadiusPanelLayout);
         sharpRadiusPanelLayout.setHorizontalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE)
+            .addComponent(octSharpRadiusSlider, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE)
         );
         sharpRadiusPanelLayout.setVerticalGroup(
             sharpRadiusPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -439,21 +445,40 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         positionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Position"));
         positionPanel.setPreferredSize(new java.awt.Dimension(80, 47));
 
-        posListTextArea.setText("Mouse Position");
+        mousePositionLabel.setText("Mouse Position");
 
         javax.swing.GroupLayout positionPanelLayout = new javax.swing.GroupLayout(positionPanel);
         positionPanel.setLayout(positionPanelLayout);
         positionPanelLayout.setHorizontalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(mousePositionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
         );
         positionPanelLayout.setVerticalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(posListTextArea, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE)
+            .addComponent(mousePositionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
         );
 
         displayPanel.add(positionPanel);
         displayPanel.add(filler1);
+
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "To Fovea"));
+        jPanel2.setPreferredSize(new java.awt.Dimension(60, 47));
+
+        mouseDistanceToFoveaLabel.setText("Distance");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(mouseDistanceToFoveaLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(mouseDistanceToFoveaLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
+        );
+
+        displayPanel.add(jPanel2);
+        displayPanel.add(filler4);
 
         dispControlPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Display Control"));
         dispControlPanel.setLayout(new javax.swing.BoxLayout(dispControlPanel, javax.swing.BoxLayout.LINE_AXIS));
@@ -697,7 +722,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                 .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(displayPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 682, Short.MAX_VALUE))
+                .addComponent(displayPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 736, Short.MAX_VALUE))
             .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
@@ -1306,6 +1331,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
+    private javax.swing.Box.Filler filler4;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JCheckBoxMenuItem filtersTBMenuItem;
     private javax.swing.JToolBar filtersToolbar;
@@ -1317,6 +1343,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem interactiveMirrorAnalysisMenuItem;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton linearOCTModeButton;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
@@ -1325,6 +1352,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel lrpSmoothingPanel;
     private javax.swing.JSlider lrpSmoothingSlider;
     private javax.swing.JFormattedTextField lrpWidthTextField;
+    private oct.analysis.application.comp.MouseDistanceToFoveaListeningLabel mouseDistanceToFoveaLabel;
+    private oct.analysis.application.comp.MousePositionListeningLabel mousePositionLabel;
     private javax.swing.JMenuItem newAnalysisMenuItem;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JSlider octSharpRadiusSlider;
@@ -1333,7 +1362,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JMenuItem openAnalysisMenuItem;
-    private oct.analysis.application.comp.MouseListeningTextArea posListTextArea;
     private javax.swing.JPanel positionPanel;
     private javax.swing.JMenuItem saveAnalysisMenuItem;
     private javax.swing.JToggleButton screenSelectButton;

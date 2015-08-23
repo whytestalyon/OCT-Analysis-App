@@ -16,7 +16,7 @@ import oct.analysis.application.dat.OCTAnalysisManager;
  *
  * @author Brandon
  */
-public class MouseListeningTextArea extends JLabel implements MouseMotionListener {
+public class MousePositionListeningLabel extends JLabel implements MouseMotionListener {
 
     public static final String ORIGIN_STRING = "(0,0)";
     private static final OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
