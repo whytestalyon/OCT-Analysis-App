@@ -8,6 +8,7 @@ package oct.analysis.application;
 import com.google.gson.Gson;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
@@ -79,16 +80,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
      */
     public OCTAnalysisUI() {
         initComponents();
+        octAnalysisPanel.requestFocusInWindow();
         //set connection for debugin
         analysisMngr.setImjPanel(octAnalysisPanel);
         //register the oct panel with the mouse position listener
-        mousePositionLabel.setOctPanel(octAnalysisPanel);
         octAnalysisPanel.addMouseMotionListener(mousePositionLabel);
         //register the oct panel with the mouse listener that determines the distance b/w the fovea and the mouse
-        mouseDistanceToFoveaLabel.setOctPanel(octAnalysisPanel);
         octAnalysisPanel.addMouseMotionListener(mouseDistanceToFoveaLabel);
         //register the oct panel with the mouse listener that determines if the cursor should be a resize cursor for an lrp selection
-        resizeOCTSelectionMouseMonitor.setOctip(octAnalysisPanel);
         resizeOCTSelectionMouseMonitor.setUi(this);
         octAnalysisPanel.addMouseMotionListener(resizeOCTSelectionMouseMonitor);
         //init the app with the default settings
@@ -440,6 +439,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpWidthTextField.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         lrpWidthTextField.setText("5");
         lrpWidthTextField.setToolTipText("Set the width of the LRP selections (in pixels)");
+        lrpWidthTextField.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
         lrpWidthTextField.setMaximumSize(new java.awt.Dimension(35, 25));
         lrpWidthTextField.setMinimumSize(new java.awt.Dimension(35, 25));
         lrpWidthTextField.setPreferredSize(new java.awt.Dimension(35, 25));
@@ -819,7 +819,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:
-                                    selectSelection(evt.getX(), evt.getY());
+                                    selectSelection(evt.getPoint());
                                     break;
                             }
                             break;
@@ -836,7 +836,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:
-                                    selectSelection(evt.getX(), evt.getY());
+                                    selectSelection(evt.getPoint());
                                     break;
                             }
                             break;
@@ -844,7 +844,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                             //allow user to select and change position of the EZ edge selections after the fact
                             switch (toolMode) {
                                 case SCREEN_SELECT:
-                                    selectSelection(evt.getX(), evt.getY());
+                                    selectSelection(evt.getPoint());
                                 default:
                                     break;
                             }
@@ -1226,15 +1226,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
      * button click). If the supplied X position does not overlap any selections
      * all currently selected selections will be unselected.
      *
-     * @param clickXPosition
-     * @param clickYPosition
+     * @param p
      * @return
      */
-    public OCTSelection selectSelection(int clickXPosition, int clickYPosition) {
+    public OCTSelection selectSelection(Point p) {
         //clear the currently selected OCT selection (if there even is one)
         selectionLRPManager.unselectSelections();
         //determine if click was over one of the EZ selections
-        OCTSelection selection = selectionLRPManager.getOverlappingSelection(clickXPosition, clickYPosition, octAnalysisPanel.getImageOffsetX(), octAnalysisPanel.getImageOffsetY());
+        OCTSelection selection = selectionLRPManager.getSelection(octAnalysisPanel.translatePanelPointToOctPoint(p), false);
         if (selection != null) {
             //high light the selection and allow the user to move the selection with the arrow keys
             selection.setHighlighted(true);

@@ -97,10 +97,8 @@ public class OCTSelection {
             this.height = height;
         }
         //set the regions that define the top and bottom lines of the drawn selection
-        //imageOffsetX + leftEdge, imageOffsetY + yPositionOnOct, imageOffsetX + rightEdge, imageOffsetY + yPositionOnOct
-        topLine = new Polygon(new int[]{leftEdge, leftEdge, rightEdge, rightEdge}, new int[]{this.yPositionOnOct - 2, this.yPositionOnOct + 2, this.yPositionOnOct + 2, this.yPositionOnOct - 2}, 4);
-        //imageOffsetX + leftEdge, imageOffsetY + yPositionOnOct + height, imageOffsetX + rightEdge, imageOffsetY + yPositionOnOct + height
-        bottomLine = new Polygon(new int[]{leftEdge, leftEdge, rightEdge, rightEdge}, new int[]{this.yPositionOnOct + this.height - 2, this.yPositionOnOct + this.height + 2, this.yPositionOnOct + this.height + 2, this.yPositionOnOct + this.height - 2}, 4);
+        updateTopLineMarker();
+        updateBottomLineMarker();
     }
 
     public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
@@ -176,6 +174,18 @@ public class OCTSelection {
         return xPositionOnOct + lineOffset;
     }
 
+    private void updateTopLineMarker() {
+        int leftEdge = getSelectionLeftEdgeCoordinate();
+        int rightEdge = getSelectionRightEdgeCoordinate();
+        topLine = new Polygon(new int[]{leftEdge, leftEdge, rightEdge, rightEdge}, new int[]{this.yPositionOnOct - 2, this.yPositionOnOct + 2, this.yPositionOnOct + 2, this.yPositionOnOct - 2}, 4);
+    }
+
+    private void updateBottomLineMarker() {
+        int leftEdge = getSelectionLeftEdgeCoordinate();
+        int rightEdge = getSelectionRightEdgeCoordinate();
+        bottomLine = new Polygon(new int[]{leftEdge, leftEdge, rightEdge, rightEdge}, new int[]{this.yPositionOnOct + this.height - 2, this.yPositionOnOct + this.height + 2, this.yPositionOnOct + this.height + 2, this.yPositionOnOct + this.height - 2}, 4);
+    }
+
     public boolean isHighlighted() {
         return highlighted;
     }
@@ -200,6 +210,8 @@ public class OCTSelection {
 
     public void setYPositionOnOct(int yPositionOnOct) {
         this.yPositionOnOct = yPositionOnOct;
+        updateBottomLineMarker();
+        updateTopLineMarker();
     }
 
     public void setWidth(int width) {
@@ -214,6 +226,12 @@ public class OCTSelection {
 
     public int getHeight() {
         return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+        updateBottomLineMarker();
+        updateTopLineMarker();
     }
 
     public boolean isDrawn() {
@@ -239,11 +257,11 @@ public class OCTSelection {
     public boolean overlapsBottomOfSelection(Point p) {
         return bottomLine.contains(p);
     }
-    
+
     public boolean overlapsTopOfSelection(Point p) {
         return topLine.contains(p);
     }
-    
+
     public JPanel createLRPPanel() {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();

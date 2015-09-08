@@ -9,7 +9,6 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import javax.swing.JLabel;
-import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.dat.OCTAnalysisManager;
 
 /**
@@ -20,11 +19,7 @@ public class MousePositionListeningLabel extends JLabel implements MouseMotionLi
 
     public static final String ORIGIN_STRING = "(0,0)";
     private static final OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
-    private OCTImagePanel octPanel;
-
-    public void setOctPanel(OCTImagePanel octPanel) {
-        this.octPanel = octPanel;
-    }
+    private OCTAnalysisManager octmngr = OCTAnalysisManager.getInstance();
 
     @Override
     public void mouseDragged(MouseEvent e) {
@@ -34,11 +29,13 @@ public class MousePositionListeningLabel extends JLabel implements MouseMotionLi
     @Override
     public void mouseMoved(MouseEvent e) {
         Point p = e.getPoint();
-        if (octPanel.coordinateOverlapsOCT(p)) {
-            p = octPanel.translatePanelPointToOctPoint(p);
-            setText("(" + p.x + "," + (octMngr.getOct().getImageHeight() - p.y) + ")");
-        } else {
-            setText(ORIGIN_STRING);
+        if (octmngr.getImgPanel() != null) {
+            if (octmngr.getImgPanel().coordinateOverlapsOCT(p)) {
+                p = octmngr.getImgPanel().translatePanelPointToOctPoint(p);
+                setText("(" + p.x + "," + (octMngr.getOct().getImageHeight() - p.y) + ")");
+            } else {
+                setText(ORIGIN_STRING);
+            }
         }
     }
 

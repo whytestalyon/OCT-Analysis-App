@@ -121,7 +121,7 @@ public class SelectionLRPManager {
         });
     }
 
-    private void updateLRP(OCTSelection selection) {
+    public void updateLRP(OCTSelection selection) {
         LRPFrame updateFrame = lrpDispMap.get(selection.getSelectionName());
         if (updateFrame != null) {
             updateFrame.updateLRP(selection.createLRPPanel());
@@ -300,22 +300,39 @@ public class SelectionLRPManager {
     }
 
     /**
-     * Get the selection (excluding the fovea selection) that overlaps the give
-     * X coordinate.
+     * Get the selection that overlaps with the X coordinate of the given point,
+     * if any. If the point doesn't overlap a selection then null will be
+     * returned. The provided coordinate should be relative to the OCT image,
+     * and not the component containing the image.
      *
-     * @param xpos
+     * @param xPos
+     * @param ignoreFoveaSelection
      * @return the selection that overlaps the give X coordinate, or null if
      * none is found
      */
-    public OCTSelection getOverlappingSelection(int xpos, int ypos, int xOffset, int yOffset) {
-        for (OCTSelection selection : selectionMap.values()) {
-            Polygon selbtn = selection.getSelectionButtonShape();
-            selbtn.translate(xOffset, yOffset);
-            if (selbtn.contains(xpos, ypos)) {
-                return selection;
-            }
+    public OCTSelection getSelection(int xPos, boolean ignoreFoveaSelection) {
+        return getSelection(new Point(xPos, analysisData.getImgPanel().getImageOffsetY() + 2), ignoreFoveaSelection);
+    }
+
+    /**
+     * Get the selection that has its select button overlapped by the given
+     * point, if any. If the point doesn't overlap a selection then null will be
+     * returned. The provided coordinate should be relative to the OCT image,
+     * and not the component containing the image.
+     *
+     * @param p
+     * @param ignoreFoveaSelection
+     * @return the selection with its select button overlapped by the supplied
+     * point, or null if none exists
+     */
+    public OCTSelection getSelection(Point p, boolean ignoreFoveaSelection) {
+        Optional<OCTSelection> sel;
+        if (ignoreFoveaSelection) {
+            sel = selectionMap.values().stream().filter(s -> s.getSelectionType() != SelectionType.FOVEAL).filter(s -> s.getSelectionButtonShape().contains(p)).findFirst();
+        } else {
+            sel = selectionMap.values().stream().filter(s -> s.getSelectionButtonShape().contains(p)).findFirst();
         }
-        return null;
+        return sel.isPresent() ? sel.get() : null;
     }
 
     public void unselectSelections() {
@@ -348,7 +365,7 @@ public class SelectionLRPManager {
     public boolean selectionTopContains(Point mousePos) {
         return selectionMap.values().stream().filter(sel -> sel.overlapsTopOfSelection(mousePos)).count() > 0;
     }
-    
+
     public boolean selectionBottomContains(Point mousePos) {
         return selectionMap.values().stream().filter(sel -> sel.overlapsBottomOfSelection(mousePos)).count() > 0;
     }

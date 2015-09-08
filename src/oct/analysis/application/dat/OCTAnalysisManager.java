@@ -471,31 +471,34 @@ public class OCTAnalysisManager {
                                         glassPane,
                                         glassPanePoint,
                                         component);
-                                //determine if click was over one of the possible fovea selections
-                                OCTSelection selection = selMngr.getOverlappingSelection(componentPoint.x, componentPoint.y, imgPanel.getImageOffsetX(), imgPanel.getImageOffsetY());
-                                if (selection == null) {
-                                    //user decided that none of the automated selections was correct and made their own selection
-                                    //check that new selection is what they want
-                                    //clear all selections from being displayed
-                                    selMngr.removeSelections(true);
-                                    //translate component coordinates to OCT coordinates
-                                    Point p = imgPanel.translatePanelPointToOctPoint(componentPoint);
-                                    selection = new OCTLine(p.x, 0, oct.getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-                                    selMngr.addOrUpdateSelection(selection);
-                                    imgPanel.repaint();
-                                    if (JOptionPane.showConfirmDialog(imgPanel, "Is this the location of the center of the fovea? If not hit 'No' and click on the image where you believe the center of the fovea resides.", "Center of Fovea?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                                //determine if click was over the OCT image
+                                if (imgPanel.coordinateOverlapsOCT(componentPoint)) {
+                                    //determine if click was over one of the possible fovea selections
+                                    OCTSelection selection = selMngr.getSelection(imgPanel.translatePanelPointToOctPoint(componentPoint), false);
+                                    if (selection == null) {
+                                        //user decided that none of the automated selections was correct and made their own selection
+                                        //check that new selection is what they want
+                                        //clear all selections from being displayed
+                                        selMngr.removeSelections(true);
+                                        //translate component coordinates to OCT coordinates
+                                        Point p = imgPanel.translatePanelPointToOctPoint(componentPoint);
+                                        selection = new OCTLine(p.x, 0, oct.getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
+                                        selMngr.addOrUpdateSelection(selection);
+                                        imgPanel.repaint();
+                                        if (JOptionPane.showConfirmDialog(imgPanel, "Is this the location of the center of the fovea? If not hit 'No' and click on the image where you believe the center of the fovea resides.", "Center of Fovea?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                                            glassPane.removeMouseListener(this);
+                                            glassPane.setVisible(false);
+                                            setFoveaCenterXPosition(selection.getXPositionOnOct());
+                                            selMngr.removeSelections(true);
+                                            imgPanel.repaint();
+                                        }
+                                    } else {
                                         glassPane.removeMouseListener(this);
                                         glassPane.setVisible(false);
                                         setFoveaCenterXPosition(selection.getXPositionOnOct());
                                         selMngr.removeSelections(true);
                                         imgPanel.repaint();
                                     }
-                                } else {
-                                    glassPane.removeMouseListener(this);
-                                    glassPane.setVisible(false);
-                                    setFoveaCenterXPosition(selection.getXPositionOnOct());
-                                    selMngr.removeSelections(true);
-                                    imgPanel.repaint();
                                 }
                             }
                         }
