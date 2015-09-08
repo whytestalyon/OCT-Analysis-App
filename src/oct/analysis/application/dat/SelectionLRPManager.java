@@ -6,6 +6,7 @@
 package oct.analysis.application.dat;
 
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -344,4 +345,11 @@ public class SelectionLRPManager {
         return selectionMap.get(selectedSelectionName);
     }
 
+    public boolean selectionTopContains(Point mousePos) {
+        return selectionMap.values().stream().filter(sel -> sel.overlapsTopOfSelection(mousePos)).count() > 0;
+    }
+    
+    public boolean selectionBottomContains(Point mousePos) {
+        return selectionMap.values().stream().filter(sel -> sel.overlapsBottomOfSelection(mousePos)).count() > 0;
+    }
 }

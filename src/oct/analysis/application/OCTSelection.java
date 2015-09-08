@@ -8,15 +8,13 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Optional;
-import java.util.stream.IntStream;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -52,6 +50,8 @@ public class OCTSelection {
     protected int yPositionOnOct;
     protected int width;
     protected int height;
+    protected Polygon topLine;
+    protected Polygon bottomLine;
     protected boolean highlighted = false;
     protected boolean drawn = false;
     protected boolean resizable = true;
@@ -96,6 +96,11 @@ public class OCTSelection {
             this.yPositionOnOct = yPositionOnOct;
             this.height = height;
         }
+        //set the regions that define the top and bottom lines of the drawn selection
+        //imageOffsetX + leftEdge, imageOffsetY + yPositionOnOct, imageOffsetX + rightEdge, imageOffsetY + yPositionOnOct
+        topLine = new Polygon(new int[]{leftEdge, leftEdge, rightEdge, rightEdge}, new int[]{this.yPositionOnOct - 2, this.yPositionOnOct + 2, this.yPositionOnOct + 2, this.yPositionOnOct - 2}, 4);
+        //imageOffsetX + leftEdge, imageOffsetY + yPositionOnOct + height, imageOffsetX + rightEdge, imageOffsetY + yPositionOnOct + height
+        bottomLine = new Polygon(new int[]{leftEdge, leftEdge, rightEdge, rightEdge}, new int[]{this.yPositionOnOct + this.height - 2, this.yPositionOnOct + this.height + 2, this.yPositionOnOct + this.height + 2, this.yPositionOnOct + this.height - 2}, 4);
     }
 
     public void drawSelection(Graphics g, int imageOffsetX, int imageOffsetY) {
@@ -231,6 +236,14 @@ public class OCTSelection {
         return moveable;
     }
 
+    public boolean overlapsBottomOfSelection(Point p) {
+        return bottomLine.contains(p);
+    }
+    
+    public boolean overlapsTopOfSelection(Point p) {
+        return topLine.contains(p);
+    }
+    
     public JPanel createLRPPanel() {
         //create the series collection from the LRP data
         XYSeriesCollection lrp = new XYSeriesCollection();
@@ -278,9 +291,9 @@ public class OCTSelection {
             int yVal = y;
             //calculate average pixel grayscale intensity
             int avgReflectivity = (int) Math.round(Arrays.stream(oct.getRGB(leftEdge, yVal, width, 1, null, 0, width))
-                        .map(Util::calculateGrayScaleValue)
-                        .average()
-                        .getAsDouble());
+                    .map(Util::calculateGrayScaleValue)
+                    .average()
+                    .getAsDouble());
             //add LRP value to return series
             lrp.add(new LinePoint(avgReflectivity, y));
         }

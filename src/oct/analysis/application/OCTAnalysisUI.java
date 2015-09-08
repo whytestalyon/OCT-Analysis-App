@@ -84,9 +84,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //register the oct panel with the mouse position listener
         mousePositionLabel.setOctPanel(octAnalysisPanel);
         octAnalysisPanel.addMouseMotionListener(mousePositionLabel);
-        //rgister the oct panel with the mouse listener that determines the distance b/w the fovea and the mouse
+        //register the oct panel with the mouse listener that determines the distance b/w the fovea and the mouse
         mouseDistanceToFoveaLabel.setOctPanel(octAnalysisPanel);
         octAnalysisPanel.addMouseMotionListener(mouseDistanceToFoveaLabel);
+        //register the oct panel with the mouse listener that determines if the cursor should be a resize cursor for an lrp selection
+        resizeOCTSelectionMouseMonitor.setOctip(octAnalysisPanel);
+        resizeOCTSelectionMouseMonitor.setUi(this);
+        octAnalysisPanel.addMouseMotionListener(resizeOCTSelectionMouseMonitor);
         //init the app with the default settings
         loadAppConfig();
     }
@@ -125,6 +129,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         analysisToolBarBtnGroup = new javax.swing.ButtonGroup();
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
         lrpSelectionWidthBean = new oct.analysis.application.dat.LRPSelectionWidthBean();
+        resizeOCTSelectionMouseMonitor = new oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor();
         octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         filterPanel = new javax.swing.JPanel();
         filtersToolbar = new javax.swing.JToolBar();
@@ -1363,6 +1368,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JMenuItem openAnalysisMenuItem;
     private javax.swing.JPanel positionPanel;
+    private oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor resizeOCTSelectionMouseMonitor;
     private javax.swing.JMenuItem saveAnalysisMenuItem;
     private javax.swing.JToggleButton screenSelectButton;
     private javax.swing.JPanel sharpRadiusPanel;

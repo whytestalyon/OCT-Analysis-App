@@ -16,6 +16,8 @@
         <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="lrpSelectionWidthBeanPropertyChange"/>
       </Events>
     </Component>
+    <Component class="oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor" name="resizeOCTSelectionMouseMonitor">
+    </Component>
     <Menu class="javax.swing.JMenuBar" name="appMenuBar">
       <SubComponents>
         <Menu class="javax.swing.JMenu" name="fileMenu">
