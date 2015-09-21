@@ -48,6 +48,7 @@ public class ResizeOCTSelectionMouseMonitor implements MouseMotionListener {
                     sel.setHeight(oldBottomYPoint - sel.getYPositionOnOct());
                 }
                 octmngr.getImgPanel().repaint();
+                selmngr.updateLRP(sel);
             }
         }
     }
