@@ -39,7 +39,8 @@ public class AnalysisSaveState {
     /*
      OCT and OCT analysis manager data
      */
-    private double scale;
+    private double xscale;
+    private double yscale;
     private int micronsBetweenSelections = 0;
     private byte[] logOCT = null;
     private String octFileName = null;
@@ -117,12 +118,12 @@ public class AnalysisSaveState {
         this.drawSelections = drawSelections;
     }
 
-    public double getScale() {
-        return scale;
+    public double getXscale() {
+        return xscale;
     }
 
-    public void setScale(double scale) {
-        this.scale = scale;
+    public void setXscale(double xscale) {
+        this.xscale = xscale;
     }
 
     public int getMicronsBetweenSelections() {
@@ -211,6 +212,14 @@ public class AnalysisSaveState {
 
     public void setOctFileName(String octFileName) {
         this.octFileName = octFileName;
+    }
+
+    public double getYscale() {
+        return yscale;
+    }
+
+    public void setYscale(double yscale) {
+        this.yscale = yscale;
     }
 
 }

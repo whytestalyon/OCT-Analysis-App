@@ -214,10 +214,10 @@ public class OCTAnalysisManager {
 
     public void setScale(double axialLength, double nominalScanWidth, int octWidth) {
         double scanLength = (nominalScanWidth * axialLength) / 24D;
-        setXScale(((scanLength * 1000D) / (double) octWidth));
+        setXscale(((scanLength * 1000D) / (double) octWidth));
     }
 
-    public void setXScale(double xscale) {
+    public void setXscale(double xscale) {
         this.xscale = xscale;
     }
 
@@ -232,7 +232,7 @@ public class OCTAnalysisManager {
         this.displayMode = mode;
     }
 
-    public double getXScale() {
+    public double getXscale() {
         return xscale;
     }
 

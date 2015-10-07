@@ -92,7 +92,7 @@ public class Util {
 
         //store values and return OCT object
         OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
-        octMngr.setXScale(xscale);
+        octMngr.setXscale(xscale);
         octMngr.setYscale(yscale);
         return new OCT(octImage, octFileName);
     }
@@ -370,13 +370,15 @@ public class Util {
         /*
          OCT and OCT analysis manager data
          */
-        double scale = analysisMngr.getXScale();
+        double xscale = analysisMngr.getXscale();
+        double yscale = analysisMngr.getYscale();
         int micronsBetweenSelections = analysisMngr.getMicronsBetweenSelections();
         OCT oct = analysisMngr.getOct();
         String octFileName = oct.getFileName();
         OCTMode displayMode = analysisMngr.getDisplayMode(); //default display mode of image is assumed to be a Log OCT image
         int foveaCenterXPosition = analysisMngr.getFoveaCenterXPosition();
-        saveObj.setScale(scale);
+        saveObj.setXscale(xscale);
+        saveObj.setYscale(yscale);
         saveObj.setMicronsBetweenSelections(micronsBetweenSelections);
         saveObj.setLogOCT(TiffWriter.writeTiffImageToByteArray(oct.getLogOctImage()));
         saveObj.setOctFileName(octFileName);
@@ -406,7 +408,8 @@ public class Util {
         /*
          OCT and OCT analysis manager data
          */
-        analysisMngr.setXScale(saveObj.getScale());
+        analysisMngr.setXscale(saveObj.getXscale());
+        analysisMngr.setYscale(saveObj.getYscale());
         analysisMngr.setMicronsBetweenSelections(saveObj.getMicronsBetweenSelections());
         if (saveObj.getLogOCT() != null) {
             OCT oct = new OCT(TiffReader.readTiffImage(saveObj.getLogOCT()), saveObj.getOctFileName());

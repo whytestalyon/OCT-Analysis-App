@@ -8,8 +8,10 @@ package oct.analysis.application;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.LayoutManager;
 import java.awt.Point;
+import java.awt.geom.AffineTransform;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -26,6 +28,7 @@ import oct.analysis.application.dat.SelectionLRPManager;
  */
 public class OCTImagePanel extends JPanel {
 
+    private static int scaleBarEdgeBufferWidth = 20;
     private final OCTAnalysisManager analysisData = OCTAnalysisManager.getInstance();
     private final SelectionLRPManager selectionLrpMngr = SelectionLRPManager.getInstance();
     /*
@@ -38,6 +41,7 @@ public class OCTImagePanel extends JPanel {
     private LinkedList<List<LinePoint>> linesToDraw = new LinkedList<>();
     private boolean drawLines;
     private boolean drawSelections = true;
+    private boolean showScaleBars = false;
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -74,6 +78,7 @@ public class OCTImagePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics grphcs) {
         super.paintComponent(grphcs);
+        Graphics2D grfx = (Graphics2D) grphcs;
         OCT oct = analysisData.getOct();
         if (oct != null) {
             //center the image within the panel, make sure the selection draw method takes this into account
@@ -88,24 +93,37 @@ public class OCTImagePanel extends JPanel {
                 imageOffsetY = (panelHeight - imageHeight) / 2;
             }
             //draw OCT to the JPanel
-            grphcs.drawImage(analysisData.getOctImage(), imageOffsetX, imageOffsetY, null);
+            grfx.drawImage(analysisData.getOctImage(), imageOffsetX, imageOffsetY, null);
+            //draw scale bars on the OCT if available
+            if (showScaleBars) {
+                int pixInX = (int) Math.round((1D / analysisData.getXscale()) * 250D);
+                int pixInY = (int) Math.round((1D / analysisData.getYscale()) * 250D);
+                grfx.setColor(Color.white);
+                grfx.fillRect(imageOffsetX + oct.getImageWidth() - (scaleBarEdgeBufferWidth + pixInX), imageOffsetY + oct.getImageHeight() - (scaleBarEdgeBufferWidth + 3), pixInX, 3);
+                grfx.fillRect(imageOffsetX + oct.getImageWidth() - scaleBarEdgeBufferWidth - 3, imageOffsetY + oct.getImageHeight() - (scaleBarEdgeBufferWidth + pixInY), 3, pixInY);
+                grfx.drawString("250\u00B5m", imageOffsetX + oct.getImageWidth() - (scaleBarEdgeBufferWidth + pixInX + 10), imageOffsetY + oct.getImageHeight() - 5);
+                AffineTransform orig = grfx.getTransform();
+                grfx.rotate(-Math.PI / 2);
+                grfx.drawString("250\u00B5m", -(imageOffsetY + oct.getImageHeight() - (scaleBarEdgeBufferWidth - 3)), imageOffsetX + oct.getImageWidth() - 5);
+                grfx.setTransform(orig);
+            }
             //draw the selections to the panel if available
             if (drawSelections) {
                 selectionLrpMngr.getSelections().stream().forEach((selection) -> {
-                    selection.drawSelection(grphcs, imageOffsetX, imageOffsetY);
+                    selection.drawSelection(grfx, imageOffsetX, imageOffsetY);
                 });
             }
             //draw point on oct if available
             if (drawPoint != null && drawLines) {
-                grphcs.setColor(Color.red);
-                grphcs.drawRect(imageOffsetX + drawPoint.x - 1, imageOffsetY + drawPoint.y - 1, 3, 3);
+                grfx.setColor(Color.red);
+                grfx.drawRect(imageOffsetX + drawPoint.x - 1, imageOffsetY + drawPoint.y - 1, 3, 3);
             }
             //draw lines on oct if available
             if (linesToDraw != null && drawLines) {
-                grphcs.setColor(Color.red);
+                grfx.setColor(Color.red);
                 linesToDraw.stream().flatMap(line -> line.stream()).forEach(p -> {
                     int y = imageOffsetY + (int) Math.round(p.getY());
-                    grphcs.drawLine(imageOffsetX + p.getX(), y, imageOffsetX + p.getX(), y);
+                    grfx.drawLine(imageOffsetX + p.getX(), y, imageOffsetX + p.getX(), y);
                 });
             }
         }
@@ -122,7 +140,7 @@ public class OCTImagePanel extends JPanel {
     }
 
     public synchronized void addDrawnLine(List<LinePoint>... linesToDraw) {
-        if(this.linesToDraw == null){
+        if (this.linesToDraw == null) {
             this.linesToDraw = new LinkedList<>();
         }
         Arrays.stream(linesToDraw).forEach(r -> {
@@ -137,6 +155,16 @@ public class OCTImagePanel extends JPanel {
 
     public void hideSelections() {
         this.drawSelections = false;
+        repaint();
+    }
+
+    public void showScaleBars() {
+        this.showScaleBars = true;
+        repaint();
+    }
+
+    public void hideScaleBars() {
+        this.showScaleBars = false;
         repaint();
     }
 

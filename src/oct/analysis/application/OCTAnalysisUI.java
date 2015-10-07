@@ -5,7 +5,6 @@
  */
 package oct.analysis.application;
 
-import com.google.gson.Gson;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -13,24 +12,16 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.URISyntaxException;
 import java.text.DecimalFormat;
-import java.util.Hashtable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JSlider;
@@ -159,6 +150,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
         dispSegmentationCheckBox = new javax.swing.JCheckBox();
         filler3 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+        scaleBarCheckBox = new javax.swing.JCheckBox();
+        filler5 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
         imageLabel = new javax.swing.JLabel();
         logModeOCTButton = new javax.swing.JRadioButton();
         linearOCTModeButton = new javax.swing.JRadioButton();
@@ -456,7 +449,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         positionPanel.setLayout(positionPanelLayout);
         positionPanelLayout.setHorizontalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mousePositionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+            .addComponent(mousePositionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
         );
         positionPanelLayout.setVerticalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -475,7 +468,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mouseDistanceToFoveaLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
+            .addComponent(mouseDistanceToFoveaLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -511,6 +504,21 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         dispControlPanel.add(dispSegmentationCheckBox);
         dispControlPanel.add(filler3);
+
+        scaleBarCheckBox.setText("Scale Bars");
+        scaleBarCheckBox.setToolTipText("Show or hide scale bars on the image");
+        scaleBarCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                scaleBarCheckBoxStateChanged(evt);
+            }
+        });
+        scaleBarCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scaleBarCheckBoxActionPerformed(evt);
+            }
+        });
+        dispControlPanel.add(scaleBarCheckBox);
+        dispControlPanel.add(filler5);
 
         imageLabel.setText("Image:");
         dispControlPanel.add(imageLabel);
@@ -1183,6 +1191,18 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_lrpSelectionWidthBeanPropertyChange
 
+    private void scaleBarCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scaleBarCheckBoxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_scaleBarCheckBoxActionPerformed
+
+    private void scaleBarCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_scaleBarCheckBoxStateChanged
+        if (scaleBarCheckBox.isSelected()) {
+            octAnalysisPanel.showScaleBars();
+        } else {
+            octAnalysisPanel.hideScaleBars();
+        }
+    }//GEN-LAST:event_scaleBarCheckBoxStateChanged
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1336,6 +1356,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
+    private javax.swing.Box.Filler filler5;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JCheckBoxMenuItem filtersTBMenuItem;
     private javax.swing.JToolBar filtersToolbar;
@@ -1369,6 +1390,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel positionPanel;
     private oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor resizeOCTSelectionMouseMonitor;
     private javax.swing.JMenuItem saveAnalysisMenuItem;
+    private javax.swing.JCheckBox scaleBarCheckBox;
     private javax.swing.JToggleButton screenSelectButton;
     private javax.swing.JPanel sharpRadiusPanel;
     private javax.swing.JMenuItem singleLRPAnalysisMenuItem;
