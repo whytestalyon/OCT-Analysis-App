@@ -168,6 +168,10 @@ public class OCTImagePanel extends JPanel {
         repaint();
     }
 
+    public boolean isShowScaleBars() {
+        return showScaleBars;
+    }
+
     public void hideLines() {
         drawLines = false;
         repaint();

@@ -36,6 +36,7 @@ public class AnalysisSaveState {
     private LinkedList<List<LinePoint>> linesToDraw = null;
     private boolean drawLines = false;
     private boolean drawSelections = true;
+    private boolean drawScaleBars = false;
     /*
      OCT and OCT analysis manager data
      */
@@ -220,6 +221,14 @@ public class AnalysisSaveState {
 
     public void setYscale(double yscale) {
         this.yscale = yscale;
+    }
+
+    public boolean isDrawScaleBars() {
+        return drawScaleBars;
+    }
+
+    public void setDrawScaleBars(boolean drawScaleBars) {
+        this.drawScaleBars = drawScaleBars;
     }
 
 }

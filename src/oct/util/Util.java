@@ -445,6 +445,11 @@ public class Util {
         } else {
             analysisMngr.getImgPanel().hideSelections();
         }
+        if (saveObj.isDrawScaleBars()) {
+            analysisMngr.getImgPanel().showScaleBars();
+        } else {
+            analysisMngr.getImgPanel().hideScaleBars();
+        }
 
         /*
          image operations
@@ -476,8 +481,8 @@ public class Util {
             ui.getLinearOCTModeButton().setSelected(true);
         }
         ui.getLrpSmoothingSlider().setValue(selMngr.getLrpSmoothingFactor());
-//        ui.getWidthSlider().setValue(selMngr.getSelectionWidth());
         ui.getLrpWidthTextField().setValue(selMngr.getSelectionWidth());
+        ui.getScaleBarCheckBox().setSelected(analysisMngr.getImgPanel().isShowScaleBars());
         ui.getDispSegmentationCheckBox().setSelected(analysisMngr.getImgPanel().isDrawLines());
         ui.getDispSelectionsCheckBox().setSelected(analysisMngr.getImgPanel().isDrawSelections());
         ui.getOctSharpRadiusSlider().setValue((int) Math.round(imageOperationMngr.getSharp().getSharpenSigma() * 10D));

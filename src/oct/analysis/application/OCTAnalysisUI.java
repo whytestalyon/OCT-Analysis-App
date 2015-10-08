@@ -198,7 +198,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
 
-        octAnalysisPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        octAnalysisPanel.setBorder(null);
         octAnalysisPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 octAnalysisPanelMouseClicked(evt);
@@ -441,7 +441,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         displayPanel.setLayout(new javax.swing.BoxLayout(displayPanel, javax.swing.BoxLayout.LINE_AXIS));
 
         positionPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "Position"));
-        positionPanel.setPreferredSize(new java.awt.Dimension(80, 47));
+        positionPanel.setPreferredSize(new java.awt.Dimension(75, 47));
 
         mousePositionLabel.setText("Mouse Position");
 
@@ -449,7 +449,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         positionPanel.setLayout(positionPanelLayout);
         positionPanelLayout.setHorizontalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mousePositionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 83, Short.MAX_VALUE)
+            .addComponent(mousePositionLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
         );
         positionPanelLayout.setVerticalGroup(
             positionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -460,7 +460,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         displayPanel.add(filler1);
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEtchedBorder(), "To Fovea"));
-        jPanel2.setPreferredSize(new java.awt.Dimension(60, 47));
+        jPanel2.setPreferredSize(new java.awt.Dimension(75, 47));
 
         mouseDistanceToFoveaLabel.setText("Distance");
 
@@ -468,7 +468,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(mouseDistanceToFoveaLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 63, Short.MAX_VALUE)
+            .addComponent(mouseDistanceToFoveaLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 85, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -520,12 +520,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         dispControlPanel.add(scaleBarCheckBox);
         dispControlPanel.add(filler5);
 
-        imageLabel.setText("Image:");
+        imageLabel.setText("OCT");
         dispControlPanel.add(imageLabel);
 
         lrpButtonGroup.add(logModeOCTButton);
         logModeOCTButton.setSelected(true);
-        logModeOCTButton.setText("Logrithmic OCT");
+        logModeOCTButton.setText("Logrithmic");
         logModeOCTButton.setToolTipText("Display the OCT image as a Logrithmic Image");
         logModeOCTButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -535,7 +535,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         dispControlPanel.add(logModeOCTButton);
 
         lrpButtonGroup.add(linearOCTModeButton);
-        linearOCTModeButton.setText("Linear OCT");
+        linearOCTModeButton.setText("Linear");
         linearOCTModeButton.setToolTipText("Display the OCT image as a Linear Image");
         linearOCTModeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1149,16 +1149,31 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private void exportAnalysisResultsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnalysisResultsMenuItemActionPerformed
         fc.resetChoosableFileFilters();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        fc.setApproveButtonText("Select");
+        fc.setDialogTitle("Select output directory...");
         if (fc.getSelectedFile() != null && fc.getSelectedFile().isFile()) {
             fc.setCurrentDirectory(fc.getSelectedFile().getParentFile());
         }
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File saveDir = fc.getSelectedFile();
+            boolean exportSuccess = false;
+            Exception e = null;
             try {
-                AnalysisSaver.exportAnalysisData(saveDir);
+                exportSuccess = AnalysisSaver.exportAnalysisData(saveDir);
             } catch (IOException ex) {
-                Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "File write error!", ex);
+                e = ex;
+            } finally {
+                if (!exportSuccess) {
+                    if (e == null) {
+                        JOptionPane.showMessageDialog(this, "Export failed! Ensure you have permission to write to the selected directory.", "Export Error", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        String message = "Export failed! An error occured while writing to " + saveDir.getAbsolutePath() + ".\n"
+                                + "Error: " + e.getClass() + "Reason: " + e.getLocalizedMessage();
+                        JOptionPane.showMessageDialog(this, message, "Export Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
             }
         }
     }//GEN-LAST:event_exportAnalysisResultsMenuItemActionPerformed
@@ -1269,6 +1284,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     public JCheckBox getDispSelectionsCheckBox() {
         return dispSelectionsCheckBox;
+    }
+
+    public JCheckBox getScaleBarCheckBox() {
+        return scaleBarCheckBox;
     }
 
     public JRadioButton getLinearOCTModeButton() {
