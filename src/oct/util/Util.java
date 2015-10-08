@@ -363,9 +363,11 @@ public class Util {
         LinkedList<List<LinePoint>> linesToDraw = analysisMngr.getImgPanel().getLinesToDraw();
         boolean drawLines = analysisMngr.getImgPanel().isDrawLines();
         boolean drawSelections = analysisMngr.getImgPanel().isDrawSelections();
+        boolean drawScaleBars = analysisMngr.getImgPanel().isShowScaleBars();
         saveObj.setDrawPoint(drawPoint);
         saveObj.setLinesToDraw(linesToDraw);
         saveObj.setDrawLines(drawLines);
+        saveObj.setDrawScaleBars(drawSelections);
         saveObj.setDrawSelections(drawSelections);
         /*
          OCT and OCT analysis manager data
