@@ -15,6 +15,7 @@ import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTLine;
+import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
@@ -93,7 +94,7 @@ public class Analysis {
                 if (OCTAnalysisManager.PROP_FOVEA_CENTER_X_POSITION.equals(evt.getPropertyName())) {
                     SwingUtilities.invokeLater(() -> {
                         int fv = octMngr.getFoveaCenterXPosition();
-                        OCTLine foveaSelection = new OCTLine(fv, 0, octMngr.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
+                        OCTSelection foveaSelection = selectionLRPManager.getFoveaSelection(fv, false);
                         selectionLRPManager.addOrUpdateSelection(foveaSelection);
                         octMngr.getImgPanel().repaint();
                     });
