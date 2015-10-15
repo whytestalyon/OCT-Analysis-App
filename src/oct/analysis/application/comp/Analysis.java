@@ -14,11 +14,9 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
 import oct.analysis.application.OCTAnalysisUI;
-import oct.analysis.application.OCTLine;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
-import oct.analysis.application.dat.SelectionType;
 
 /**
  *

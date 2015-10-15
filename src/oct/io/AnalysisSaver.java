@@ -75,11 +75,7 @@ public class AnalysisSaver {
         return gson.fromJson(analysisJson, AnalysisSaveState.class);
     }
 
-    public static boolean exportAnalysisData(File outputDir) throws IOException {
-        //check if app has permissions to write to supplied directory
-        if (!outputDir.canWrite()) {
-            return false;
-        }
+    public static void exportAnalysisData(File outputDir) throws IOException {
         //get OCT file name without extension
         String fdate = sdf.format(new Date());
         String fileNameStub = octMngr.getOct().getFileName().replaceFirst("\\.[^\\.]+", "");
@@ -200,7 +196,6 @@ public class AnalysisSaver {
                     break;
             }
         }
-        return true;
     }
 
     private static BufferedImage getOCTScreenShot(OCTImagePanel component) {

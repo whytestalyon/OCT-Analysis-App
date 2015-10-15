@@ -120,7 +120,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         toolsToolBarBtnGroup = new javax.swing.ButtonGroup();
         lrpSelectionWidthBean = new oct.analysis.application.dat.LRPSelectionWidthBean();
         resizeOCTSelectionMouseMonitor = new oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor();
-        octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         filterPanel = new javax.swing.JPanel();
         filtersToolbar = new javax.swing.JToolBar();
         jPanel1 = new javax.swing.JPanel();
@@ -155,6 +154,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         imageLabel = new javax.swing.JLabel();
         logModeOCTButton = new javax.swing.JRadioButton();
         linearOCTModeButton = new javax.swing.JRadioButton();
+        dispPanel = new javax.swing.JPanel();
+        octAnalysisPanel = new oct.analysis.application.OCTImagePanel();
         appMenuBar = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newAnalysisMenuItem = new javax.swing.JMenuItem();
@@ -197,32 +198,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 formWindowClosed(evt);
             }
         });
-
-        octAnalysisPanel.setBorder(null);
-        octAnalysisPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                octAnalysisPanelMouseClicked(evt);
-            }
-        });
-        octAnalysisPanel.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                octAnalysisPanelKeyPressed(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                octAnalysisPanelKeyTyped(evt);
-            }
-        });
-
-        javax.swing.GroupLayout octAnalysisPanelLayout = new javax.swing.GroupLayout(octAnalysisPanel);
-        octAnalysisPanel.setLayout(octAnalysisPanelLayout);
-        octAnalysisPanelLayout.setHorizontalGroup(
-            octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        octAnalysisPanelLayout.setVerticalGroup(
-            octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
 
         filterPanel.setLayout(new java.awt.BorderLayout());
 
@@ -546,6 +521,37 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         displayPanel.add(dispControlPanel);
 
+        dispPanel.setPreferredSize(new java.awt.Dimension(0, 5));
+        dispPanel.setLayout(new java.awt.BorderLayout());
+
+        octAnalysisPanel.setBorder(null);
+        octAnalysisPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                octAnalysisPanelMouseClicked(evt);
+            }
+        });
+        octAnalysisPanel.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                octAnalysisPanelKeyPressed(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                octAnalysisPanelKeyTyped(evt);
+            }
+        });
+
+        javax.swing.GroupLayout octAnalysisPanelLayout = new javax.swing.GroupLayout(octAnalysisPanel);
+        octAnalysisPanel.setLayout(octAnalysisPanelLayout);
+        octAnalysisPanelLayout.setHorizontalGroup(
+            octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        octAnalysisPanelLayout.setVerticalGroup(
+            octAnalysisPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 5, Short.MAX_VALUE)
+        );
+
+        dispPanel.add(octAnalysisPanel, java.awt.BorderLayout.CENTER);
+
         fileMenu.setText("File");
 
         newAnalysisMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
@@ -733,21 +739,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(displayPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 736, Short.MAX_VALUE))
-            .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(filterPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(dispPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(displayPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(analysisToolsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(octAnalysisPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(dispPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(displayPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(filterPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
@@ -1157,23 +1164,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             File saveDir = fc.getSelectedFile();
-            boolean exportSuccess = false;
-            Exception e = null;
             try {
-                exportSuccess = AnalysisSaver.exportAnalysisData(saveDir);
+                AnalysisSaver.exportAnalysisData(saveDir);
             } catch (IOException ex) {
                 Logger.getLogger(OCTAnalysisUI.class.getName()).log(Level.SEVERE, "File write error!", ex);
-                e = ex;
-            } finally {
-                if (!exportSuccess) {
-                    if (e == null) {
-                        JOptionPane.showMessageDialog(this, "Export failed! Ensure you have permission to write to the selected directory.", "Export Error", JOptionPane.ERROR_MESSAGE);
-                    } else {
-                        String message = "Export failed! An error occured while writing to " + saveDir.getAbsolutePath() + ".\n"
-                                + "Error: " + e.getClass() + "Reason: " + e.getLocalizedMessage();
-                        JOptionPane.showMessageDialog(this, message, "Export Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                }
+                String message = "Export failed! An error occured while writing to " + saveDir.getAbsolutePath() + ".\n"
+                        + "Error: " + ex.getClass() + "Reason: " + ex.getLocalizedMessage();
+                JOptionPane.showMessageDialog(this, message, "Export Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }//GEN-LAST:event_exportAnalysisResultsMenuItemActionPerformed
@@ -1364,6 +1361,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem autoFoveaFindMenuItem;
     private javax.swing.JMenuItem autoMirrorMenuItem;
     private javax.swing.JPanel dispControlPanel;
+    private javax.swing.JPanel dispPanel;
     private javax.swing.JCheckBox dispSegmentationCheckBox;
     private javax.swing.JCheckBox dispSelectionsCheckBox;
     private javax.swing.JPanel displayPanel;
