@@ -55,6 +55,7 @@ public class OCTAnalysisManager {
      property change support
      */
     public static final String PROP_FOVEA_CENTER_X_POSITION = "foveaCenterXPosition";
+    public static final String PROP_OCT = "oct";
     private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
     private double xscale;
     private double yscale;
@@ -209,7 +210,9 @@ public class OCTAnalysisManager {
     }
 
     public void setOct(OCT oct) {
+        OCT org = this.oct;
         this.oct = oct;
+        propertyChangeSupport.firePropertyChange(PROP_OCT, org, this.oct);
     }
 
     public void setScale(double axialLength, double nominalScanWidth, int octWidth) {

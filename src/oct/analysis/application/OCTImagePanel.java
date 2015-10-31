@@ -42,6 +42,7 @@ public class OCTImagePanel extends JPanel {
     private boolean drawLines;
     private boolean drawSelections = true;
     private boolean showScaleBars = false;
+    private final Dimension defaultPanelDimension = new Dimension(Integer.MAX_VALUE, 10);
 
     public OCTImagePanel(LayoutManager lm, boolean bln) {
         super(lm, bln);
@@ -264,4 +265,20 @@ public class OCTImagePanel extends JPanel {
             return new Point(p.x - imageOffsetX, p.y - imageOffsetY);
         }
     }
+
+    @Override
+    public Dimension getMinimumSize() {
+        if (analysisData.getOct() == null) {
+            return defaultPanelDimension;
+        } else {
+
+            return new Dimension(WIDTH, WIDTH);
+        }
+    }
+
+    @Override
+    public Dimension getMaximumSize() {
+        return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE); //To change body of generated methods, choose Tools | Templates.
+    }
+
 }
