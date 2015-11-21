@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.swing.JOptionPane;
+import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTLine;
 import oct.analysis.application.dat.Cardinality;
@@ -46,6 +47,11 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
     private final boolean debug = false;
     private final int debug_sleep = 50;
     private final int depthThreshold = 6000;
+    private final ProgressMonitor pm;
+
+    public EZWorker(ProgressMonitor pm) {
+        this.pm = pm;
+    }
 
     @Override
     protected EZEdgeCoord doInBackground() throws Exception {
@@ -56,11 +62,14 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          out imperfetions in the segmentation line.
          */
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
-        ArrayList<Point> rawBrmPoints = new ArrayList<>(analysisManager.getSegmentation(new SharpenOperation(15, 0.5F)).getSegment(Segmentation.BrM_SEGMENT));
+        ArrayList<Point> rawBrmPoints = new ArrayList<>(analysisManager.getSegmentation(new SharpenOperation(15, 0.6F)).getSegment(Segmentation.BrM_SEGMENT));
         double[][] brmSeg = Util.getXYArraysFromPoints(rawBrmPoints);
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
         BufferedImage sharpOCT = analysisManager.getSharpenedOctImage(8.5D, 1.0F);
         setProgress(10);
+        if (pm.isCanceled()) {
+            this.cancel(true);
+        }
         /*
          Starting from the identified location of the fovea search northward in 
          the image until the most northern pixels northward (in a 3x3 matrix of 
@@ -74,9 +83,13 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          of the edge between the black and white pixels along the width of the image.
          */
         int searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition)) + 1;
+        analysisManager.getImgPanel().setDrawPoint(new Point(foveaCenterXPosition, searchY));
         do {
             searchY--;
         } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || !isContrastPoint(foveaCenterXPosition, searchY, sharpOCT));
+        if (pm.isCanceled()) {
+            this.cancel(true);
+        }
         LinkedList<Point> contour = new LinkedList<>();
         Point startPoint = new Point(foveaCenterXPosition, searchY);
         //find contour by searching for white pixel boundary to te right of the fovea
@@ -97,7 +110,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
         setProgress(20);
         //open balck space found, complete contour to left of fovea
         contour.add(findContourLeft(startPoint, Cardinality.SOUTH, startPoint, Cardinality.SOUTH, contour, sharpOCT));
-        analysisManager.getImgPanel().setDrawPoint(new Point(foveaCenterXPosition, searchY));
+//        analysisManager.getImgPanel().setDrawPoint(new Point(foveaCenterXPosition, searchY));
         setProgress(30);
         /*
          since the contour can snake around due to aberations and low image density 
@@ -113,6 +126,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             return new Point(points.get(0).x, maxY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
         setProgress(35);
+        if(pm.isCanceled()){
+            this.cancel(true);
+        }
         /*
          Starting from the identified location of the fovea search southward in 
          the image until the most southern pixels (in a 3x3 matrix of 
@@ -177,6 +193,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             contour.add(findContourLeft(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
         }
         setProgress(55);
+        if(pm.isCanceled()){
+            this.cancel(true);
+        }
         /*
          since the contour can snake around due to aberations and low image density 
          we need to create a single line (represented by points) from left to right
@@ -191,6 +210,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             return new Point(points.get(0).x, minY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
         setProgress(70);
+        if(pm.isCanceled()){
+            this.cancel(true);
+        }
 
         /*
          use a Loess interpolator again to smooth the new contours of the EZ and Bruch's Membrane
@@ -220,6 +242,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                 //do nothing but let loop continue
             }
         }
+        if(pm.isCanceled()){
+            this.cancel(true);
+        }
         double avgDif = Stream.concat(IntStream.range(minX + 30, minX + 50).boxed(), IntStream.range(maxX - 49, maxX - 28).boxed())
                 .mapToDouble(x -> interpBruchsContour.value(x) - interpEZContour.value(x))
                 .average()
@@ -238,6 +263,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          */
         List<LinePoint> diffLine = findDiffWithAdjustment(interpBruchsContour, 0D, interpEZContour, avgDif, minX, maxX);
         setProgress(90);
+        if(pm.isCanceled()){
+            this.cancel(true);
+        }
 //        List<LinePoint> peaks = Util.findPeaksAndVallies(diffLine);
 //        Util.graphPoints(diffLine, peaks);
 
@@ -342,6 +370,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             publish(searchPoint);
             Thread.sleep(debug_sleep);
         }
+        if (pm.isCanceled()) {
+            this.cancel(true);
+        }
         depth++;
         if (depth > depthThreshold) {
             //the recursive search has gone awry, we must terminate it before causing the stack to overflow
@@ -426,6 +457,9 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
         if (debug) {
             publish(searchPoint);
             Thread.sleep(debug_sleep);
+        }
+        if (pm.isCanceled()) {
+            this.cancel(true);
         }
         Point nextPoint;
         Cardinality nextDirection;

@@ -63,7 +63,7 @@ public class Analysis {
                     pm.setMillisToDecideToPopup(0);
                     pm.setMillisToPopup(100);
                     pm.setProgress(0);
-                    EZWorker ezw = new EZWorker();
+                    EZWorker ezw = new EZWorker(pm);
                     ezw.addPropertyChangeListener((PropertyChangeEvent ev) -> {
                         if ("progress".equals(ev.getPropertyName())) {
                             int progress1 = (Integer) ev.getNewValue();
