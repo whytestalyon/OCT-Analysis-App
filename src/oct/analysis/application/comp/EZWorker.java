@@ -22,6 +22,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTLine;
+import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.Cardinality;
 import oct.analysis.application.dat.EZEdgeCoord;
 import oct.analysis.application.dat.LinePoint;
@@ -126,7 +127,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             return new Point(points.get(0).x, maxY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
         setProgress(35);
-        if(pm.isCanceled()){
+        if (pm.isCanceled()) {
             this.cancel(true);
         }
         /*
@@ -193,7 +194,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             contour.add(findContourLeft(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT));
         }
         setProgress(55);
-        if(pm.isCanceled()){
+        if (pm.isCanceled()) {
             this.cancel(true);
         }
         /*
@@ -210,7 +211,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
             return new Point(points.get(0).x, minY);
         }).sorted((Point p1, Point p2) -> Integer.compare(p1.x, p2.x)).collect(Collectors.toList());
         setProgress(70);
-        if(pm.isCanceled()){
+        if (pm.isCanceled()) {
             this.cancel(true);
         }
 
@@ -242,7 +243,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                 //do nothing but let loop continue
             }
         }
-        if(pm.isCanceled()){
+        if (pm.isCanceled()) {
             this.cancel(true);
         }
         double avgDif = Stream.concat(IntStream.range(minX + 30, minX + 50).boxed(), IntStream.range(maxX - 49, maxX - 28).boxed())
@@ -263,7 +264,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          */
         List<LinePoint> diffLine = findDiffWithAdjustment(interpBruchsContour, 0D, interpEZContour, avgDif, minX, maxX);
         setProgress(90);
-        if(pm.isCanceled()){
+        if (pm.isCanceled()) {
             this.cancel(true);
         }
 //        List<LinePoint> peaks = Util.findPeaksAndVallies(diffLine);
@@ -315,12 +316,10 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
         try {
             //place selection showing each EZ edge
             EZEdgeCoord ez = get();
-            selMngr.addOrUpdateSelection(new OCTLine(ez.getLeftXCoord(), 0, analysisManager.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
-            selMngr.addOrUpdateSelection(new OCTLine(ez.getRightXCoord(), 0, analysisManager.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
+            selMngr.addOrUpdateSelection(new OCTSelection(ez.getLeftXCoord(), 0, selMngr.getSelectionWidth(), analysisManager.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Left", true));
+            selMngr.addOrUpdateSelection(new OCTSelection(ez.getRightXCoord(), 0, selMngr.getSelectionWidth(), analysisManager.getOct().getImageHeight(), SelectionType.NONFOVEAL, "EZ Right", true));
             //place selection at the center of the fovea
-            int fv = analysisManager.getFoveaCenterXPosition();
-            OCTLine foveaSelection = new OCTLine(fv, 0, analysisManager.getOct().getImageHeight(), SelectionType.FOVEAL, "Fovea", false);
-            selMngr.addOrUpdateSelection(foveaSelection);
+            selMngr.addOrUpdateSelection(selMngr.getFoveaSelection(analysisManager.getFoveaCenterXPosition(), false));
         } catch (InterruptedException | ExecutionException ex) {
             Logger.getLogger(EZWorker.class.getName()).log(Level.SEVERE, "Automatic detection of EZ edges failed!", ex);
             JOptionPane.showMessageDialog(analysisManager.getImgPanel(), "Detection of the edges of the EZ can't be determined automatically by the application.\nYou will have to manually find the edges of the EZ.", "Can't Analyze Image", JOptionPane.ERROR_MESSAGE);
