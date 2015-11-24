@@ -36,7 +36,7 @@ import oct.analysis.application.OCTLine;
 import oct.analysis.application.OCTSelection;
 import oct.util.Segmentation;
 import oct.util.Util;
-import oct.util.ip.ImageOperation;
+import oct.util.ip.FloatProcessorOperation;
 import oct.util.ip.SharpenOperation;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -250,10 +250,14 @@ public class OCTAnalysisManager {
         BufferedImage modeOCT = (displayMode == OCTMode.LOG) ? oct.getLogOctImage() : oct.getLinearOctImage();
         FloatProcessor fp = new ByteProcessor(modeOCT).convertToFloatProcessor();
         fp.snapshot();
-        ImageOperationManager.getInstance().getActiveOperationList().forEach(imop -> {
+        ImageOperationManager.getInstance().getActiveFPOperationList().forEach(imop -> {
             imop.performOperation(fp);
         });
-        return fp.getBufferedImage();
+        BufferedImage bi = fp.getBufferedImage();
+        ImageOperationManager.getInstance().getActiveCustomOperationList().forEach(imop -> {
+            imop.performOperation(bi);
+        });
+        return bi;
     }
 
     /**
@@ -266,7 +270,7 @@ public class OCTAnalysisManager {
      * segmenting the OCT)
      * @return segmentation of the OCT
      */
-    public Segmentation getSegmentation(ImageOperation optionalOp) {
+    public Segmentation getSegmentation(FloatProcessorOperation optionalOp) {
         //segmentation and image operations can only be done on 8-bit gray xscale images, using the OCT we ensure 
         //the image is in useable format which handles this upon creation
         BufferedImage segImg;

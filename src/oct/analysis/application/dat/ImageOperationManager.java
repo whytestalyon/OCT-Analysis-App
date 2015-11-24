@@ -8,7 +8,10 @@ package oct.analysis.application.dat;
 import java.util.ArrayList;
 import java.util.List;
 import oct.util.ip.BlurOperation;
-import oct.util.ip.ImageOperation;
+import oct.util.ip.CustomOperation;
+import oct.util.ip.FloatProcessorOperation;
+import oct.util.ip.MedianFilterOperation;
+import oct.util.ip.NormalizationOperation;
 import oct.util.ip.SharpenOperation;
 
 /**
@@ -16,12 +19,17 @@ import oct.util.ip.SharpenOperation;
  * @author Brandon
  */
 public class ImageOperationManager {
+
     private BlurOperation blur;
     private SharpenOperation sharp;
+    private final MedianFilterOperation median;
+    private final NormalizationOperation norm;
 
     private ImageOperationManager() {
-        blur =  new BlurOperation(0D);
+        blur = new BlurOperation(0D);
         sharp = new SharpenOperation(0D, 0F);
+        median = new MedianFilterOperation();
+        norm = new NormalizationOperation();
     }
 
     public static ImageOperationManager getInstance() {
@@ -34,11 +42,27 @@ public class ImageOperationManager {
     }
 
     public void updateBlurOperation(BlurOperation op) {
-         blur = op;
+        blur = op;
     }
 
     public void updateSharpenOperation(SharpenOperation op) {
-         sharp = op;
+        sharp = op;
+    }
+
+    public void activateMedianFilter() {
+        median.activate();
+    }
+
+    public void deactivateMedianFilter() {
+        median.deactivate();
+    }
+
+    public void activateNormalization() {
+        norm.setActive(true);
+    }
+
+    public void deactivateNormalization() {
+        norm.setActive(false);
     }
 
     /**
@@ -46,13 +70,29 @@ public class ImageOperationManager {
      *
      * @return
      */
-    public List<ImageOperation> getActiveOperationList() {
-        ArrayList<ImageOperation> ret = new ArrayList<>(2);
-        if(blur.isActive()){
+    public List<FloatProcessorOperation> getActiveFPOperationList() {
+        ArrayList<FloatProcessorOperation> ret = new ArrayList<>(2);
+        if (blur.isActive()) {
             ret.add(blur);
         }
-        if(sharp.isActive()){
+        if (sharp.isActive()) {
             ret.add(sharp);
+        }
+        return ret;
+    }
+
+    /**
+     * Get the set of active operations to apply to the OCT image
+     *
+     * @return
+     */
+    public List<CustomOperation> getActiveCustomOperationList() {
+        ArrayList<CustomOperation> ret = new ArrayList<>(2);
+        if (median.isActive()) {
+            ret.add(median);
+        }
+        if (norm.isActive()) {
+            ret.add(norm);
         }
         return ret;
     }
@@ -64,5 +104,9 @@ public class ImageOperationManager {
     public SharpenOperation getSharp() {
         return sharp;
     }
-    
+
+    public MedianFilterOperation getMedian() {
+        return median;
+    }
+
 }

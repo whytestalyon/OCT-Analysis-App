@@ -136,5 +136,11 @@ public class Analysis {
     public static void performMirror(boolean interactive) {
         findFovea(interactive);
     }
+    
+    public static void performOSRatio(boolean interactive) {
+        //first find the 'Wilk Spot' a.k.a. the greatest distance between the 
+        //EZ and IZ (not necessarily the bottom of the foveal pit)
+        findFovea(interactive);
+    }
 
 }

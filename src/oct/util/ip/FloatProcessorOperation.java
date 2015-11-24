@@ -6,13 +6,12 @@
 package oct.util.ip;
 
 import ij.process.FloatProcessor;
-import java.util.List;
 
 /**
  *
  * @author Brandon
  */
-public interface ImageOperation {
+public interface FloatProcessorOperation {
     
     /**
      * Performs the specific image operation on the image represented by the

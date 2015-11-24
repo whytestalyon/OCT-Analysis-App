@@ -12,7 +12,7 @@ import ij.process.FloatProcessor;
  *
  * @author Brandon
  */
-public class SharpenOperation implements ImageOperation {
+public class SharpenOperation implements FloatProcessorOperation {
 
     private final UnsharpMask sharpener; //Unsharp mask used to perform the sharpening operation
     private double sharpenSigma; //"Radius (Sigma)" is the standard deviation (blur radius) of the Gaussian blur that is subtracted.

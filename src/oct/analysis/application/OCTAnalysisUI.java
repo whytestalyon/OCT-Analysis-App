@@ -138,6 +138,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         screenSelectButton = new javax.swing.JToggleButton();
         jLabel1 = new javax.swing.JLabel();
         lrpWidthTextField = new javax.swing.JFormattedTextField();
+        filler6 = new javax.swing.Box.Filler(new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 32767));
+        noiseReductionCheckbox = new javax.swing.JCheckBox();
+        filler7 = new javax.swing.Box.Filler(new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 32767));
+        normalizeCheckBox = new javax.swing.JCheckBox();
         displayPanel = new javax.swing.JPanel();
         positionPanel = new javax.swing.JPanel();
         mousePositionLabel = new oct.analysis.application.comp.MousePositionListeningLabel();
@@ -172,6 +176,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         interactiveMirrorAnalysisMenuItem = new javax.swing.JMenuItem();
         autoFoveaFindMenuItem = new javax.swing.JMenuItem();
         interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
+        osRatioMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -437,6 +442,35 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         lrpWidthTextField.setMinimumSize(new java.awt.Dimension(35, 25));
         lrpWidthTextField.setPreferredSize(new java.awt.Dimension(35, 25));
         analysisToolsToolBar.add(lrpWidthTextField);
+        analysisToolsToolBar.add(filler6);
+
+        noiseReductionCheckbox.setText("Noise Reduction");
+        noiseReductionCheckbox.setFocusable(false);
+        noiseReductionCheckbox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        noiseReductionCheckbox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        noiseReductionCheckbox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                noiseReductionCheckboxStateChanged(evt);
+            }
+        });
+        noiseReductionCheckbox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                noiseReductionCheckboxActionPerformed(evt);
+            }
+        });
+        analysisToolsToolBar.add(noiseReductionCheckbox);
+        analysisToolsToolBar.add(filler7);
+
+        normalizeCheckBox.setText("Normalize");
+        normalizeCheckBox.setFocusable(false);
+        normalizeCheckBox.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        normalizeCheckBox.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        normalizeCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                normalizeCheckBoxStateChanged(evt);
+            }
+        });
+        analysisToolsToolBar.add(normalizeCheckBox);
 
         displayPanel.setLayout(new javax.swing.BoxLayout(displayPanel, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -675,6 +709,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
         analysisMenu.add(interactiveFindFoveaMenuItem);
+
+        osRatioMenuItem.setText("OS Ratio");
+        osRatioMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                osRatioMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(osRatioMenuItem);
 
         appMenuBar.add(analysisMenu);
 
@@ -1218,6 +1260,45 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_scaleBarCheckBoxStateChanged
 
+    private void osRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_osRatioMenuItemActionPerformed
+
+
+    }//GEN-LAST:event_osRatioMenuItemActionPerformed
+
+    private void noiseReductionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noiseReductionCheckboxActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_noiseReductionCheckboxActionPerformed
+
+    private void noiseReductionCheckboxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_noiseReductionCheckboxStateChanged
+        //update the median filter
+        if (noiseReductionCheckbox.isSelected()) {
+            ImageOperationManager.getInstance().activateMedianFilter();
+        } else {
+            ImageOperationManager.getInstance().deactivateMedianFilter();
+        }
+        SwingUtilities.invokeLater(() -> {
+            //redraw OCT with median filter applied
+            octAnalysisPanel.repaint();
+            //redraw LRPs to update with new information
+            selectionLRPManager.updateLRPs();
+        });
+    }//GEN-LAST:event_noiseReductionCheckboxStateChanged
+
+    private void normalizeCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_normalizeCheckBoxStateChanged
+        //update the normalization filter
+        if (normalizeCheckBox.isSelected()) {
+            ImageOperationManager.getInstance().activateNormalization();
+        } else {
+            ImageOperationManager.getInstance().deactivateNormalization();
+        }
+        SwingUtilities.invokeLater(() -> {
+            //redraw OCT with median filter applied
+            octAnalysisPanel.repaint();
+            //redraw LRPs to update with new information
+            selectionLRPManager.updateLRPs();
+        });
+    }//GEN-LAST:event_normalizeCheckBoxStateChanged
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1376,6 +1457,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.Box.Filler filler3;
     private javax.swing.Box.Filler filler4;
     private javax.swing.Box.Filler filler5;
+    private javax.swing.Box.Filler filler6;
+    private javax.swing.Box.Filler filler7;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JCheckBoxMenuItem filtersTBMenuItem;
     private javax.swing.JToolBar filtersToolbar;
@@ -1399,6 +1482,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private oct.analysis.application.comp.MouseDistanceToFoveaListeningLabel mouseDistanceToFoveaLabel;
     private oct.analysis.application.comp.MousePositionListeningLabel mousePositionLabel;
     private javax.swing.JMenuItem newAnalysisMenuItem;
+    private javax.swing.JCheckBox noiseReductionCheckbox;
+    private javax.swing.JCheckBox normalizeCheckBox;
     private oct.analysis.application.OCTImagePanel octAnalysisPanel;
     private javax.swing.JSlider octSharpRadiusSlider;
     private javax.swing.JPanel octSharpWeightPanel;
@@ -1406,6 +1491,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JMenuItem openAnalysisMenuItem;
+    private javax.swing.JMenuItem osRatioMenuItem;
     private javax.swing.JPanel positionPanel;
     private oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor resizeOCTSelectionMouseMonitor;
     private javax.swing.JMenuItem saveAnalysisMenuItem;

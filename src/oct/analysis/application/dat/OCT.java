@@ -3,6 +3,8 @@ package oct.analysis.application.dat;
 import ij.ImagePlus;
 import ij.process.ImageConverter;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.WritableRaster;
 import oct.util.Util;
 
 /**

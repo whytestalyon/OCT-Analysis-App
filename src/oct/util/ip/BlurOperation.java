@@ -11,7 +11,7 @@ import ij.process.FloatProcessor;
  *
  * @author Brandon
  */
-public class BlurOperation implements ImageOperation {
+public class BlurOperation implements FloatProcessorOperation {
 
     private double blurFactor;
 
