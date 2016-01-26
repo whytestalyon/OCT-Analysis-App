@@ -11,20 +11,21 @@ import java.awt.image.BufferedImage;
  *
  * @author Brandon
  */
-public interface CustomOperation {
+public interface FilterOperation {
 
     /**
      * Performs the specific image operation on the image represented by the
      * supplied float processor.
      *
      * @param bi the image to apply the given operation to
+     * @return the modified image
      */
-    public abstract void performOperation(BufferedImage bi);
+    public BufferedImage performOperation(BufferedImage bi);
 
     /**
      * Check to indicate if the filter is active and should be used or not.
      *
      * @return true if active, false otherwise
      */
-    public abstract boolean isActive();
+    public boolean isActive();
 }

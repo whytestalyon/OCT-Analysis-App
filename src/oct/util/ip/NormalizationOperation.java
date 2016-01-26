@@ -13,7 +13,7 @@ import oct.util.Util;
  *
  * @author Brandon M. Wilk {@literal <}wilkb777@gmail.com{@literal >}
  */
-public class NormalizationOperation implements CustomOperation {
+public class NormalizationOperation implements FilterOperation {
 
     private boolean active = false;
 
@@ -27,22 +27,24 @@ public class NormalizationOperation implements CustomOperation {
     }
 
     @Override
-    public void performOperation(BufferedImage bi) {
+    public BufferedImage performOperation(BufferedImage bi) {
         //first set up scaling parameters
         double A = (double) findMinGrayScaleValue(bi);
         double B = (double) findMaxGrayScaleValue(bi);
-        System.out.println("A: " + A + ", B: " + B);
+        System.out.println("Min Gray scale value: " + A + ", max Gray scale value: " + B);
         double a = 0D;
         double b = 255D;
         //normalize pixels to new range
         int[][] pixels = Util.convertTo2D(bi);
+        BufferedImage retBi = Util.deepCopyBufferedImage(bi);
         for (int x = 0; x < pixels.length; x++) {
             for (int y = 0; y < pixels[x].length; y++) {
                 int pixel = Util.calculateGrayScaleValue(pixels[x][y]);
                 int norm = (int) Math.round(a + (((double) pixel - A) * (b - a) / (B - A)));
-                bi.setRGB(x, y, Util.calculateRGBValue(norm));
+                retBi.setRGB(x, y, Util.calculateRGBValue(norm));
             }
         }
+        return retBi;
     }
 
     private int findMaxGrayScaleValue(BufferedImage bi) {

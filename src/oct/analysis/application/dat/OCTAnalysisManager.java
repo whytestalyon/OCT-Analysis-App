@@ -5,6 +5,7 @@
  */
 package oct.analysis.application.dat;
 
+import ij.plugin.filter.GaussianBlur;
 import ij.process.ByteProcessor;
 import ij.process.FloatProcessor;
 import java.awt.Component;
@@ -26,7 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
@@ -36,6 +39,7 @@ import oct.analysis.application.OCTLine;
 import oct.analysis.application.OCTSelection;
 import oct.util.Segmentation;
 import oct.util.Util;
+import oct.util.ip.FilterOperation;
 import oct.util.ip.FloatProcessorOperation;
 import oct.util.ip.SharpenOperation;
 import org.apache.commons.math3.analysis.UnivariateFunction;
@@ -248,16 +252,11 @@ public class OCTAnalysisManager {
      */
     public BufferedImage getOctImage() {
         BufferedImage modeOCT = (displayMode == OCTMode.LOG) ? oct.getLogOctImage() : oct.getLinearOctImage();
-        FloatProcessor fp = new ByteProcessor(modeOCT).convertToFloatProcessor();
-        fp.snapshot();
-        ImageOperationManager.getInstance().getActiveFPOperationList().forEach(imop -> {
-            imop.performOperation(fp);
-        });
-        BufferedImage bi = fp.getBufferedImage();
-        ImageOperationManager.getInstance().getActiveCustomOperationList().forEach(imop -> {
-            imop.performOperation(bi);
-        });
-        return bi;
+//        JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(modeOCT)));
+        for (FilterOperation imop : ImageOperationManager.getInstance().getActiveCustomOperationList()) {
+            modeOCT = imop.performOperation(modeOCT);
+        }
+        return modeOCT;
     }
 
     /**
@@ -288,6 +287,29 @@ public class OCTAnalysisManager {
     }
 
     /**
+     * Segment the four major layers of the retina from the Log OCT image. An
+     * optional {@code ImageOperation} can be applied to the image before the
+     * segmentation is performed, to help improve segmentation performance.
+     *
+     * @param optionalOp an ImageOperation to apply before segmenting an image,
+     * or null (indicating tat no operations should be performed before
+     * segmenting the OCT)
+     * @return segmentation of the OCT
+     */
+    public Segmentation getSegmentation(FilterOperation optionalOp) {
+        //segmentation and image operations can only be done on 8-bit gray xscale images, using the OCT we ensure 
+        //the image is in useable format which handles this upon creation
+        BufferedImage segImg;
+        if (optionalOp != null) {
+            segImg = optionalOp.performOperation(oct.getLogOctImage());
+        } else {
+            segImg = oct.getLogOctImage();
+        }
+
+        return new Segmentation(segImg, 1);
+    }
+
+    /**
      * This method grabs the current OCT and sharpens it using a radius (sigma)
      * of 15 and a weight factor of the supplied value. The sharpened image is
      * then returned.
@@ -297,7 +319,7 @@ public class OCTAnalysisManager {
     public BufferedImage getSharpenedOctImage(double sigma, float weight) {
         FloatProcessor tmpFp = new ByteProcessor(oct.getLogOctImage()).convertToFloatProcessor();
         tmpFp.snapshot();//need to create a snapshot before any operations can be performed on image
-        new SharpenOperation(sigma, weight).performOperation(tmpFp);
+//        new SharpenOperation(sigma, weight).performOperation(tmpFp);
         return tmpFp.getBufferedImage();
     }
 

@@ -8,7 +8,7 @@ package oct.analysis.application.dat;
 import java.util.ArrayList;
 import java.util.List;
 import oct.util.ip.BlurOperation;
-import oct.util.ip.CustomOperation;
+import oct.util.ip.FilterOperation;
 import oct.util.ip.FloatProcessorOperation;
 import oct.util.ip.MedianFilterOperation;
 import oct.util.ip.NormalizationOperation;
@@ -70,24 +70,14 @@ public class ImageOperationManager {
      *
      * @return
      */
-    public List<FloatProcessorOperation> getActiveFPOperationList() {
-        ArrayList<FloatProcessorOperation> ret = new ArrayList<>(2);
+    public List<FilterOperation> getActiveCustomOperationList() {
+        ArrayList<FilterOperation> ret = new ArrayList<>(2);
         if (blur.isActive()) {
             ret.add(blur);
         }
         if (sharp.isActive()) {
             ret.add(sharp);
         }
-        return ret;
-    }
-
-    /**
-     * Get the set of active operations to apply to the OCT image
-     *
-     * @return
-     */
-    public List<CustomOperation> getActiveCustomOperationList() {
-        ArrayList<CustomOperation> ret = new ArrayList<>(2);
         if (median.isActive()) {
             ret.add(median);
         }

@@ -13,8 +13,11 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -166,6 +169,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         saveAnalysisMenuItem = new javax.swing.JMenuItem();
         exportAnalysisResultsMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
+        loadTestMenuItem = new javax.swing.JMenuItem();
         analysisMenu = new javax.swing.JMenu();
         equidistantAutoMenuItem = new javax.swing.JMenuItem();
         equidistantInteractiveMenuItem = new javax.swing.JMenuItem();
@@ -581,6 +585,11 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         displayPanel.add(dispControlPanel);
 
         fileMenu.setText("File");
+        fileMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                fileMenuActionPerformed(evt);
+            }
+        });
 
         newAnalysisMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newAnalysisMenuItem.setText("New Analysis");
@@ -628,6 +637,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
         fileMenu.add(Exit);
+
+        loadTestMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        loadTestMenuItem.setText("Load Test Image");
+        loadTestMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadTestMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(loadTestMenuItem);
 
         appMenuBar.add(fileMenu);
 
@@ -1299,6 +1317,39 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
     }//GEN-LAST:event_normalizeCheckBoxStateChanged
 
+    private void fileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_fileMenuActionPerformed
+
+    private void loadTestMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadTestMenuItemActionPerformed
+        //reset application to fresh analysis settings
+        loadAppConfig();
+        InputStream imgStream = getClass().getResourceAsStream("/oct/rsc/demo/demo_oct.tif");
+        try {
+            //read in image and keep track of the image for later use
+            BufferedImage tiffBI = TiffReader.readTiffImage(imgStream);
+            OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
+            octMngr.setXscale(6.9446);
+            octMngr.setYscale(2.2645);
+            OCT oct = new OCT(tiffBI, "demo_oct.tif");
+            //add the OCT to the analysis manager, it will take care of making it available to the OCT image panel for drawing
+            analysisMngr.setOct(oct);
+            //display the selected image in the display
+            octAnalysisPanel.setSize(new Dimension(tiffBI.getWidth(), tiffBI.getHeight()));
+            octAnalysisPanel.repaint();
+            validate();
+            pack();
+            //enable save
+            saveAnalysisMenuItem.setEnabled(true);
+            exportAnalysisResultsMenuItem.setEnabled(true);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Image loading failed for demo_oct.tif"
+                    + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
+            );
+        }
+
+    }//GEN-LAST:event_loadTestMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1472,6 +1523,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JRadioButton linearOCTModeButton;
+    private javax.swing.JMenuItem loadTestMenuItem;
     private javax.swing.JRadioButton logModeOCTButton;
     private javax.swing.ButtonGroup lrpButtonGroup;
     private javax.swing.JMenuItem lrpMenuItem;

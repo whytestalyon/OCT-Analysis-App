@@ -13,7 +13,7 @@ import oct.util.Util;
  *
  * @author Brandon M. Wilk {@literal <}wilkb777@gmail.com{@literal >}
  */
-public class MedianFilterOperation implements CustomOperation {
+public class MedianFilterOperation implements FilterOperation {
 
     private boolean active = false;
 
@@ -31,7 +31,7 @@ public class MedianFilterOperation implements CustomOperation {
     }
 
     @Override
-    public void performOperation(BufferedImage bi) {
+    public BufferedImage performOperation(BufferedImage bi) {
         int[][] pixels = Util.convertTo2D(bi);
         //convert to grayscale
         for (int[] pixelColumn : pixels) {
@@ -57,11 +57,13 @@ public class MedianFilterOperation implements CustomOperation {
             }
         }
         //update the image
+        BufferedImage retbi = Util.deepCopyBufferedImage(bi);
         for (int x = 1; x < pixels.length - 1; x++) {
             for (int y = 1; y < pixels[x].length - 1; y++) {
-                bi.setRGB(x, y, Util.calculateRGBValue(pixels[x][y]));
+                retbi.setRGB(x, y, Util.calculateRGBValue(pixels[x][y]));
             }
         }
+        return retbi;
     }
 
 }

@@ -37,7 +37,7 @@ import javax.imageio.ImageReader;
  */
 public class TiffReader {
 
-    public static BufferedImage readTiffImage(File file) throws IOException {
+    public static BufferedImage readTiffImage(Object file) throws IOException {
 
         Iterator tiffImReader = ImageIO.getImageReadersByFormatName("tiff");
         ImageReader tiffStkReader = (ImageReader) tiffImReader.next();
