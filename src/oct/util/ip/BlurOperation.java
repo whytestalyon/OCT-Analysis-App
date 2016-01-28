@@ -43,7 +43,7 @@ public class BlurOperation implements FilterOperation {
     @Override
     public BufferedImage performOperation(BufferedImage bi) {
         ByteProcessor bp = new ByteProcessor(Util.deepCopyBufferedImage(bi));
-        bp.toFloat(0, null);
+//        bp.toFloat(0, null);
         bp.blurGaussian(blurFactor);
 //        JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon( bp.getBufferedImage() )) );
         return bp.getBufferedImage();

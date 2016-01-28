@@ -19,14 +19,14 @@ import oct.util.Util;
  */
 public class SharpenOperation implements FilterOperation {
 
-    private final UnsharpMask sharpener; //Unsharp mask used to perform the sharpening operation
+    private static final UnsharpMask sharpener = new UnsharpMask();
+    ; //Unsharp mask used to perform the sharpening operation
     private double sharpenSigma = 0; //"Radius (Sigma)" is the standard deviation (blur radius) of the Gaussian blur that is subtracted.
     private float sharpenWeight = 0; //Mask Weight" determines the strength of filtering, where "Mask Weight"=1 would be an infinite weight of the high-pass filtered image that is added.
     BlurOperation bo;
 
     public SharpenOperation(double sharpenSigma, float sharpenWeight) {
         this.bo = new BlurOperation(sharpenSigma);
-        this.sharpener = new UnsharpMask();
         this.sharpenSigma = sharpenSigma;
         this.sharpenWeight = sharpenWeight;
     }
@@ -54,27 +54,30 @@ public class SharpenOperation implements FilterOperation {
 
     @Override
     public BufferedImage performOperation(BufferedImage bi) {
+
+        BlurOperation blur = new BlurOperation(sharpenSigma);
+        BufferedImage sharpBi = blur.performOperation(bi);
+        for (int y = 0; y < sharpBi.getHeight(); y++) {
+            for (int x = 0; x < sharpBi.getWidth(); x++) {
+                float oldPix = Util.calculateGrayScaleValue(bi.getRGB(x, y));
+                float newPix = Util.calculateGrayScaleValue(sharpBi.getRGB(x, y));
+                float sharpPix = (oldPix - sharpenWeight * newPix) / (1f - sharpenWeight);
+                if (sharpPix > 255) {
+                    sharpBi.setRGB(x, y, Util.calculateRGBValue(255));
+                } else if (sharpPix < 0) {
+                    sharpBi.setRGB(x, y, Util.calculateRGBValue(0));
+                } else {
+                    sharpBi.setRGB(x, y, Util.calculateRGBValue((int) sharpPix));
+                }
+            }
+        }
+        return sharpBi;
+    }
+
+    public static BufferedImage performSharpenUsingImageJFloatProcessor(double sharpenSigma, float sharpenWeight, BufferedImage bi) {
         FloatProcessor fp = new ByteProcessor(bi).convertToFloatProcessor();
         fp.snapshot();
         new UnsharpMask().sharpenFloat(fp, sharpenSigma, sharpenWeight);
         return fp.getBufferedImage();
     }
-
-    /**
-     * Unsharp Mask filtering of a float image. 'fp' must have a valid snapshot.
-     * Method cannibalized from the ImageJ v1.49 source code from UnsharpMask.
-     */
-    private void sharpenFloat(FloatProcessor fp) {
-        fp.snapshot();
-        float[] pixels = (float[]) fp.getPixels();
-        float[] snapshotPixels = (float[]) fp.getSnapshotPixels();
-        int width = fp.getWidth();
-        Rectangle roi = fp.getRoi();
-        for (int y = roi.y; y < roi.y + roi.height; y++) {
-            for (int x = roi.x, p = width * y + x; x < roi.x + roi.width; x++, p++) {
-                pixels[p] = (snapshotPixels[p] - sharpenWeight * pixels[p]) / (1f - sharpenWeight);
-            }
-        }
-    }
-
 }

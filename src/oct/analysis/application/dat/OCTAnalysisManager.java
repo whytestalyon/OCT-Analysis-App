@@ -255,6 +255,13 @@ public class OCTAnalysisManager {
 //        JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(modeOCT)));
         for (FilterOperation imop : ImageOperationManager.getInstance().getActiveCustomOperationList()) {
             modeOCT = imop.performOperation(modeOCT);
+//            if (imop instanceof SharpenOperation) {
+//                SharpenOperation s = (SharpenOperation) imop;
+//                if ((Math.abs(s.getSharpenSigma() - 15D) < 0.1D && Math.abs(s.getSharpenWeight() - 0.6F) < 0.01F)
+//                        || (Math.abs(s.getSharpenSigma() - 8.5D) < 0.1D && Math.abs(s.getSharpenWeight() - 1F) < 0.01F)) {
+//                    JOptionPane.showMessageDialog(null, new JLabel(new ImageIcon(SharpenOperation.performSharpenUsingImageJFloatProcessor(s.getSharpenSigma(), s.getSharpenWeight(), oct.getLogOctImage()))));
+//                }
+//            }
         }
         return modeOCT;
     }
@@ -310,17 +317,13 @@ public class OCTAnalysisManager {
     }
 
     /**
-     * This method grabs the current OCT and sharpens it using a radius (sigma)
-     * of 15 and a weight factor of the supplied value. The sharpened image is
-     * then returned.
+     * Segment the four major layers of the retina from the supplied OCT image.
      *
-     * @return sharpened image
+     * @param segImg OCT to segment
+     * @return segmentation of the OCT
      */
-    public BufferedImage getSharpenedOctImage(double sigma, float weight) {
-        FloatProcessor tmpFp = new ByteProcessor(oct.getLogOctImage()).convertToFloatProcessor();
-        tmpFp.snapshot();//need to create a snapshot before any operations can be performed on image
-//        new SharpenOperation(sigma, weight).performOperation(tmpFp);
-        return tmpFp.getBufferedImage();
+    public Segmentation getSegmentation(BufferedImage segImg) {
+        return new Segmentation(segImg, 1);
     }
 
     public List<LinePoint> findAbsoluteDiff(UnivariateFunction fa, UnivariateFunction fb, int minX, int maxX) {
@@ -369,7 +372,7 @@ public class OCTAnalysisManager {
             //find the fovea since it hasn't been found/defined yet
             UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
             setProgress(5);
-            Segmentation octSeg = getSegmentation(new SharpenOperation(15, 0.6F));
+            Segmentation octSeg = getSegmentation(SharpenOperation.performSharpenUsingImageJFloatProcessor(15, 0.6F, oct.getLogOctImage()));
             setProgress(50);
             double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
             UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);

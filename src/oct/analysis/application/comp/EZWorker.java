@@ -63,10 +63,10 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          out imperfetions in the segmentation line.
          */
         UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
-        ArrayList<Point> rawBrmPoints = new ArrayList<>(analysisManager.getSegmentation(new SharpenOperation(15, 0.6F)).getSegment(Segmentation.BrM_SEGMENT));
+        ArrayList<Point> rawBrmPoints = new ArrayList<>(analysisManager.getSegmentation(SharpenOperation.performSharpenUsingImageJFloatProcessor(15D, 0.6F, analysisManager.getOct().getLogOctImage())).getSegment(Segmentation.BrM_SEGMENT));
         double[][] brmSeg = Util.getXYArraysFromPoints(rawBrmPoints);
         UnivariateFunction brmInterp = interpolator.interpolate(brmSeg[0], brmSeg[1]);
-        BufferedImage sharpOCT = analysisManager.getSharpenedOctImage(8.5D, 1.0F);
+        BufferedImage sharpOCT = SharpenOperation.performSharpenUsingImageJFloatProcessor(8.5D, 1.0F, analysisManager.getOct().getLogOctImage());
         setProgress(10);
         if (pm.isCanceled()) {
             this.cancel(true);
@@ -169,7 +169,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
                 tweakFailed = true;
                 break;
             }
-            sharpOCT = analysisManager.getSharpenedOctImage(8.5D, 1.0F);
+            sharpOCT = SharpenOperation.performSharpenUsingImageJFloatProcessor(8.5D, 1.0F, analysisManager.getOct().getLogOctImage());
             contour.add(findContourRight(startPoint, Cardinality.NORTH, startPoint, Cardinality.NORTH, contour, sharpOCT, 0));
         }
 
