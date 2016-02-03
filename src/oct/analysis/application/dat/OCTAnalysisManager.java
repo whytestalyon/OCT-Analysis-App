@@ -41,6 +41,7 @@ import oct.util.Segmentation;
 import oct.util.Util;
 import oct.util.ip.FilterOperation;
 import oct.util.ip.FloatProcessorOperation;
+import oct.util.ip.NormalizationOperation;
 import oct.util.ip.SharpenOperation;
 import org.apache.commons.math3.analysis.UnivariateFunction;
 import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
@@ -372,7 +373,8 @@ public class OCTAnalysisManager {
             //find the fovea since it hasn't been found/defined yet
             UnivariateInterpolator interpolator = new LoessInterpolator(0.1, 0);
             setProgress(5);
-            Segmentation octSeg = getSegmentation(SharpenOperation.performSharpenUsingImageJFloatProcessor(15, 0.6F, oct.getLogOctImage()));
+//            Segmentation octSeg = getSegmentation(SharpenOperation.performSharpenUsingImageJFloatProcessor(15, 0.6F, oct.getLogOctImage()));
+            Segmentation octSeg = getSegmentation(new NormalizationOperation());
             setProgress(50);
             double[][] ilmSeg = Util.getXYArraysFromPoints(new ArrayList<>(octSeg.getSegment(Segmentation.ILM_SEGMENT)));
             UnivariateFunction ilmInterp = interpolator.interpolate(ilmSeg[0], ilmSeg[1]);

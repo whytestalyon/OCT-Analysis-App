@@ -1027,7 +1027,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                     case EZ:
                         sel = selectionLRPManager.getSelectedSelection();
                         if (sel.isMoveable()) {
-                            selectionLRPManager.moveSelectionRight(sel);
+                            selectionLRPManager.moveSelectionLeft(sel);
                         }
                         break;
                     default:
