@@ -209,6 +209,33 @@ public class Util {
         });
     }
 
+    public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight) {
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        int seriesCntr = 1;
+        for (Line line : lines) {
+            XYSeries data = new XYSeries("Series " + seriesCntr);
+            line.forEach(point -> {
+                if (invert_y) {
+                    data.add(point.getX(), imgHeight - point.getY());
+                } else {
+                    data.add(point.getX(), point.getY());
+                }
+            });
+            dataset.addSeries(data);
+            seriesCntr++;
+        }
+
+        JFrame graphFrame = new JFrame("Plotted Lines");
+
+        JPanel chartPanel = createChartPanel("Plotted Lines", dataset);
+        chartPanel.setPreferredSize(new Dimension(800, 800));
+        graphFrame.add(chartPanel, BorderLayout.CENTER);
+        SwingUtilities.invokeLater(() -> {
+            graphFrame.pack();
+            graphFrame.setVisible(true);
+        });
+    }
+
     private static JPanel createChartPanel(String title, XYDataset dataset) {
         String xAxisLabel = "X";
         String yAxisLabel = "Y";

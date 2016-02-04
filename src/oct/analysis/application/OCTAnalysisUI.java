@@ -18,6 +18,8 @@ import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.DecimalFormat;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -45,6 +47,8 @@ import oct.analysis.application.dat.ToolMode;
 import oct.io.AnalysisSaveState;
 import oct.io.AnalysisSaver;
 import oct.io.TiffReader;
+import oct.util.Line;
+import oct.util.Segmentation;
 import oct.util.Util;
 import oct.util.ip.BlurOperation;
 import oct.util.ip.SharpenOperation;
@@ -145,6 +149,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         noiseReductionCheckbox = new javax.swing.JCheckBox();
         filler7 = new javax.swing.Box.Filler(new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 32767));
         normalizeCheckBox = new javax.swing.JCheckBox();
+        dispSegButton = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
         displayPanel = new javax.swing.JPanel();
         positionPanel = new javax.swing.JPanel();
         mousePositionLabel = new oct.analysis.application.comp.MousePositionListeningLabel();
@@ -475,6 +481,28 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
         analysisToolsToolBar.add(normalizeCheckBox);
+
+        dispSegButton.setText("Disp Seg");
+        dispSegButton.setFocusable(false);
+        dispSegButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        dispSegButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        dispSegButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dispSegButtonActionPerformed(evt);
+            }
+        });
+        analysisToolsToolBar.add(dispSegButton);
+
+        jButton1.setText("No Norm Seg");
+        jButton1.setFocusable(false);
+        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        analysisToolsToolBar.add(jButton1);
 
         displayPanel.setLayout(new javax.swing.BoxLayout(displayPanel, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1350,6 +1378,22 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     }//GEN-LAST:event_loadTestMenuItemActionPerformed
 
+    private void dispSegButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dispSegButtonActionPerformed
+        LinkedList<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), false);
+        Collections.sort(segLines, (Line l1, Line l2) -> {
+            return Integer.compare(l2.size(), l1.size());
+        });
+        Util.graphLines(segLines.subList(0, 30), true, analysisMngr.getOct().getImageHeight());
+    }//GEN-LAST:event_dispSegButtonActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        LinkedList<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), true);
+        Collections.sort(segLines, (Line l1, Line l2) -> {
+            return Integer.compare(l2.size(), l1.size());
+        });
+        Util.graphLines(segLines.subList(0, 30), true, analysisMngr.getOct().getImageHeight());
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1496,6 +1540,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem autoFoveaFindMenuItem;
     private javax.swing.JMenuItem autoMirrorMenuItem;
     private javax.swing.JPanel dispControlPanel;
+    private javax.swing.JButton dispSegButton;
     private javax.swing.JCheckBox dispSegmentationCheckBox;
     private javax.swing.JCheckBox dispSelectionsCheckBox;
     private javax.swing.JPanel displayPanel;
@@ -1519,6 +1564,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem interactiveEzMenuItem;
     private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
     private javax.swing.JMenuItem interactiveMirrorAnalysisMenuItem;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
