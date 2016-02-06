@@ -20,6 +20,7 @@ import java.text.DecimalFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -1379,19 +1380,19 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_loadTestMenuItemActionPerformed
 
     private void dispSegButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dispSegButtonActionPerformed
-        LinkedList<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), false);
+        List<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), false, 1.8D);
         Collections.sort(segLines, (Line l1, Line l2) -> {
             return Integer.compare(l2.size(), l1.size());
         });
-        Util.graphLines(segLines.subList(0, 30), true, analysisMngr.getOct().getImageHeight());
+        Util.graphLines(segLines.subList(0, 20), true, analysisMngr.getOct().getImageHeight());
     }//GEN-LAST:event_dispSegButtonActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        LinkedList<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), true);
+        List<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), true, 0.5D, 1D, 1.8D, 3D, 5D);
         Collections.sort(segLines, (Line l1, Line l2) -> {
             return Integer.compare(l2.size(), l1.size());
         });
-        Util.graphLines(segLines.subList(0, 30), true, analysisMngr.getOct().getImageHeight());
+        Util.graphLines(segLines.subList(0, 20), true, analysisMngr.getOct().getImageHeight());
     }//GEN-LAST:event_jButton1ActionPerformed
 
     public void enableAnalysisTools() {

@@ -14,11 +14,14 @@ import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -209,7 +212,24 @@ public class Util {
         });
     }
 
+    public static Line mergeLines(Line... lines) {
+        int minx = Arrays.stream(lines).mapToInt(l -> l.get(0).x).min().getAsInt();
+        int maxx = Arrays.stream(lines).mapToInt(l -> l.get(0).x).max().getAsInt();
+
+        Line mLine = new Line(1024);
+        IntStream.rangeClosed(minx, maxx)
+                .forEachOrdered(x -> {
+                    double avgY = Arrays.stream(lines).flatMap(l -> l.stream()).filter(p -> p.x == x).mapToInt(p -> p.y).average().getAsDouble();
+                    mLine.add(new Point(x, (int) Math.round(avgY)));
+                });
+        return mLine;
+    }
+
     public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight) {
+        graphLines(lines, invert_y, imgHeight, "Plotted Lines");
+    }
+
+    public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight, String title) {
         XYSeriesCollection dataset = new XYSeriesCollection();
         int seriesCntr = 1;
         for (Line line : lines) {
@@ -225,7 +245,7 @@ public class Util {
             seriesCntr++;
         }
 
-        JFrame graphFrame = new JFrame("Plotted Lines");
+        JFrame graphFrame = new JFrame(title);
 
         JPanel chartPanel = createChartPanel("Plotted Lines", dataset);
         chartPanel.setPreferredSize(new Dimension(800, 800));

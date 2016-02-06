@@ -10,6 +10,7 @@ import chuiSegmentation.SegmentGroup;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +32,7 @@ public class Segmentation {
 
     public static final int ILM_SEGMENT = 0;
     public static final int BrM_SEGMENT = 3;
-    public static final int peakPixelDiff = 7;
+    public static final int peakPixelDiff = 5;
     private final SegmentGroup segments;
     private final int distanceBetweenPoints;
 
@@ -62,81 +63,88 @@ public class Segmentation {
         return segments.getCurve(segment, distanceBetweenPoints).getPointCollection();
     }
 
-    public static LinkedList<Line> getSegmentationLines(BufferedImage image, boolean skipNorm) {
-        //normalize image to make identification of ILM and BrM easier
-        if (!skipNorm) {
-            image = new NormalizationOperation().performOperation(image);
-        }
-        //smooth image to simplify segmentation
-        image = new BlurOperation(1.5D).performOperation(image);
-        //get LRP for each X position, find peaks, group peaks by x
-        BufferedImage tmpimg = image;
-        List<List<Point>> lrpPeaks = IntStream.range(0, tmpimg.getWidth())
-                .parallel()
-                .mapToObj(x -> {
-                    ArrayList<LinePoint> intensityValues = new ArrayList<>(tmpimg.getHeight());
-                    IntStream.range(0, tmpimg.getHeight()).forEach(y -> {
-                        intensityValues.add(new LinePoint(y, Util.calculateGrayScaleValue(tmpimg.getRGB(x, y))));
-                    });
-                    return Util.getMaximums(intensityValues)
-                    .stream()
-                    .map(lp -> new Point(x, lp.getX()))
-                    .collect(Collectors.toList());
-                })
-                .collect(Collectors.toList());
-
-        //calulate all possible lines that can be generated from the peaks of the LRPs
-        LinkedList<Line> activeLines = new LinkedList<>();
-        LinkedList<Line> retLines = new LinkedList<>();
-
-        //init the start of the first lines (i.e. first peaks from LRP on left side)
-        ListIterator<List<Point>> lrpPeaksIter = lrpPeaks.listIterator();
-        lrpPeaksIter.next()
-                .forEach(p -> {
-                    Line l = new Line(1024);
-                    l.add(p);
-                    activeLines.add(l);
-                });
-        lrpPeaksIter.remove();
-
-        //grow lines
-        while (lrpPeaksIter.hasNext()) {
-            List<Point> curPeaks = lrpPeaksIter.next();
-            //link curPeaks to closest line(s)
-            List<Line2PointLink> line2PointLinks = curPeaks.stream()
-                    .filter(peak -> activeLines.stream().anyMatch(line -> Line2PointLink.getDistnaceBetween(line, peak) <= peakPixelDiff))
-                    .map(peak -> {
-                        List<Line2PointLink> lineMatchCandidates = activeLines.stream().map(line -> new Line2PointLink(line, peak)).filter(l2p -> l2p.getDistnaceBetween() <= peakPixelDiff).collect(Collectors.toList());
-                        int mindist = lineMatchCandidates.stream().mapToInt(Line2PointLink::getDistnaceBetween).min().getAsInt();
-                        int maxLineLength = lineMatchCandidates.stream().filter(l2p -> l2p.getDistnaceBetween() == mindist).mapToInt(l2p -> l2p.line.size()).max().getAsInt();
-                        return lineMatchCandidates.stream().filter(l2p -> l2p.getDistnaceBetween() == mindist).filter(l2p -> l2p.line.size() == maxLineLength).findFirst().get();
+    public static List<Line> getSegmentationLines(BufferedImage image, boolean skipNorm, double... blurFactors) {
+        return Arrays.stream(blurFactors)
+                .mapToObj(bf -> {
+                    BufferedImage modImg = image;
+                    //normalize image to make identification of ILM and BrM easier
+                    if (!skipNorm) {
+                        modImg = new NormalizationOperation().performOperation(image);
+                    }
+                    //smooth image to simplify segmentation
+                    modImg = new BlurOperation(bf).performOperation(modImg);
+                    //get LRP for each X position, find peaks, group peaks by x
+                    BufferedImage tmpimg = modImg;
+                    List<List<Point>> lrpPeaks = IntStream.range(2, tmpimg.getWidth() - 2)
+                    .parallel()
+                    .mapToObj(x -> {
+                        ArrayList<LinePoint> intensityValues = new ArrayList<>(tmpimg.getHeight());
+                        IntStream.range(0, tmpimg.getHeight()).forEach(y -> {
+                            double intesity = IntStream.rangeClosed(x - 2, x + 2).map(xval -> Util.calculateGrayScaleValue(tmpimg.getRGB(xval, y))).average().getAsDouble();
+                            intensityValues.add(new LinePoint(y, intesity));
+                        });
+                        return Util.getMaximums(intensityValues)
+                        .stream()
+                        .map(lp -> new Point(x, lp.getX()))
+                        .collect(Collectors.toList());
                     })
                     .collect(Collectors.toList());
-            //retire lines that had no new peaks linked to them
-            ListIterator<Line> aliter = activeLines.listIterator();
-            while (aliter.hasNext()) {
-                Line activeLine = aliter.next();
-                if (line2PointLinks.stream().noneMatch(l2p -> l2p.line.getId() == activeLine.getId())) {
-                    retLines.add(activeLine);
-                    aliter.remove();
-                }
-            }
-            //add linked points to lines
-            line2PointLinks.forEach(l2p -> {
-                l2p.line.add(l2p.point);
-            });
-            //start new lines for all peaks that weren't matched to a line
-            curPeaks.stream()
-                    .filter(peak -> line2PointLinks.stream().noneMatch(l2p -> l2p.point.equals(peak)))
-                    .forEach(peak -> {
+
+                    //calulate all possible lines that can be generated from the peaks of the LRPs
+                    LinkedList<Line> activeLines = new LinkedList<>();
+                    LinkedList<Line> retLines = new LinkedList<>();
+
+                    //init the start of the first lines (i.e. first peaks from LRP on left side)
+                    ListIterator<List<Point>> lrpPeaksIter = lrpPeaks.listIterator();
+                    lrpPeaksIter.next()
+                    .forEach(p -> {
                         Line l = new Line(1024);
-                        l.add(peak);
+                        l.add(p);
                         activeLines.add(l);
                     });
-        }
-        //add the last of the active lines to the return lines
-        retLines.addAll(activeLines);
-        return retLines;
+                    lrpPeaksIter.remove();
+
+                    //grow lines
+                    while (lrpPeaksIter.hasNext()) {
+                        List<Point> curPeaks = lrpPeaksIter.next();
+                        //link curPeaks to closest line(s)
+                        List<Line2PointLink> line2PointLinks = curPeaks.stream()
+                        .filter(peak -> activeLines.stream().anyMatch(line -> Line2PointLink.getDistnaceBetween(line, peak) <= peakPixelDiff))
+                        .map(peak -> {
+                            List<Line2PointLink> lineMatchCandidates = activeLines.stream().map(line -> new Line2PointLink(line, peak)).filter(l2p -> l2p.getDistnaceBetween() <= peakPixelDiff).collect(Collectors.toList());
+                            int mindist = lineMatchCandidates.stream().mapToInt(Line2PointLink::getDistnaceBetween).min().getAsInt();
+                            int maxLineLength = lineMatchCandidates.stream().filter(l2p -> l2p.getDistnaceBetween() == mindist).mapToInt(l2p -> l2p.line.size()).max().getAsInt();
+                            return lineMatchCandidates.stream().filter(l2p -> l2p.getDistnaceBetween() == mindist).filter(l2p -> l2p.line.size() == maxLineLength).findFirst().get();
+                        })
+                        .collect(Collectors.toList());
+                        //retire lines that had no new peaks linked to them
+                        ListIterator<Line> aliter = activeLines.listIterator();
+                        while (aliter.hasNext()) {
+                            Line activeLine = aliter.next();
+                            if (line2PointLinks.stream().noneMatch(l2p -> l2p.line.getId() == activeLine.getId())) {
+                                retLines.add(activeLine);
+                                aliter.remove();
+                            }
+                        }
+                        //add linked points to lines
+                        line2PointLinks.forEach(l2p -> {
+                            l2p.line.add(l2p.point);
+                        });
+                        //start new lines for all peaks that weren't matched to a line
+                        curPeaks.stream()
+                        .filter(peak -> line2PointLinks.stream().noneMatch(l2p -> l2p.point.equals(peak)))
+                        .forEach(peak -> {
+                            Line l = new Line(1024);
+                            l.add(peak);
+                            activeLines.add(l);
+                        });
+                    }
+                    //add the last of the active lines to the return lines
+                    retLines.addAll(activeLines);
+                    return retLines;
+                })
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     private static class Line2PointLink {
