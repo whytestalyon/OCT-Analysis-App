@@ -213,8 +213,8 @@ public class Util {
     }
 
     public static Line mergeLines(Line... lines) {
-        int minx = Arrays.stream(lines).mapToInt(l -> l.get(0).x).min().getAsInt();
-        int maxx = Arrays.stream(lines).mapToInt(l -> l.get(0).x).max().getAsInt();
+        int minx = Arrays.stream(lines).flatMap(l -> l.stream()).mapToInt(p -> p.x).min().getAsInt();
+        int maxx = Arrays.stream(lines).flatMap(l -> l.stream()).mapToInt(p -> p.x).max().getAsInt();
 
         Line mLine = new Line(1024);
         IntStream.rangeClosed(minx, maxx)
@@ -224,7 +224,7 @@ public class Util {
                 });
         return mLine;
     }
-
+    
     public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight) {
         graphLines(lines, invert_y, imgHeight, "Plotted Lines");
     }
