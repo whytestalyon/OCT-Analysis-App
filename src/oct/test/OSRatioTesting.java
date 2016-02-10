@@ -34,11 +34,13 @@ public class OSRatioTesting {
 
         for (File oct : octs) {
 
-//            if(!oct.getName().contains("JC_0628")){
-//                continue;
-//            }
+            if(!oct.getName().contains("JC_0628")){
+                continue;
+            }
             BufferedImage tiffBI = TiffReader.readTiffImage(oct);
+            System.out.println("Getting segs...");
             List<Line> segLines = Segmentation.getSegmentationLines(tiffBI, true, 0.5D, 1.8D, 5D);
+            System.out.println("Sorting segs...");
             Collections.sort(segLines, (Line l1, Line l2) -> {
                 return Integer.compare(l2.size(), l1.size());
             });

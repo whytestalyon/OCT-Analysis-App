@@ -41,6 +41,12 @@ import oct.io.TiffReader;
 import oct.io.TiffWriter;
 import oct.util.ip.BlurOperation;
 import oct.util.ip.SharpenOperation;
+import org.apache.commons.math3.analysis.UnivariateFunction;
+import org.apache.commons.math3.analysis.differentiation.DerivativeStructure;
+import org.apache.commons.math3.analysis.differentiation.FiniteDifferencesDifferentiator;
+import org.apache.commons.math3.analysis.differentiation.UnivariateDifferentiableFunction;
+import org.apache.commons.math3.analysis.interpolation.SplineInterpolator;
+import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -153,6 +159,51 @@ public class Util {
         return maxPoints;
     }
 
+    /**
+     * Get the local maximums from a collection of Points.
+     *
+     * @param line assumes that the line starts at X = 0
+     * @return
+     */
+    public static LinkedList<LinePoint> getMaximumsWithHiddenPeaks(List<LinePoint> line) {
+        LinkedList<LinePoint> maxPoints = new LinkedList<>();
+
+        //convert to x and y coordinate arrays
+        double[][] xyline = getXYArraysFromLinePoints(line);
+
+        //use a spline interpolator to converts points into an equation
+        UnivariateInterpolator interpolator = new SplineInterpolator();
+        UnivariateFunction function = interpolator.interpolate(xyline[0], xyline[1]);
+
+        // create a differentiator using 5 points and 0.01 step
+        FiniteDifferencesDifferentiator differentiator
+                = new FiniteDifferencesDifferentiator(5, 0.01);
+
+        // create a new function that computes both the value and the derivatives
+        // using DerivativeStructure
+        UnivariateDifferentiableFunction completeF = differentiator.differentiate(function);
+
+        // now we can compute the value and its derivatives
+        // here we decided to display up to second order derivatives,
+        // because we feed completeF with order 2 DerivativeStructure instances
+        //find local minima in second derivative, these indicate the peaks (and hidden peaks)
+        //of the input
+        for (double x = xyline[0][0] + 1; x < xyline[0][xyline[0].length - 1] - 1; x += 0.5) {
+            DerivativeStructure xDSc = new DerivativeStructure(1, 2, 0, x);
+            DerivativeStructure xDSl = new DerivativeStructure(1, 2, 0, x - 0.5);
+            DerivativeStructure xDSr = new DerivativeStructure(1, 2, 0, x + 0.5);
+            DerivativeStructure yDSc = completeF.value(xDSc);
+            DerivativeStructure yDSl = completeF.value(xDSl);
+            DerivativeStructure yDSr = completeF.value(xDSr);
+            double c2d = yDSc.getPartialDerivative(2);
+            if (c2d < yDSl.getPartialDerivative(2) && c2d < yDSr.getPartialDerivative(2)) {
+                maxPoints.add(new LinePoint((int) Math.round(x), yDSc.getValue()));
+            }
+        }
+
+        return maxPoints;
+    }
+
     public static List<LinePoint> findMaxAndMins(List<LinePoint> line) {
         //create list of all positive Y values to get peaks
         ArrayList<LinePoint> convList = new ArrayList<>(line.size());
@@ -205,7 +256,7 @@ public class Util {
         JFrame graphFrame = new JFrame("Points graph");
 
         JPanel chartPanel = createChartPanel("Points graph", dataset);
-        graphFrame.add(chartPanel, BorderLayout.SOUTH);
+        graphFrame.add(chartPanel, BorderLayout.CENTER);
         SwingUtilities.invokeLater(() -> {
             graphFrame.pack();
             graphFrame.setVisible(true);
@@ -224,7 +275,7 @@ public class Util {
                 });
         return mLine;
     }
-    
+
     public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight) {
         graphLines(lines, invert_y, imgHeight, "Plotted Lines");
     }

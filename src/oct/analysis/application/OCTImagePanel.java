@@ -15,6 +15,7 @@ import java.awt.geom.AffineTransform;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -24,6 +25,7 @@ import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
+import oct.util.Line;
 
 /**
  *
@@ -140,6 +142,16 @@ public class OCTImagePanel extends JPanel {
     public void setDrawnLines(List<LinePoint>... linesToDraw) {
         this.linesToDraw = new LinkedList<>();
         addDrawnLine(linesToDraw);
+    }
+
+    public synchronized void addDrawnLines(List<Line> linesToDraw) {
+        linesToDraw.stream()
+                .map(line -> {
+                    return line.stream()
+                    .map(p -> new LinePoint(p.x, p.y))
+                    .collect(Collectors.toList());
+                })
+                .forEach(this::addDrawnLine);
     }
 
     public synchronized void addDrawnLine(List<LinePoint>... linesToDraw) {

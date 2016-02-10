@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.stream.Collectors;
 import javax.swing.JPanel;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -268,6 +269,14 @@ public class OCTSelection {
         lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOctImage()));
 //        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
         lrp.addSeries(findMaximums(lrp.getSeries(0), selectionName + " LRP Maximums"));
+
+        XYSeries lrpMaxPoints = new XYSeries("Hidden Maxima");
+        LinkedList<LinePoint> hp = Util.getMaximumsWithHiddenPeaks(((List<XYDataItem>) lrp.getSeries(0).getItems()).stream().map(xy -> new LinePoint((int) Math.round(xy.getXValue()), xy.getYValue())).collect(Collectors.toList()));
+        hp.forEach(p -> {
+            lrpMaxPoints.add(p.getX(), p.getY());
+        });
+        lrp.addSeries(lrpMaxPoints);
+
         List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
         fwhm.forEach((fwhmSeries) -> {
             lrp.addSeries(fwhmSeries);
@@ -286,7 +295,11 @@ public class OCTSelection {
         renderer.setSeriesShapesVisible(1, true);
         renderer.setSeriesShapesFilled(1, true);
         renderer.setSeriesPaint(1, Color.BLUE);
-        for (int i = 2; i < fwhm.size() + 2; i++) {
+        renderer.setSeriesLinesVisible(2, false);
+        renderer.setSeriesShapesVisible(2, true);
+        renderer.setSeriesShapesFilled(2, true);
+        renderer.setSeriesPaint(2, Color.MAGENTA);
+        for (int i = 3; i < fwhm.size() + 3; i++) {
             renderer.setSeriesLinesVisible(i, true);
             renderer.setSeriesShapesVisible(i, false);
             renderer.setSeriesPaint(i, Color.BLACK);

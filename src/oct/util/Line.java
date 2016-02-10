@@ -40,6 +40,11 @@ public class Line extends ArrayList<Point> {
         if (lp.x == e.x) {
             lp.y = (lp.y + e.y) / 2;
             return true;
+//        } else if (e.x > lp.x) {
+//            for (int ix = lp.x + 1; ix < e.x; ix++) {
+//                add(new Point(ix, (lp.y + e.y) / 2));
+//            }
+//            return true;
         } else {
             return super.add(e); //To change body of generated methods, choose Tools | Templates.
         }

@@ -94,6 +94,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }
 
     private void loadAppConfig() {
+        octAnalysisPanel.clearDrawnLines();
         try {
             //load up default settings for analysis as stream
             InputStreamReader appConfig = new InputStreamReader(getClass().getResourceAsStream("/oct/rsc/conf/default_setting.ora"));
@@ -151,7 +152,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         filler7 = new javax.swing.Box.Filler(new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 0), new java.awt.Dimension(6, 32767));
         normalizeCheckBox = new javax.swing.JCheckBox();
         dispSegButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         displayPanel = new javax.swing.JPanel();
         positionPanel = new javax.swing.JPanel();
         mousePositionLabel = new oct.analysis.application.comp.MousePositionListeningLabel();
@@ -493,17 +493,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             }
         });
         analysisToolsToolBar.add(dispSegButton);
-
-        jButton1.setText("No Norm Seg");
-        jButton1.setFocusable(false);
-        jButton1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        jButton1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        analysisToolsToolBar.add(jButton1);
 
         displayPanel.setLayout(new javax.swing.BoxLayout(displayPanel, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -1380,20 +1369,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_loadTestMenuItemActionPerformed
 
     private void dispSegButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dispSegButtonActionPerformed
-        List<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), false, 1.8D);
-        Collections.sort(segLines, (Line l1, Line l2) -> {
-            return Integer.compare(l2.size(), l1.size());
-        });
-        Util.graphLines(segLines.subList(0, 20), true, analysisMngr.getOct().getImageHeight());
+        List<Line> bestSegs = Segmentation.getBestSegmentationLines(analysisMngr.getOct().getLogOctImage());
+        Util.graphLines(bestSegs, true, analysisMngr.getOct().getImageHeight());
+        octAnalysisPanel.addDrawnLines(bestSegs);
+        octAnalysisPanel.repaint();
+        validate();
+        pack();
+        dispSegmentationCheckBox.setSelected(true);
+        dispSegmentationCheckBoxStateChanged(null);
     }//GEN-LAST:event_dispSegButtonActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        List<Line> segLines = Segmentation.getSegmentationLines(analysisMngr.getOct().getLogOctImage(), true, 0.5D, 1D, 1.8D, 3D, 5D);
-        Collections.sort(segLines, (Line l1, Line l2) -> {
-            return Integer.compare(l2.size(), l1.size());
-        });
-        Util.graphLines(segLines.subList(0, 20), true, analysisMngr.getOct().getImageHeight());
-    }//GEN-LAST:event_jButton1ActionPerformed
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
@@ -1565,7 +1549,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenuItem interactiveEzMenuItem;
     private javax.swing.JMenuItem interactiveFindFoveaMenuItem;
     private javax.swing.JMenuItem interactiveMirrorAnalysisMenuItem;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
