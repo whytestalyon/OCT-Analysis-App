@@ -298,9 +298,35 @@ public class Segmentation {
         }
 
         //merge lines contained within each group into single line
-        return overlapingLines.stream()
+        List<Line> singleLines = overlapingLines.stream()
                 .map(llist -> Util.mergeLines(llist.toArray(new Line[llist.size()])))
                 .collect(Collectors.toList());
+
+        //find lines that are slightly seperated that could be joined
+        LinkedList<Line> retLines = new LinkedList<>();
+        ListIterator<Line> sgIter = singleLines.listIterator();
+        while (sgIter.hasNext()) {
+            Line line = sgIter.next();
+            if (!singleLines.stream().anyMatch(l -> l.linesCouldConnect(line))) {
+                retLines.add(line);
+                sgIter.remove();
+            }
+        }
+        
+        //merge lines
+        LinkedList<Line> doMergeLines = new LinkedList<>(singleLines);
+        while (!doMergeLines.isEmpty()) {            
+            Line evalLine = doMergeLines.removeFirst();
+            if(doMergeLines.stream().noneMatch(l -> l.linesCouldConnect(evalLine))){
+                retLines.add(evalLine);
+            }else{
+                Line toMergeLine = doMergeLines.stream().filter(l -> l.linesCouldConnect(evalLine)).findFirst().get();
+                doMergeLines.remove(toMergeLine);
+                doMergeLines.add(Util.mergeDisconnetedLines(evalLine, toMergeLine));
+            }
+        }
+
+        return retLines;
     }
 
     private static class Line2PointLink {

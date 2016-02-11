@@ -7,6 +7,7 @@ package oct.util;
 
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -25,6 +26,10 @@ public class Line extends ArrayList<Point> {
 
     public Point getLastPoint() {
         return get(size() - 1);
+    }
+
+    public Point getFirstPoint() {
+        return get(0);
     }
 
     public int getId() {
@@ -50,4 +55,48 @@ public class Line extends ArrayList<Point> {
         }
     }
 
+    public double slopeAtLeftEnd() {
+        double[] slopes = new double[20];
+        for (int i = 0; i < 20 && i < size(); i++) {
+            Point p1 = get(i);
+            Point p2 = get(i + 1);
+            slopes[i] = (p1.y - p2.y) / (p1.x - p2.x);
+        }
+        return Arrays.stream(slopes).average().orElse(0);
+    }
+
+    public double slopeAtRightEnd() {
+        double[] slopes = new double[20];
+        for (int i = Math.max(0, size() - 21); i < size(); i++) {
+            Point p1 = get(i - 1);
+            Point p2 = get(i);
+            slopes[i] = (p1.y - p2.y) / (p1.x - p2.x);
+        }
+        return Arrays.stream(slopes).average().orElse(0);
+    }
+
+    public boolean linesCouldConnect(Line compLine) {
+        Point thisLineLeftPoint = this.getFirstPoint();
+        Point thisLineRightPoint = this.getLastPoint();
+        Point otherLineLeftPoint = compLine.getFirstPoint();
+        Point otherLineRightPoint = compLine.getLastPoint();
+
+        int overlappingXCnt = Math.min(thisLineRightPoint.x, otherLineRightPoint.x) - Math.max(thisLineLeftPoint.x, otherLineLeftPoint.x);
+
+        if (overlappingXCnt < -20
+                || overlappingXCnt > 30) {
+            //lines are further than 20 x values apart or overlap by more than 30 x values
+            return false;
+        }
+
+        if (thisLineLeftPoint.x < otherLineLeftPoint.x) {
+            double thisLineRightEndAvgY = subList(size() - 21, size() - 1).stream().mapToDouble(Point::getY).average().getAsDouble();
+            double otherLineLeftEndAvgY = compLine.subList(0, 20).stream().mapToDouble(Point::getY).average().getAsDouble();
+            return Math.abs(thisLineRightEndAvgY - otherLineLeftEndAvgY) < 7;
+        } else {
+            double otherLineRightEndAvgY = compLine.subList(compLine.size() - 21, compLine.size() - 1).stream().mapToDouble(Point::getY).average().getAsDouble();
+            double thisLineLeftEndAvgY = subList(0, 20).stream().mapToDouble(Point::getY).average().getAsDouble();
+            return Math.abs(otherLineRightEndAvgY - thisLineLeftEndAvgY) < 7;
+        }
+    }
 }

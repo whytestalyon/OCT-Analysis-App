@@ -19,6 +19,7 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -267,12 +268,65 @@ public class Util {
         int minx = Arrays.stream(lines).flatMap(l -> l.stream()).mapToInt(p -> p.x).min().getAsInt();
         int maxx = Arrays.stream(lines).flatMap(l -> l.stream()).mapToInt(p -> p.x).max().getAsInt();
 
+        Set<Integer> distinctXs = Arrays.stream(lines).flatMap(l -> l.stream()).map(p -> p.x).collect(Collectors.toSet());
+
+        if (distinctXs.size() != (maxx - minx) + 1) {
+            throw new IllegalArgumentException("lines must overlap to be merged.");
+        }
+
         Line mLine = new Line(1024);
         IntStream.rangeClosed(minx, maxx)
                 .forEachOrdered(x -> {
                     double avgY = Arrays.stream(lines).flatMap(l -> l.stream()).filter(p -> p.x == x).mapToInt(p -> p.y).average().getAsDouble();
                     mLine.add(new Point(x, (int) Math.round(avgY)));
                 });
+        return mLine;
+    }
+
+    public static Line mergeDisconnetedLines(Line line1, Line line2) {
+
+        Point thisLineLeftPoint = line1.getFirstPoint();
+        Point thisLineRightPoint = line1.getLastPoint();
+        Point otherLineLeftPoint = line2.getFirstPoint();
+        Point otherLineRightPoint = line2.getLastPoint();
+
+        int overlappingXCnt = Math.min(thisLineRightPoint.x, otherLineRightPoint.x) - Math.max(thisLineLeftPoint.x, otherLineLeftPoint.x);
+
+        Line mLine = new Line(1024);
+        LinkedList<Point> allpts = new LinkedList<>(line1);
+        allpts.addAll(line2);
+
+        if (overlappingXCnt < 0) {
+            Set<Integer> unqX = allpts.stream().map(p -> p.x).collect(Collectors.toSet());
+            if (thisLineLeftPoint.x < otherLineLeftPoint.x) {
+                double thisLineRightEndAvgY = line1.subList(line1.size() - 21, line1.size() - 1).stream().mapToDouble(Point::getY).average().getAsDouble();
+                double otherLineLeftEndAvgY = line2.subList(0, 20).stream().mapToDouble(Point::getY).average().getAsDouble();
+                IntStream.rangeClosed(thisLineLeftPoint.x, otherLineRightPoint.x)
+                        .filter(x -> !unqX.contains(x))
+                        .forEach(x -> {
+                            mLine.add(new Point(x, (int) Math.round((thisLineRightEndAvgY + otherLineLeftEndAvgY) / 2D)));
+                        });
+            } else {
+                double otherLineRightEndAvgY = line2.subList(line2.size() - 21, line2.size() - 1).stream().mapToDouble(Point::getY).average().getAsDouble();
+                double thisLineLeftEndAvgY = line1.subList(0, 20).stream().mapToDouble(Point::getY).average().getAsDouble();
+                IntStream.rangeClosed(otherLineLeftPoint.x, thisLineRightPoint.x)
+                        .filter(x -> !unqX.contains(x))
+                        .forEach(x -> {
+                            mLine.add(new Point(x, (int) Math.round((otherLineRightEndAvgY + thisLineLeftEndAvgY) / 2D)));
+                        });
+            }
+            mLine.addAll(allpts);
+        } else {
+            int minx = Math.min(line1.getFirstPoint().x, line2.getFirstPoint().x);
+            int maxx = Math.max(line1.getLastPoint().x, line2.getLastPoint().x);
+
+            IntStream.rangeClosed(minx, maxx)
+                    .forEachOrdered(x -> {
+                        double avgY = allpts.stream().filter(p -> p.x == x).mapToInt(p -> p.y).average().getAsDouble();
+                        mLine.add(new Point(x, (int) Math.round(avgY)));
+                    });
+        }
+
         return mLine;
     }
 
