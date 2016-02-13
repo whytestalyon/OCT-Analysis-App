@@ -89,12 +89,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         //register the oct panel with the mouse listener that determines if the cursor should be a resize cursor for an lrp selection
         resizeOCTSelectionMouseMonitor.setUi(this);
         octAnalysisPanel.addMouseMotionListener(resizeOCTSelectionMouseMonitor);
+        octAnalysisPanel.addMouseListener(resizeOCTSelectionMouseMonitor);
         //init the app with the default settings
         loadAppConfig();
     }
 
     private void loadAppConfig() {
-        octAnalysisPanel.clearDrawnLines();
         try {
             //load up default settings for analysis as stream
             InputStreamReader appConfig = new InputStreamReader(getClass().getResourceAsStream("/oct/rsc/conf/default_setting.ora"));
@@ -177,6 +177,12 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         exportAnalysisResultsMenuItem = new javax.swing.JMenuItem();
         Exit = new javax.swing.JMenuItem();
         loadTestMenuItem = new javax.swing.JMenuItem();
+        toolsMenu = new javax.swing.JMenu();
+        foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
+        singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
+        lrpMenuItem = new javax.swing.JMenuItem();
+        toolbarsMenu = new javax.swing.JMenu();
+        filtersTBMenuItem = new javax.swing.JCheckBoxMenuItem();
         analysisMenu = new javax.swing.JMenu();
         equidistantAutoMenuItem = new javax.swing.JMenuItem();
         equidistantInteractiveMenuItem = new javax.swing.JMenuItem();
@@ -188,12 +194,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         autoFoveaFindMenuItem = new javax.swing.JMenuItem();
         interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         osRatioMenuItem = new javax.swing.JMenuItem();
-        toolsMenu = new javax.swing.JMenu();
-        foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
-        singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
-        lrpMenuItem = new javax.swing.JMenuItem();
-        toolbarsMenu = new javax.swing.JMenu();
-        filtersTBMenuItem = new javax.swing.JCheckBoxMenuItem();
 
         org.jdesktop.beansbinding.Binding binding = org.jdesktop.beansbinding.Bindings.createAutoBinding(org.jdesktop.beansbinding.AutoBinding.UpdateStrategy.READ_WRITE, lrpWidthTextField, org.jdesktop.beansbinding.ELProperty.create("${value}"), lrpSelectionWidthBean, org.jdesktop.beansbinding.BeanProperty.create("lrpSelectionWidth"));
         bindingGroup.addBinding(binding);
@@ -667,6 +667,55 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         appMenuBar.add(fileMenu);
 
+        toolsMenu.setText("Tools");
+        toolsMenu.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toolsMenuActionPerformed(evt);
+            }
+        });
+
+        foveaSelectMenuItem.setText("Select Fovea");
+        foveaSelectMenuItem.setEnabled(false);
+        foveaSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                foveaSelectMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(foveaSelectMenuItem);
+
+        singleSelectMenuItem.setText("Select Single");
+        singleSelectMenuItem.setEnabled(false);
+        singleSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                singleSelectMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(singleSelectMenuItem);
+
+        lrpMenuItem.setText("Generate LRPs");
+        lrpMenuItem.setEnabled(false);
+        lrpMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                lrpMenuItemActionPerformed(evt);
+            }
+        });
+        toolsMenu.add(lrpMenuItem);
+
+        appMenuBar.add(toolsMenu);
+
+        toolbarsMenu.setText("Toolbars");
+
+        filtersTBMenuItem.setSelected(true);
+        filtersTBMenuItem.setText("Filters Toolbar");
+        filtersTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filtersTBMenuItemActionPerformed(evt);
+            }
+        });
+        toolbarsMenu.add(filtersTBMenuItem);
+
+        appMenuBar.add(toolbarsMenu);
+
         analysisMenu.setText("Analysis");
         analysisMenu.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -756,55 +805,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
         appMenuBar.add(analysisMenu);
 
-        toolsMenu.setText("Tools");
-        toolsMenu.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toolsMenuActionPerformed(evt);
-            }
-        });
-
-        foveaSelectMenuItem.setText("Select Fovea");
-        foveaSelectMenuItem.setEnabled(false);
-        foveaSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                foveaSelectMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(foveaSelectMenuItem);
-
-        singleSelectMenuItem.setText("Select Single");
-        singleSelectMenuItem.setEnabled(false);
-        singleSelectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                singleSelectMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(singleSelectMenuItem);
-
-        lrpMenuItem.setText("Generate LRPs");
-        lrpMenuItem.setEnabled(false);
-        lrpMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                lrpMenuItemActionPerformed(evt);
-            }
-        });
-        toolsMenu.add(lrpMenuItem);
-
-        appMenuBar.add(toolsMenu);
-
-        toolbarsMenu.setText("Toolbars");
-
-        filtersTBMenuItem.setSelected(true);
-        filtersTBMenuItem.setText("Filters Toolbar");
-        filtersTBMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                filtersTBMenuItemActionPerformed(evt);
-            }
-        });
-        toolbarsMenu.add(filtersTBMenuItem);
-
-        appMenuBar.add(toolbarsMenu);
-
         setJMenuBar(appMenuBar);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -864,6 +864,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 //enable save
                 saveAnalysisMenuItem.setEnabled(true);
                 exportAnalysisResultsMenuItem.setEnabled(true);
+                //start fresh analysis
+                restartAnalysis();
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Image loading failed for " + tiffFile.getAbsolutePath()
                         + ", reason: " + ex.getMessage(), "Loading error!", JOptionPane.ERROR_MESSAGE
@@ -909,6 +911,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     break;
                             }
                             break;
+                        case OS_RATIO:
                         case MIRROR:
                             switch (toolMode) {
                                 case SELECT_SINGLE:
@@ -1000,6 +1003,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         switch (evt.getKeyCode()) {
             case KeyEvent.VK_RIGHT:
                 switch (analysisMngr.getAnalysisMode()) {
+                    case OS_RATIO:
                     case MIRROR:
                         sel = selectionLRPManager.getSelectedSelection();
                         if (sel.getSelectionName().equals("Left")) {
@@ -1297,8 +1301,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_scaleBarCheckBoxStateChanged
 
     private void osRatioMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_osRatioMenuItemActionPerformed
-
-
+        performAnalysis(AnalysisMode.OS_RATIO, true);
     }//GEN-LAST:event_osRatioMenuItemActionPerformed
 
     private void noiseReductionCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noiseReductionCheckboxActionPerformed
@@ -1369,7 +1372,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_loadTestMenuItemActionPerformed
 
     private void dispSegButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dispSegButtonActionPerformed
-        List<Line> bestSegs = Segmentation.getBestSegmentationLines(analysisMngr.getOct().getLogOctImage());
+        List<Line> bestSegs = Segmentation.getBestSegmentationLines(analysisMngr.getOct());
         Util.graphLines(bestSegs, true, analysisMngr.getOct().getImageHeight());
         octAnalysisPanel.addDrawnLines(bestSegs);
         octAnalysisPanel.repaint();
@@ -1407,6 +1410,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 break;
             case FIND_FOVEA:
                 Analysis.findFovea(interactive);
+                break;
+            case OS_RATIO:
+                Analysis.performOSRatio(interactive);
                 break;
             case MIRROR:
                 Analysis.performMirror(interactive);

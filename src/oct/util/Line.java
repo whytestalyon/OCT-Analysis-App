@@ -5,6 +5,7 @@
  */
 package oct.util;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ public class Line extends ArrayList<Point> {
 
     private static final AtomicInteger idcntr = new AtomicInteger(0);
     final int id;
+    private Color drawColor = new Color(0xff69b4);
 
     public Line(int initialCapacity) {
         super(initialCapacity);
@@ -53,6 +55,14 @@ public class Line extends ArrayList<Point> {
         } else {
             return super.add(e); //To change body of generated methods, choose Tools | Templates.
         }
+    }
+
+    public Color getDrawColor() {
+        return drawColor;
+    }
+
+    public void setDrawColor(Color drawColor) {
+        this.drawColor = drawColor;
     }
 
     public double slopeAtLeftEnd() {

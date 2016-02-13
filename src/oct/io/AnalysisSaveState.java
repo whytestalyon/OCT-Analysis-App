@@ -13,6 +13,7 @@ import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.AnalysisMode;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCTMode;
+import oct.util.Line;
 
 /**
  *
@@ -33,7 +34,7 @@ public class AnalysisSaveState {
      OCT dispaly panel info
      */
     private Point drawPoint = null;
-    private LinkedList<List<LinePoint>> linesToDraw = null;
+    private LinkedList<Line> linesToDraw = null;
     private boolean drawLines = false;
     private boolean drawSelections = true;
     private boolean drawScaleBars = false;
@@ -95,11 +96,11 @@ public class AnalysisSaveState {
         this.drawPoint = drawPoint;
     }
 
-    public LinkedList<List<LinePoint>> getLinesToDraw() {
+    public LinkedList<Line> getLinesToDraw() {
         return linesToDraw;
     }
 
-    public void setLinesToDraw(LinkedList<List<LinePoint>> linesToDraw) {
+    public void setLinesToDraw(LinkedList<Line> linesToDraw) {
         this.linesToDraw = linesToDraw;
     }
 

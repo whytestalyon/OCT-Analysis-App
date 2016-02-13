@@ -14,5 +14,6 @@ public enum AnalysisMode {
     SINGLE,
     MIRROR,
     EQUIDISTANT,
-    FIND_FOVEA;
+    FIND_FOVEA,
+    OS_RATIO;
 }

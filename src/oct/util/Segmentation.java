@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import oct.analysis.application.dat.LinePoint;
+import oct.analysis.application.dat.OCT;
 import oct.util.ip.BlurOperation;
 import oct.util.ip.NormalizationOperation;
 import oct.util.ip.SharpenOperation;
@@ -226,14 +227,15 @@ public class Segmentation {
         return retblurredLines;
     }
 
-    public static List<Line> getBestSegmentationLines(BufferedImage bi) {
-        List<Line> segLines = Segmentation.getSegmentationLines(bi, true, 0.5D, 1.8D, 5D);
+    public static List<Line> getBestSegmentationLines(OCT oct) {
+        LinkedList<Line> segLines = new LinkedList<>(Segmentation.getSegmentationLines(oct.getLogOctImage(), true, 0.5D, 1.8D, 5D));
+        segLines.addAll(Segmentation.getSegmentationLines(oct.getLinearOctImage(), true, 0.1D));
         Collections.sort(segLines, (Line l1, Line l2) -> {
             return Integer.compare(l2.size(), l1.size());
         });
 
         LinkedList<List<Line>> overlapingLines = new LinkedList<>();
-        for (Line curLine : segLines.subList(0, 20)) {
+        for (Line curLine : segLines.subList(0, 50)) {
             boolean foundGroup = false;
             //see if line can bee added to already existing group
             OUT:
@@ -312,14 +314,14 @@ public class Segmentation {
                 sgIter.remove();
             }
         }
-        
+
         //merge lines
         LinkedList<Line> doMergeLines = new LinkedList<>(singleLines);
-        while (!doMergeLines.isEmpty()) {            
+        while (!doMergeLines.isEmpty()) {
             Line evalLine = doMergeLines.removeFirst();
-            if(doMergeLines.stream().noneMatch(l -> l.linesCouldConnect(evalLine))){
+            if (doMergeLines.stream().noneMatch(l -> l.linesCouldConnect(evalLine))) {
                 retLines.add(evalLine);
-            }else{
+            } else {
                 Line toMergeLine = doMergeLines.stream().filter(l -> l.linesCouldConnect(evalLine)).findFirst().get();
                 doMergeLines.remove(toMergeLine);
                 doMergeLines.add(Util.mergeDisconnetedLines(evalLine, toMergeLine));

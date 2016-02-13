@@ -43,7 +43,7 @@ public class OCTImagePanel extends JPanel {
     private int imageOffsetY = 0;
     private int imageOffsetX = 0;
     private Point drawPoint = null;
-    private LinkedList<List<LinePoint>> linesToDraw = new LinkedList<>();
+    private LinkedList<Line> linesToDraw = new LinkedList<>();
     private boolean drawLines;
     private boolean drawSelections = true;
     private boolean showScaleBars = false;
@@ -124,11 +124,16 @@ public class OCTImagePanel extends JPanel {
                 grfx.drawRect(imageOffsetX + drawPoint.x - 1, imageOffsetY + drawPoint.y - 1, 3, 3);
             }
             //draw lines on oct if available
-            if (linesToDraw != null && drawLines) {
-                grfx.setColor(Color.red);
-                linesToDraw.stream().flatMap(line -> line.stream()).forEach(p -> {
-                    int y = imageOffsetY + (int) Math.round(p.getY());
-                    grfx.drawLine(imageOffsetX + p.getX(), y, imageOffsetX + p.getX(), y);
+            if (drawLines) {
+                linesToDraw.forEach(line -> {
+                    grfx.setColor(line.getDrawColor());
+                    for (int i = 0; i < line.size() - 1; i++) {
+                        int y1 = imageOffsetY + line.get(i).y;
+                        int y2 = imageOffsetY + line.get(i + 1).y;
+                        int x1 = imageOffsetX + line.get(i).x;
+                        int x2 = imageOffsetX + line.get(i + 1).x;
+                        grfx.drawLine(x1, y1, x2, y2);
+                    }
                 });
             }
         }
@@ -145,21 +150,18 @@ public class OCTImagePanel extends JPanel {
     }
 
     public synchronized void addDrawnLines(List<Line> linesToDraw) {
-        linesToDraw.stream()
-                .map(line -> {
-                    return line.stream()
-                    .map(p -> new LinePoint(p.x, p.y))
-                    .collect(Collectors.toList());
-                })
-                .forEach(this::addDrawnLine);
+        this.linesToDraw.addAll(linesToDraw);
     }
 
     public synchronized void addDrawnLine(List<LinePoint>... linesToDraw) {
-        if (this.linesToDraw == null) {
-            this.linesToDraw = new LinkedList<>();
-        }
-        Arrays.stream(linesToDraw).forEach(r -> {
-            this.linesToDraw.add(r);
+        Arrays.stream(linesToDraw).forEach(lp -> {
+            Line newLine = new Line(lp.size());
+            lp.stream()
+                    .sorted((p1, p2) -> {
+                        return Integer.compare(p1.getX(), p2.getX());
+                    })
+                    .map(p -> new Point(p.getX(), (int) Math.round(p.getY())))
+                    .forEachOrdered(newLine::add);
         });
     }
 
@@ -202,7 +204,7 @@ public class OCTImagePanel extends JPanel {
     }
 
     public void clearDrawnLines() {
-        this.linesToDraw = null;
+        this.linesToDraw = new LinkedList<>();
         this.drawPoint = null;
     }
 
@@ -218,7 +220,7 @@ public class OCTImagePanel extends JPanel {
         return drawPoint;
     }
 
-    public LinkedList<List<LinePoint>> getLinesToDraw() {
+    public LinkedList<Line> getLinesToDraw() {
         return linesToDraw;
     }
 
