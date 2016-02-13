@@ -6,6 +6,8 @@
 package oct.analysis.application.dat;
 
 import java.awt.Point;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.LinkedList;
 import oct.util.Line;
 
@@ -14,6 +16,11 @@ import oct.util.Line;
  * @author Brandon M. Wilk {@literal <}wilkb777@gmail.com{@literal >}
  */
 public class SegmentationManager extends LinkedList<Line> {
+
+    private LinkedList<Line> selectedSegLines = new LinkedList<>();
+    public static final String PROP_SELECTEDSEGLINES = "selectedSegLines";
+    public static final String PROP_SELECTEDSEGLINES_SIZE = "selectedSegLinesSize";
+    private transient final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     private SegmentationManager() {
     }
@@ -35,5 +42,54 @@ public class SegmentationManager extends LinkedList<Line> {
                 .findFirst()
                 .orElse(null);
     }
-    
+
+    /**
+     * Get the value of selectedSegLines
+     *
+     * @return the value of selectedSegLines
+     */
+    public LinkedList<Line> getSelectedSegLines() {
+        return selectedSegLines;
+    }
+
+    /**
+     * Set the value of selectedSegLines
+     *
+     * @param selectedSegLines new value of selectedSegLines
+     */
+    public void setSelectedSegLines(LinkedList<Line> selectedSegLines) {
+        LinkedList<Line> oldSelectedSegLines = this.selectedSegLines;
+        this.selectedSegLines = selectedSegLines;
+        propertyChangeSupport.firePropertyChange(PROP_SELECTEDSEGLINES, oldSelectedSegLines, selectedSegLines);
+    }
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public void resetSelectedSegs() {
+        selectedSegLines = new LinkedList<>();
+    }
+
+    public void addSelectedSeg(Line line) {
+        selectedSegLines.add(line);
+        if (selectedSegLines.size() > 1) {
+            propertyChangeSupport.firePropertyChange(PROP_SELECTEDSEGLINES_SIZE, 1, 2);
+        }
+    }
+
 }

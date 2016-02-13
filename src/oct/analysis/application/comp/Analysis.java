@@ -17,8 +17,10 @@ import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTLine;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.SegmentationManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
+import oct.util.Segmentation;
 
 /**
  *
@@ -136,11 +138,30 @@ public class Analysis {
     public static void performMirror(boolean interactive) {
         findFovea(interactive);
     }
-    
+
     public static void performOSRatio(boolean interactive) {
-        //first find the 'Wilk Spot' a.k.a. the greatest distance between the 
-        //EZ and IZ (not necessarily the bottom of the foveal pit)
+        //perform segmentation
+        SegmentationManager segMngr = SegmentationManager.getInstance();
+        segMngr.addAll(Segmentation.getBestSegmentationLines(octMngr.getOct()));
+
+        //display segmentation
+        octMngr.getImgPanel().addDrawnLines(segMngr);
+        octMngr.getImgPanel().showLines();
+        OCTAnalysisUI.getInstance().getDispSegmentationCheckBox().setSelected(true);
         
+        //request user to select segmentation lines for the EZ and IZ
+        segMngr.addPropertyChangeListener(new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (SegmentationManager.PROP_SELECTEDSEGLINES_SIZE.equals(evt.getPropertyName())) {
+                    //user selected two segmentation lines, find Wilk spot
+                }
+            }
+        });
+
+        //find the 'Wilk Spot' a.k.a. the greatest distance between the 
+        //EZ and IZ (not necessarily the bottom of the foveal pit)
     }
 
 }

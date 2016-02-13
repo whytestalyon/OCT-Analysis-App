@@ -68,6 +68,15 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private final JFileChooser fc = new JFileChooser();
     private ToolMode toolMode = ToolMode.NONE;
 
+    public static OCTAnalysisUI getInstance() {
+        return OCTAnalysisUIHolder.INSTANCE;
+    }
+
+    private static class OCTAnalysisUIHolder {
+
+        private static OCTAnalysisUI INSTANCE = null;
+    }
+
     static {
         // set a chart theme using the new shadow generator feature available in
         // 1.0.14 - for backwards compatibility it is not enabled by default
@@ -77,7 +86,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     /**
      * Creates new form OCTAnalysisUI
      */
-    public OCTAnalysisUI() {
+    private OCTAnalysisUI() {
         initComponents();
         octAnalysisPanel.requestFocusInWindow();
         //set connection for debugin
@@ -1515,7 +1524,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new OCTAnalysisUI().setVisible(true);
+                OCTAnalysisUIHolder.INSTANCE = new OCTAnalysisUI();
+                OCTAnalysisUI.getInstance().setVisible(true);
             }
         });
 
