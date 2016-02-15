@@ -7,9 +7,13 @@ package oct.analysis.application.comp;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.DecimalFormat;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 import javax.swing.ProgressMonitor;
 import javax.swing.SwingUtilities;
@@ -20,6 +24,7 @@ import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SegmentationManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
+import oct.util.Line;
 import oct.util.Segmentation;
 
 /**
@@ -30,6 +35,7 @@ public class Analysis {
 
     private static final OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
     private static final SelectionLRPManager selectionLRPManager = SelectionLRPManager.getInstance();
+    private static final DecimalFormat df = new DecimalFormat("#,##0.00");
 
     public static void findEZ(boolean interactive) {
         //based off of interactive mode specified, find the fovea, and then trigger EZ edge detection
@@ -148,20 +154,77 @@ public class Analysis {
         octMngr.getImgPanel().addDrawnLines(segMngr);
         octMngr.getImgPanel().showLines();
         OCTAnalysisUI.getInstance().getDispSegmentationCheckBox().setSelected(true);
-        
+
         //request user to select segmentation lines for the EZ and IZ
+        JOptionPane.showMessageDialog(OCTAnalysisUI.getInstance(), "Please select the segmenation lines that represent the EZ and IZ bands.");
+
+        OSRatioClickListener seglistener = new OSRatioClickListener();
+        octMngr.getImgPanel().addMouseListener(seglistener);
+
         segMngr.addPropertyChangeListener(new PropertyChangeListener() {
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (SegmentationManager.PROP_SELECTEDSEGLINES_SIZE.equals(evt.getPropertyName())) {
-                    //user selected two segmentation lines, find Wilk spot
+                    //user selected two segmentation lines
+                    //find the 'Wilk Spot' a.k.a. the greatest distance between the 
+                    //EZ and IZ (not necessarily the bottom of the foveal pit)
+                    octMngr.getImgPanel().removeMouseListener(seglistener);
+                    PointDiff maxDifPoint = segMngr.getSelectedSegLines()
+                            .stream()
+                            .flatMap(List::stream)
+                            .collect(Collectors.groupingBy(p -> p.x))
+                            .values()
+                            .stream()
+                            .filter(diffList -> diffList.size() > 1)
+                            .map(plist -> {
+                                int miny = plist.stream().mapToInt(p -> p.y).min().getAsInt();
+                                int maxy = plist.stream().mapToInt(p -> p.y).max().getAsInt();
+                                return new PointDiff(plist.get(0).x, maxy - miny);
+                            })
+                            .max((pdif1, pdif2) -> {
+                                return Integer.compare(pdif1.distance, pdif2.distance);
+                            })
+                            .get();
+                    SwingUtilities.invokeLater(() -> {
+                        OCTSelection foveaSelection = selectionLRPManager.getFoveaSelection(maxDifPoint.x, false);
+                        selectionLRPManager.addOrUpdateSelection(foveaSelection);
+                        octMngr.setFoveaCenterXPosition(maxDifPoint.x);
+                        segMngr.getSelectedSegLines()
+                                .forEach(l -> {
+                                    l.setDrawColor(Line.DEFAULT_LINE_COLOR);
+                                });
+                        //clear out the selected segmentation lines
+                        segMngr.resetSelectedSegs();
+                        octMngr.getImgPanel().repaint();
+                        //notify user of max distance between EZ and IZ
+                        double diffInMicrons = (double) maxDifPoint.distance * octMngr.getYscale();
+                        JOptionPane.showMessageDialog(null, "Max distance between IZ and EZ: " + df.format(diffInMicrons) + "\u00B5m");
+                    });
+                    //remove the listener since it's no longer needed
+                    segMngr.removePropertyChangeListener(this);
                 }
             }
         });
 
-        //find the 'Wilk Spot' a.k.a. the greatest distance between the 
-        //EZ and IZ (not necessarily the bottom of the foveal pit)
     }
 
+    private static class PointDiff {
+
+        int x, distance;
+
+        public PointDiff(int x, int distance) {
+            this.x = x;
+            this.distance = distance;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public int getDistance() {
+            return distance;
+        }
+
+    }
 }

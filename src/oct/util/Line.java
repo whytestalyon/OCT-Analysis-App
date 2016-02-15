@@ -19,7 +19,8 @@ public class Line extends ArrayList<Point> {
 
     private static final AtomicInteger idcntr = new AtomicInteger(0);
     final int id;
-    private Color drawColor = new Color(0xff69b4);
+    public static final Color DEFAULT_LINE_COLOR = new Color(0xff69b4);
+    private Color drawColor = DEFAULT_LINE_COLOR;
 
     public Line(int initialCapacity) {
         super(initialCapacity);
@@ -109,4 +110,27 @@ public class Line extends ArrayList<Point> {
             return Math.abs(otherLineRightEndAvgY - thisLineLeftEndAvgY) < 7;
         }
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Line other = (Line) obj;
+        if (this.id != other.id) {
+            return false;
+        }
+        return true;
+    }
+
 }
