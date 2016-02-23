@@ -150,12 +150,13 @@ public class AnalysisSaver {
                 case EQUIDISTANT:
                 case EZ:
                 case MIRROR:
+                case WILK_SPOT:
                     ArrayList<String> fnameList = new ArrayList<>(selections.size());
                     ArrayList<String> fpnameList = new ArrayList<>(selections.size());
                     for (OCTSelection selection : selections) {
                         //export CSV of LRP information for each selection
                         lrpFile = new File(outputDir,
-                                fileNameStub + "_" + selection.getSelectionName().toLowerCase() + "_lrp_v" + fdate + ".csv");
+                                fileNameStub + "_" + selection.getSelectionName().toLowerCase().replaceAll(" ", "_") + "_lrp_v" + fdate + ".csv");
                         fnameList.add(lrpFile.getName());
                         try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpFile)))) {
                             //grab lrp reflectivity
@@ -169,7 +170,7 @@ public class AnalysisSaver {
                         }
                         //export CSV of LRP Peaks information
                         lrpPeaksFile = new File(outputDir,
-                                fileNameStub + "_" + selection.getSelectionName().toLowerCase() + "_lrp_peaks_v" + fdate + ".csv");
+                                fileNameStub + "_" + selection.getSelectionName().toLowerCase().replaceAll(" ", "_") + "_lrp_peaks_v" + fdate + ".csv");
                         fpnameList.add(lrpPeaksFile.getName());
                         try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpPeaksFile)))) {
                             //grab lrp reflectivity peak values

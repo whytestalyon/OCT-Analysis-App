@@ -92,4 +92,7 @@ public class SegmentationManager extends LinkedList<Line> {
         }
     }
 
+    public void clearSegs() {
+        this.removeRange(0, this.size() - 1);
+    }
 }

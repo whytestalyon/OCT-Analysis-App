@@ -43,6 +43,7 @@ import oct.analysis.application.dat.LRPSelectionWidthBean;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTMode;
+import oct.analysis.application.dat.SegmentationManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.dat.ToolMode;
@@ -200,6 +201,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         autoFoveaFindMenuItem = new javax.swing.JMenuItem();
         interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         osRatioMenuItem = new javax.swing.JMenuItem();
+        wilkSpotAnalysisMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -772,6 +774,14 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(osRatioMenuItem);
 
+        wilkSpotAnalysisMenuItem.setText("Wilk Spot Analysis");
+        wilkSpotAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                wilkSpotAnalysisMenuItemActionPerformed(evt);
+            }
+        });
+        analysisMenu.add(wilkSpotAnalysisMenuItem);
+
         appMenuBar.add(analysisMenu);
 
         toolsMenu.setText("Tools");
@@ -1251,6 +1261,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     }//GEN-LAST:event_openAnalysisMenuItemActionPerformed
 
     private void exportAnalysisResultsMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAnalysisResultsMenuItemActionPerformed
+        if (analysisMngr.getAnalysisMode() == null) {
+            JOptionPane.showMessageDialog(this, "No analysis performed, nothing to export.", "Export Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         fc.resetChoosableFileFilters();
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setApproveButtonText("Select");
@@ -1393,6 +1407,10 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     }//GEN-LAST:event_loadTestMenuItemActionPerformed
 
+    private void wilkSpotAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wilkSpotAnalysisMenuItemActionPerformed
+        performAnalysis(AnalysisMode.WILK_SPOT, true);
+    }//GEN-LAST:event_wilkSpotAnalysisMenuItemActionPerformed
+
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
             c.setEnabled(true);
@@ -1404,6 +1422,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     public void restartAnalysis() {
         selectionLRPManager.removeSelections(true);
+        SegmentationManager.getInstance().clearSegs();
         octAnalysisPanel.clearDrawnLines();
         octAnalysisPanel.repaint();
     }
@@ -1424,6 +1443,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                 break;
             case OS_RATIO:
                 Analysis.performOSRatio(interactive);
+                break;
+            case WILK_SPOT:
+                Analysis.performWilkSpot();
                 break;
             case MIRROR:
                 Analysis.performMirror(interactive);
@@ -1499,7 +1521,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     public JLabel getFileNameLabel() {
         return fileNameLabel;
     }
-    
+
     /**
      * @param args the command line arguments
      */
@@ -1610,6 +1632,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu toolbarsMenu;
     private javax.swing.JMenu toolsMenu;
     private javax.swing.ButtonGroup toolsToolBarBtnGroup;
+    private javax.swing.JMenuItem wilkSpotAnalysisMenuItem;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 }

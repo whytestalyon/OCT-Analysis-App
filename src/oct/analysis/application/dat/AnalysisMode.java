@@ -15,5 +15,6 @@ public enum AnalysisMode {
     MIRROR,
     EQUIDISTANT,
     FIND_FOVEA,
-    OS_RATIO;
+    OS_RATIO,
+    WILK_SPOT;
 }
