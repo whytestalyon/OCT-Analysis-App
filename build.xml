@@ -70,4 +70,26 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <!-- Import environment variables -->
+    <property environment="env"/>
+
+    <!-- Define the appbundler task -->
+    <taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask"/>
+
+    <!-- Create the app bundle -->
+    <target name="-post-jar">
+        <bundleapp outputdirectory="${dist.dir}"
+               name="OCT Reflectivity Analytics"
+               displayname="OCT Reflectivity Analytics"
+               identifier="com.bwc.oct.ora"
+               shortversion="0.2.1"
+               icon="${build.classes.dir}/oct/rsc/icon/logo.png"
+               applicationCategory="public.app-category.medical"
+               mainclassname="oct/analysis/application/OCTAnalysisUI">
+            <runtime dir="C:\Users\Brandon\Java\MacJRE8\jre1.8.0_73.jre\Contents"/>
+            <classpath file="${dist.dir}/lib/*"/>
+            <option value="-Dapple.laf.useScreenMenuBar=true"/>
+            <option value="-Xss32m"/>
+        </bundleapp>
+    </target>
 </project>

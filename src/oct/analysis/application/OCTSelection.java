@@ -17,15 +17,21 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.stream.Collectors;
 import javax.swing.JPanel;
+import javax.swing.Renderer;
 import oct.analysis.application.dat.LinePoint;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.err.OverOCTEdgeException;
+import oct.analysis.application.comp.HighlightXYRenderer;
 import oct.util.Util;
 import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartMouseEvent;
+import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
@@ -287,7 +293,10 @@ public class OCTSelection {
 //        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
 //        plot.getDomainAxis().setInverted(true);
         //set up rendering principles
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+//        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        HighlightXYRenderer renderer = new HighlightXYRenderer();
+        renderer.setDrawOutlines(true);
+        renderer.setUseOutlinePaint(true);
         renderer.setSeriesLinesVisible(0, true);
         renderer.setSeriesShapesVisible(0, false);
         renderer.setSeriesPaint(0, Color.RED);
@@ -307,6 +316,24 @@ public class OCTSelection {
         plot.setRenderer(renderer);
         //make panel
         ChartPanel panel = new ChartPanel(chart);
+        panel.addChartMouseListener(new ChartMouseListener() {
+
+            @Override
+            public void chartMouseClicked(ChartMouseEvent cme) {
+                //do nothing for now
+            }
+
+            @Override
+            public void chartMouseMoved(ChartMouseEvent cme) {
+                ChartEntity entity = cme.getEntity();
+                if (!(entity instanceof XYItemEntity)) {
+                    renderer.setHighlightedItem(-1, -1);
+                } else {
+                    XYItemEntity xyent = (XYItemEntity) entity;
+                    renderer.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
+                }
+            }
+        });
         panel.setPreferredSize(new Dimension(200, 200));
         panel.setFillZoomRectangle(true);
         panel.setMouseWheelEnabled(true);
