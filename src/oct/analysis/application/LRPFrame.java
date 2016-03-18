@@ -10,6 +10,7 @@ import java.awt.Component;
 import java.awt.HeadlessException;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import oct.analysis.application.lrp.LRPPanel;
 
 /**
  *
@@ -17,28 +18,24 @@ import javax.swing.JPanel;
  */
 public class LRPFrame extends JFrame implements Runnable {
 
-    private JPanel lrpPanel;
+    private LRPPanel lrpPanel;
     private Component relativeTo;
 
-    public LRPFrame(JPanel lrpPanel) throws HeadlessException {
+    public LRPFrame(LRPPanel lrpPanel) throws HeadlessException {
         this.lrpPanel = lrpPanel;
         add(lrpPanel, BorderLayout.CENTER);
     }
 
-    public LRPFrame(JPanel lrpPanel, String title) throws HeadlessException {
+    public LRPFrame(LRPPanel lrpPanel, String title) throws HeadlessException {
         super(title);
         add(lrpPanel, BorderLayout.CENTER);
         this.lrpPanel = lrpPanel;
     }
 
-    public void updateLRP(JPanel newLRP) {
-        this.remove(lrpPanel);
-        this.add(newLRP);
-        this.invalidate();
-        this.validate();
-        lrpPanel = newLRP;
+    public LRPPanel getLrpPanel() {
+        return lrpPanel;
     }
-
+    
     public Component getRelativeTo() {
         return relativeTo;
     }

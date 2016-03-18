@@ -33,7 +33,7 @@ public class AnalysisSaveState {
     /*
      OCT dispaly panel info
      */
-    private Point drawPoint = null;
+    private Point drawPoint = null; //keep for compatability with old ORA files and possibly using down the road
     private LinkedList<Line> linesToDraw = null;
     private boolean drawLines = false;
     private boolean drawSelections = true;
@@ -86,14 +86,6 @@ public class AnalysisSaveState {
 
     public void setSelSegs(List<OCTSelection> selSegs) {
         this.selSegs = selSegs;
-    }
-
-    public Point getDrawPoint() {
-        return drawPoint;
-    }
-
-    public void setDrawPoint(Point drawPoint) {
-        this.drawPoint = drawPoint;
     }
 
     public LinkedList<Line> getLinesToDraw() {

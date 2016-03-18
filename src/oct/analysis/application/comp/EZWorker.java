@@ -84,7 +84,7 @@ public class EZWorker extends SwingWorker<EZEdgeCoord, Point> {
          of the edge between the black and white pixels along the width of the image.
          */
         int searchY = (int) Math.round(brmInterp.value(foveaCenterXPosition)) + 1;
-        analysisManager.getImgPanel().setDrawPoint(new Point(foveaCenterXPosition, searchY));
+//        analysisManager.getImgPanel().setDrawPoint(new Point(foveaCenterXPosition, searchY));
         do {
             searchY--;
         } while (Util.calculateGrayScaleValue(sharpOCT.getRGB(foveaCenterXPosition, searchY)) > 0 || !isContrastPoint(foveaCenterXPosition, searchY, sharpOCT));

@@ -7,17 +7,17 @@ package oct.analysis.application.lrp;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.util.List;
 import oct.analysis.application.comp.HighlightXYRenderer;
+import oct.analysis.application.dat.OCTAnalysisManager;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.XYItemEntity;
 import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
@@ -29,11 +29,12 @@ import org.jfree.data.xy.XYSeriesCollection;
  */
 public class LRPPanel extends ChartPanel {
 
-    private XYSeries lrpSeries, maximaSeries, hiddenMaximaSeries;
+    private final XYSeries lrpSeries, maximaSeries, hiddenMaximaSeries;
     private List<XYSeries> fwhmSeries;
     private final XYSeriesCollection graphData = new XYSeriesCollection();
+    private final OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
 
-    public LRPPanel(String title, XYSeries lrpSeries, XYSeries maximaSeries, XYSeries hiddenMaximaSeries, List<XYSeries> fwhmSeries) {
+    public LRPPanel(String title, int xPosOnOct, XYSeries lrpSeries, XYSeries maximaSeries, XYSeries hiddenMaximaSeries, List<XYSeries> fwhmSeries) {
         super(null);
         this.lrpSeries = lrpSeries;
         this.maximaSeries = maximaSeries;
@@ -52,78 +53,59 @@ public class LRPPanel extends ChartPanel {
         setChart(ChartFactory.createXYLineChart(title, "Pixel Height", "Reflectivity", graphData, PlotOrientation.HORIZONTAL, false, true, false));
 
         //create a custom renderer to control the display of each series
-        XYLineAndShapeRenderer renderer;
         //set draw properties for the LRP data
-        renderer = new XYLineAndShapeRenderer();
+        HighlightXYRenderer renderer = new HighlightXYRenderer();
         renderer.setSeriesLinesVisible(0, true);
         renderer.setSeriesShapesVisible(0, false);
         renderer.setSeriesPaint(0, Color.RED);
-        getChart().getXYPlot().setRenderer(0, renderer);
+
         //set draw properties for the maxima data
-        HighlightXYRenderer renderer2 = new HighlightXYRenderer();
-        renderer2.setDrawOutlines(true);
-        renderer2.setUseOutlinePaint(true);
-        renderer2.setSeriesLinesVisible(0, false);
-        renderer2.setSeriesShapesVisible(0, true);
-        renderer2.setSeriesShapesFilled(0, true);
-        renderer2.setSeriesPaint(0, Color.BLUE);
-        getChart().getXYPlot().setRenderer(1, renderer2);
-        //add listener for highlighting points on the graph when the mouse hovers over them
-        addChartMouseListener(new ChartMouseListener() {
+        renderer.setDrawOutlines(true);
+        renderer.setUseOutlinePaint(true);
+        renderer.setSeriesLinesVisible(1, false);
+        renderer.setSeriesShapesVisible(1, true);
+        renderer.setSeriesShapesFilled(1, true);
+        renderer.setSeriesPaint(1, Color.BLUE);
 
-            @Override
-            public void chartMouseClicked(ChartMouseEvent cme) {
-                //do nothing for now
-            }
-
-            @Override
-            public void chartMouseMoved(ChartMouseEvent cme) {
-                ChartEntity entity = cme.getEntity();
-                if (!(entity instanceof XYItemEntity)) {
-                    renderer2.setHighlightedItem(-1, -1);
-                } else {
-                    XYItemEntity xyent = (XYItemEntity) entity;
-                    renderer2.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
-                }
-            }
-        });
         //set draw properties for the hidden maxima data
-        HighlightXYRenderer renderer3 = new HighlightXYRenderer();
-        renderer3.setDrawOutlines(true);
-        renderer3.setUseOutlinePaint(true);
-        renderer3.setSeriesLinesVisible(0, false);
-        renderer3.setSeriesShapesVisible(0, true);
-        renderer3.setSeriesShapesFilled(0, true);
-        renderer3.setSeriesPaint(0, Color.MAGENTA);
-        getChart().getXYPlot().setRenderer(2, renderer3);
-        //add listener for highlighting points on the graph when the mouse hovers over them
-        addChartMouseListener(new ChartMouseListener() {
-
-            @Override
-            public void chartMouseClicked(ChartMouseEvent cme) {
-                //do nothing for now
-            }
-
-            @Override
-            public void chartMouseMoved(ChartMouseEvent cme) {
-                ChartEntity entity = cme.getEntity();
-                if (!(entity instanceof XYItemEntity)) {
-                    renderer3.setHighlightedItem(-1, -1);
-                } else {
-                    XYItemEntity xyent = (XYItemEntity) entity;
-                    renderer3.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
-                }
-            }
-        });
+        renderer.setDrawOutlines(true);
+        renderer.setUseOutlinePaint(true);
+        renderer.setSeriesLinesVisible(2, false);
+        renderer.setSeriesShapesVisible(2, true);
+        renderer.setSeriesShapesFilled(2, true);
+        renderer.setSeriesPaint(2, Color.MAGENTA);
 
         //set draw properties for each of the full-width half-max lines
         for (int i = 3; i < fwhmSeries.size() + 3; i++) {
-            renderer = new XYLineAndShapeRenderer();
-            renderer.setSeriesLinesVisible(0, true);
-            renderer.setSeriesShapesVisible(0, false);
-            renderer.setSeriesPaint(0, Color.BLACK);
-            getChart().getXYPlot().setRenderer(i, renderer);
+            renderer.setSeriesLinesVisible(i, true);
+            renderer.setSeriesShapesVisible(i, false);
+            renderer.setSeriesPaint(i, Color.BLACK);
         }
+
+        //add listener for highlighting points on the graph when the mouse hovers over them
+        addChartMouseListener(new ChartMouseListener() {
+
+            @Override
+            public void chartMouseClicked(ChartMouseEvent cme) {
+                //do nothing for now
+            }
+
+            @Override
+            public void chartMouseMoved(ChartMouseEvent cme) {
+                ChartEntity entity = cme.getEntity();
+                if (!(entity instanceof XYItemEntity)) {
+                    renderer.setHighlightedItem(-1, -1);
+                    octMngr.getImgPanel().clearDrawnPoint();
+                } else {
+                    XYItemEntity xyent = (XYItemEntity) entity;
+                    renderer.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
+                    int y = octMngr.getImgPanel().getHeight() - ((int) Math.round(xyent.getDataset().getXValue(xyent.getSeriesIndex(), xyent.getItem())));
+                    octMngr.getImgPanel().setDrawPoint(new Point(xPosOnOct, y));
+                }
+            }
+        });
+
+        getChart().getXYPlot().setRenderer(renderer);
 
         //configure initial display setting for the panel
         setPreferredSize(new Dimension(200, 200));
@@ -156,13 +138,13 @@ public class LRPPanel extends ChartPanel {
     }
 
     public void setFwhmSeries(List<XYSeries> fwhmSeries) {
-        this.fwhmSeries = fwhmSeries;
-        for (int i = 3; i < fwhmSeries.size() + 3; i++) {
+        for (int i = 3; i < this.fwhmSeries.size() + 3; i++) {
             graphData.removeSeries(i);
         }
-        fwhmSeries.forEach(graphData::addSeries);
+        this.fwhmSeries = fwhmSeries;
+        this.fwhmSeries.forEach(graphData::addSeries);
         //set draw properties of the for each of the full-width half-max lines
-        for (int i = 3; i < fwhmSeries.size() + 3; i++) {
+        for (int i = 3; i < this.fwhmSeries.size() + 3; i++) {
             XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
             renderer.setSeriesLinesVisible(i, true);
             renderer.setSeriesShapesVisible(i, false);

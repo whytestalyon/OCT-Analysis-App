@@ -493,12 +493,10 @@ public class Util {
         /*
          OCT dispaly panel info
          */
-        Point drawPoint = analysisMngr.getImgPanel().getDrawPoint();
         LinkedList<Line> linesToDraw = analysisMngr.getImgPanel().getLinesToDraw();
         boolean drawLines = analysisMngr.getImgPanel().isDrawLines();
         boolean drawSelections = analysisMngr.getImgPanel().isDrawSelections();
         boolean drawScaleBars = analysisMngr.getImgPanel().isShowScaleBars();
-        saveObj.setDrawPoint(drawPoint);
         saveObj.setLinesToDraw(linesToDraw);
         saveObj.setDrawLines(drawLines);
         saveObj.setDrawScaleBars(drawScaleBars);
@@ -568,7 +566,6 @@ public class Util {
         /*
          OCT dispaly panel info
          */
-        analysisMngr.getImgPanel().setDrawPoint(saveObj.getDrawPoint());
         if (saveObj.getLinesToDraw() != null) {
             analysisMngr.getImgPanel().addDrawnLines(saveObj.getLinesToDraw());
         }

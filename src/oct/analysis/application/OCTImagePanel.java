@@ -119,7 +119,7 @@ public class OCTImagePanel extends JPanel {
                 });
             }
             //draw point on oct if available
-            if (drawPoint != null && drawLines) {
+            if (drawPoint != null) {
                 grfx.setColor(Color.red);
                 grfx.drawRect(imageOffsetX + drawPoint.x - 1, imageOffsetY + drawPoint.y - 1, 3, 3);
             }
@@ -206,6 +206,11 @@ public class OCTImagePanel extends JPanel {
     public void clearDrawnLines() {
         this.linesToDraw = new LinkedList<>();
         this.drawPoint = null;
+    }
+    
+    public void clearDrawnPoint(){
+        this.drawPoint = null;
+        repaint();
     }
 
     public int getImageOffsetY() {

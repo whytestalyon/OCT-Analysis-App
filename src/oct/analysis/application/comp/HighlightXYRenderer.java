@@ -51,7 +51,7 @@ public class HighlightXYRenderer extends XYLineAndShapeRenderer {
      */
     @Override
     public Paint getItemOutlinePaint(int seriesIndex, int itemIndex) {
-        System.out.println("Looking for (" + seriesIndex + "," + itemIndex + ")");
+//        System.out.println("Looking for (" + seriesIndex + "," + itemIndex + ")");
         if (seriesIndex == highlightSeries && itemIndex == highlightItem) {
             return Color.yellow;
         }

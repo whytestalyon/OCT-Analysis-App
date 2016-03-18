@@ -24,6 +24,7 @@ import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.err.OverOCTEdgeException;
 import oct.analysis.application.comp.HighlightXYRenderer;
+import oct.analysis.application.lrp.LRPPanel;
 import oct.util.Util;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
@@ -269,75 +270,48 @@ public class OCTSelection {
         return topLine.contains(p);
     }
 
-    public JPanel createLRPPanel() {
-        //create the series collection from the LRP data
-        XYSeriesCollection lrp = new XYSeriesCollection();
-        lrp.addSeries(getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOctImage()));
-//        System.out.println("Processing graph " + lrp.getSeriesKey(0).toString());
-        lrp.addSeries(findMaximums(lrp.getSeries(0), selectionName + " LRP Maximums"));
+    public LRPPanel createLRPPanel() {
+        return createOrUpdateLRPPanel(null);
+    }
 
-        XYSeries lrpMaxPoints = new XYSeries("Hidden Maxima");
-        LinkedList<LinePoint> hp = Util.getMaximumsWithHiddenPeaks(((List<XYDataItem>) lrp.getSeries(0).getItems()).stream().map(xy -> new LinePoint((int) Math.round(xy.getXValue()), xy.getYValue())).collect(Collectors.toList()));
+    public void updateLRP(LRPFrame lrpFrame) {
+        createOrUpdateLRPPanel(lrpFrame.getLrpPanel());
+    }
+
+    private LRPPanel createOrUpdateLRPPanel(LRPPanel lrpp) {
+        //create series for the LRP
+        XYSeries lrpSeries = getLrpSeriesFromOCT(OCTAnalysisManager.getInstance().getOctImage());
+
+        //create series for the local maxima in the LRP
+        XYSeries localMaximaSeries = findMaximums(lrpSeries, selectionName + " Local Maxima");
+
+        //create series for peaks identified by the second derivative
+        XYSeries hiddenMaxPoints = new XYSeries("Second Derivative Maxima");
+        LinkedList<LinePoint> hp = Util.getMaximumsWithHiddenPeaks(((List<XYDataItem>) lrpSeries.getItems()).stream().map(xy -> new LinePoint((int) Math.round(xy.getXValue()), xy.getYValue())).collect(Collectors.toList()));
         hp.forEach(p -> {
-            lrpMaxPoints.add(p.getX(), p.getY());
+            hiddenMaxPoints.add(p.getX(), p.getY());
         });
-        lrp.addSeries(lrpMaxPoints);
 
-        List<XYSeries> fwhm = getFWHMForLRPPeaks(lrp.getSeries(1), lrp.getSeries(0));
-        fwhm.forEach((fwhmSeries) -> {
-            lrp.addSeries(fwhmSeries);
-        });
-        //create chart panel for LRP
-        JFreeChart chart = ChartFactory.createXYLineChart(lrp.getSeriesKey(0).toString(), "Pixel Height", "Reflectivity", lrp, PlotOrientation.HORIZONTAL, false, true, false);
-        XYPlot plot = chart.getXYPlot();
-//        plot.setRangeAxisLocation(AxisLocation.TOP_OR_LEFT);
-//        plot.getDomainAxis().setInverted(true);
-        //set up rendering principles
-//        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        HighlightXYRenderer renderer = new HighlightXYRenderer();
-        renderer.setDrawOutlines(true);
-        renderer.setUseOutlinePaint(true);
-        renderer.setSeriesLinesVisible(0, true);
-        renderer.setSeriesShapesVisible(0, false);
-        renderer.setSeriesPaint(0, Color.RED);
-        renderer.setSeriesLinesVisible(1, false);
-        renderer.setSeriesShapesVisible(1, true);
-        renderer.setSeriesShapesFilled(1, true);
-        renderer.setSeriesPaint(1, Color.BLUE);
-        renderer.setSeriesLinesVisible(2, false);
-        renderer.setSeriesShapesVisible(2, true);
-        renderer.setSeriesShapesFilled(2, true);
-        renderer.setSeriesPaint(2, Color.MAGENTA);
-        for (int i = 3; i < fwhm.size() + 3; i++) {
-            renderer.setSeriesLinesVisible(i, true);
-            renderer.setSeriesShapesVisible(i, false);
-            renderer.setSeriesPaint(i, Color.BLACK);
+        //create series for each full-width half-max for each local maxima peak
+        List<XYSeries> fwhm = getFWHMForLRPPeaks(localMaximaSeries, lrpSeries);
+
+        if (lrpp == null) {
+            //create new panel and return that
+            return new LRPPanel(
+                    selectionName + " LRP",
+                    xPositionOnOct,
+                    lrpSeries,
+                    localMaximaSeries,
+                    hiddenMaxPoints,
+                    fwhm);
+        } else {
+            //update supplied panel and return it for possible chaining
+            lrpp.setLrpSeries(lrpSeries);
+            lrpp.setMaximaSeries(localMaximaSeries);
+            lrpp.setHiddenMaximaSeries(hiddenMaxPoints);
+            lrpp.setFwhmSeries(fwhm);
+            return lrpp;
         }
-        plot.setRenderer(renderer);
-        //make panel
-        ChartPanel panel = new ChartPanel(chart);
-        panel.addChartMouseListener(new ChartMouseListener() {
-
-            @Override
-            public void chartMouseClicked(ChartMouseEvent cme) {
-                //do nothing for now
-            }
-
-            @Override
-            public void chartMouseMoved(ChartMouseEvent cme) {
-                ChartEntity entity = cme.getEntity();
-                if (!(entity instanceof XYItemEntity)) {
-                    renderer.setHighlightedItem(-1, -1);
-                } else {
-                    XYItemEntity xyent = (XYItemEntity) entity;
-                    renderer.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
-                }
-            }
-        });
-        panel.setPreferredSize(new Dimension(200, 200));
-        panel.setFillZoomRectangle(true);
-        panel.setMouseWheelEnabled(true);
-        return panel;
     }
 
     public final List<LinePoint> getLrpAcrossOCT(BufferedImage oct) {
