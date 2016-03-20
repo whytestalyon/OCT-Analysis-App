@@ -100,16 +100,14 @@ public class SelectionLRPManager {
 
     public void addOrUpdateSelection(OCTSelection selection) {
         selectionMap.put(selection.getSelectionName(), selection);
-        SwingUtilities.invokeLater(() -> {
-            if (lrpDispMap.containsKey(selection.getSelectionName())) {
-                //update the JFrame for the given selection with the new LRP
-                updateLRP(selection);
-            } else {
-                //add new LRP frame for never before added selection
-                LRPFrame newFrame = new LRPFrame(selection.createLRPPanel());
-                lrpDispMap.put(selection.getSelectionName(), newFrame);
-            }
-        });
+        if (lrpDispMap.containsKey(selection.getSelectionName())) {
+            //update the JFrame for the given selection with the new LRP
+            updateLRP(selection);
+        } else {
+            //add new LRP frame for never before added selection
+            LRPFrame newFrame = new LRPFrame(selection.createLRPPanel());
+            lrpDispMap.put(selection.getSelectionName(), newFrame);
+        }
     }
 
     public void updateLRPs() {
@@ -187,8 +185,17 @@ public class SelectionLRPManager {
         }
         //display frames
         lrpDispMap.forEach((lrpKey, lrpFrame) -> {
-            SwingUtilities.invokeLater(lrpFrame);
+            System.out.println("Displaying " + lrpFrame.getLrpPanel().getTitle() + "!");
+            lrpFrame.run();
         });
+    }
+
+    public LRPFrame getLRP(String name) {
+        return lrpDispMap.get(name);
+    }
+
+    public LRPFrame getLRP(OCTSelection selection) {
+        return getLRP(selection.getSelectionName());
     }
 
     /**
@@ -236,7 +243,7 @@ public class SelectionLRPManager {
      * @param selectionName
      * @return a selection centered around the supplied position
      */
-    public OCTSelection getSelection(int xPositionOnOCT, String selectionName, SelectionType selType, boolean moveable) {
+    public OCTSelection createSelection(int xPositionOnOCT, String selectionName, SelectionType selType, boolean moveable) {
         if (selType == SelectionType.FOVEAL) {
             return getFoveaSelection(xPositionOnOCT, moveable);
         } else {
@@ -280,7 +287,7 @@ public class SelectionLRPManager {
         int selX;
         for (int i = 1; (selX = foveaSelection.getXPositionOnOct() + analysisData.getNumPixelFromFovea(i)) <= analysisData.getOct().getImageWidth(); i++) {
             try {
-                selections.add(getSelection(selX, "R" + i, SelectionType.NONFOVEAL, false));
+                selections.add(createSelection(selX, "R" + i, SelectionType.NONFOVEAL, false));
             } catch (OverOCTEdgeException oe) {
                 //just need ot fail silenty here, nothin is wrong just selection too wide to add since it would go past edge of OCT
                 break;
@@ -289,7 +296,7 @@ public class SelectionLRPManager {
         //build selection list to the left of the center
         for (int i = 1; (selX = foveaSelection.getXPositionOnOct() - analysisData.getNumPixelFromFovea(i)) >= 0; i++) {
             try {
-                selections.add(getSelection(selX, "L" + i, SelectionType.NONFOVEAL, false));
+                selections.add(createSelection(selX, "L" + i, SelectionType.NONFOVEAL, false));
             } catch (OverOCTEdgeException oe) {
                 //just need ot fail silenty here, nothin is wrong just selection too wide to add since it would go past edge of OCT
                 break;

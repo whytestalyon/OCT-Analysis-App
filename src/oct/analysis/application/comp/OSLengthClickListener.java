@@ -56,10 +56,10 @@ public class OSLengthClickListener extends MouseInputAdapter {
                 JTextField field1 = new JTextField();
                 JTextField field2 = new JTextField();
                 Object[] message = {
-                    "<html><b>Distance between LRPs:</b></html>", field2,
+                    "<html><b>Distance between LRPs:</b></html>", field1,
                     "Use:", disMicronButton, disPixelsButton,
                     " ",
-                    "<html><b>ROI Width:</b></html>", field1,
+                    "<html><b>ROI Width:</b></html>", field2,
                     "Use:", roiMicronButton, roiPixelsButton
                 };
                 userOption = JOptionPane.showConfirmDialog(octmngr.getImgPanel(), message, "Enter analysis values", JOptionPane.OK_CANCEL_OPTION);
@@ -84,10 +84,11 @@ public class OSLengthClickListener extends MouseInputAdapter {
             if (userOption == JOptionPane.OK_OPTION) {
                 //input was good, proceed with analysis
                 System.out.println("Results: dis = " + distanceBetweenLrp + ", roi = " + roiWidth + ", disPixels? " + disIsInPixels + ", roiPixels? " + roiIsInPixels);
+                OSLengthWorker task = new OSLengthWorker(clickPoint, distanceBetweenLrp, roiWidth, disIsInPixels, roiIsInPixels);
+                task.execute();
             }
 
             octmngr.getImgPanel().removeMouseListener(this);
-            octmngr.getImgPanel().repaint();
         }
         if (octmngr.getAnalysisMode() != AnalysisMode.OS_LENGTH) {
             octmngr.getImgPanel().removeMouseListener(this);

@@ -935,7 +935,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     selectionLRPManager.removeSelections(false);
                                     octAnalysisPanel.repaint();
                                     //add new selections and redraw panel
-                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x, "Selection", SelectionType.NONFOVEAL, true));
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.createSelection(octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x, "Selection", SelectionType.NONFOVEAL, true));
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:
@@ -952,8 +952,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
                                     octAnalysisPanel.repaint();
                                     //add new selections and redraw panel
                                     int distFromFovea = Math.abs(analysisMngr.getFoveaCenterXPosition() - octAnalysisPanel.translatePanelPointToOctPoint(evt.getPoint()).x);
-                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMngr.getFoveaCenterXPosition() - distFromFovea, "Left", SelectionType.NONFOVEAL, true));
-                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.getSelection(analysisMngr.getFoveaCenterXPosition() + distFromFovea, "Right", SelectionType.NONFOVEAL, true));
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.createSelection(analysisMngr.getFoveaCenterXPosition() - distFromFovea, "Left", SelectionType.NONFOVEAL, true));
+                                    selectionLRPManager.addOrUpdateSelection(selectionLRPManager.createSelection(analysisMngr.getFoveaCenterXPosition() + distFromFovea, "Right", SelectionType.NONFOVEAL, true));
                                     octAnalysisPanel.repaint();
                                     break;
                                 case SCREEN_SELECT:

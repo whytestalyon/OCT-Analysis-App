@@ -33,9 +33,11 @@ public class LRPPanel extends ChartPanel {
     private List<XYSeries> fwhmSeries;
     private final XYSeriesCollection graphData = new XYSeriesCollection();
     private final OCTAnalysisManager octMngr = OCTAnalysisManager.getInstance();
+    private final String title;
 
     public LRPPanel(String title, int xPosOnOct, XYSeries lrpSeries, XYSeries maximaSeries, XYSeries hiddenMaximaSeries, List<XYSeries> fwhmSeries) {
         super(null);
+        this.title = title;
         this.lrpSeries = lrpSeries;
         this.maximaSeries = maximaSeries;
         this.hiddenMaximaSeries = hiddenMaximaSeries;
@@ -151,6 +153,10 @@ public class LRPPanel extends ChartPanel {
             renderer.setSeriesPaint(i, Color.BLACK);
             getChart().getXYPlot().setRenderer(i, renderer);
         }
+    }
+
+    public String getTitle() {
+        return title;
     }
 
 }
