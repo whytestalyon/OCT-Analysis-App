@@ -201,7 +201,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         autoFoveaFindMenuItem = new javax.swing.JMenuItem();
         interactiveFindFoveaMenuItem = new javax.swing.JMenuItem();
         osRatioMenuItem = new javax.swing.JMenuItem();
-        wilkSpotAnalysisMenuItem = new javax.swing.JMenuItem();
+        osLengthAnalysisMenuItem = new javax.swing.JMenuItem();
         toolsMenu = new javax.swing.JMenu();
         foveaSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
         singleSelectMenuItem = new javax.swing.JCheckBoxMenuItem();
@@ -774,13 +774,13 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
         });
         analysisMenu.add(osRatioMenuItem);
 
-        wilkSpotAnalysisMenuItem.setText("Wilk Spot Analysis");
-        wilkSpotAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
+        osLengthAnalysisMenuItem.setText("Maximum OS Length");
+        osLengthAnalysisMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                wilkSpotAnalysisMenuItemActionPerformed(evt);
+                osLengthAnalysisMenuItemActionPerformed(evt);
             }
         });
-        analysisMenu.add(wilkSpotAnalysisMenuItem);
+        analysisMenu.add(osLengthAnalysisMenuItem);
 
         appMenuBar.add(analysisMenu);
 
@@ -1407,9 +1407,9 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
 
     }//GEN-LAST:event_loadTestMenuItemActionPerformed
 
-    private void wilkSpotAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_wilkSpotAnalysisMenuItemActionPerformed
-        performAnalysis(AnalysisMode.WILK_SPOT, true);
-    }//GEN-LAST:event_wilkSpotAnalysisMenuItemActionPerformed
+    private void osLengthAnalysisMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_osLengthAnalysisMenuItemActionPerformed
+        performAnalysis(AnalysisMode.OS_LENGTH, true);
+    }//GEN-LAST:event_osLengthAnalysisMenuItemActionPerformed
 
     public void enableAnalysisTools() {
         for (Component c : toolsMenu.getMenuComponents()) {
@@ -1444,8 +1444,8 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
             case OS_RATIO:
                 Analysis.performOSRatio(interactive);
                 break;
-            case WILK_SPOT:
-                Analysis.performWilkSpot();
+            case OS_LENGTH:
+                Analysis.performOSLength();
                 break;
             case MIRROR:
                 Analysis.performMirror(interactive);
@@ -1619,6 +1619,7 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JPanel octSmoothingPanel;
     private javax.swing.JSlider octSmoothingSlider;
     private javax.swing.JMenuItem openAnalysisMenuItem;
+    private javax.swing.JMenuItem osLengthAnalysisMenuItem;
     private javax.swing.JMenuItem osRatioMenuItem;
     private javax.swing.JPanel positionPanel;
     private oct.analysis.application.comp.ResizeOCTSelectionMouseMonitor resizeOCTSelectionMouseMonitor;
@@ -1632,7 +1633,6 @@ public class OCTAnalysisUI extends javax.swing.JFrame {
     private javax.swing.JMenu toolbarsMenu;
     private javax.swing.JMenu toolsMenu;
     private javax.swing.ButtonGroup toolsToolBarBtnGroup;
-    private javax.swing.JMenuItem wilkSpotAnalysisMenuItem;
     private org.jdesktop.beansbinding.BindingGroup bindingGroup;
     // End of variables declaration//GEN-END:variables
 }

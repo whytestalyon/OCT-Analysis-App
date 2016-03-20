@@ -150,7 +150,7 @@ public class AnalysisSaver {
                 case EQUIDISTANT:
                 case EZ:
                 case MIRROR:
-                case WILK_SPOT:
+                case OS_LENGTH:
                     ArrayList<String> fnameList = new ArrayList<>(selections.size());
                     ArrayList<String> fpnameList = new ArrayList<>(selections.size());
                     for (OCTSelection selection : selections) {

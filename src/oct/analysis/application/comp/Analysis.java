@@ -145,10 +145,10 @@ public class Analysis {
         findFovea(interactive);
     }
 
-    public static void performWilkSpot() {
-        JOptionPane.showMessageDialog(OCTAnalysisUI.getInstance(), "Please select location on the OCT that represent the greatest distance between the EZ and IZ bands.");
-        WilkSpotClickListener wilkSpotClickListener = new WilkSpotClickListener();
-        octMngr.getImgPanel().addMouseListener(wilkSpotClickListener);
+    public static void performOSLength() {
+        JOptionPane.showMessageDialog(OCTAnalysisUI.getInstance(), "Please select location on the OCT that represents the\ngreatest distance between the EZ and IZ bands.");
+        OSLengthClickListener osLengthClickListener = new OSLengthClickListener();
+        octMngr.getImgPanel().addMouseListener(osLengthClickListener);
     }
 
     public static void performOSRatio(boolean interactive) {

@@ -10,7 +10,6 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
-import java.awt.image.DataBufferByte;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.swing.JFrame;
@@ -62,7 +60,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 public class Util {
     
     public static double parseNumberFromInput(String in) {
-        if (in.matches("[0-9]+(\\.[0-9]+)*")) {
+        if (in != null && in.matches("[0-9]+(\\.[0-9]+)?")) {
             return Double.parseDouble(in);
         } else {
             return -1;

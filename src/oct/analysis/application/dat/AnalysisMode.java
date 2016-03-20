@@ -16,5 +16,5 @@ public enum AnalysisMode {
     EQUIDISTANT,
     FIND_FOVEA,
     OS_RATIO,
-    WILK_SPOT;
+    OS_LENGTH;
 }

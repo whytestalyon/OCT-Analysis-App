@@ -186,12 +186,12 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="osRatioMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
-            <MenuItem class="javax.swing.JMenuItem" name="wilkSpotAnalysisMenuItem">
+            <MenuItem class="javax.swing.JMenuItem" name="osLengthAnalysisMenuItem">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Wilk Spot Analysis"/>
+                <Property name="text" type="java.lang.String" value="Maximum OS Length"/>
               </Properties>
               <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="wilkSpotAnalysisMenuItemActionPerformed"/>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="osLengthAnalysisMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
           </SubComponents>
