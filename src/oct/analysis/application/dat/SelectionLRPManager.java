@@ -158,15 +158,17 @@ public class SelectionLRPManager {
     }
 
     public void removeSelection(OCTSelection s, boolean removeLRP) {
-        if (removeLRP) {
-            if (lrpDispMap.containsKey(s.getSelectionName())) {
-                lrpDispMap.get(s.getSelectionName()).dispose();
+        if (s != null) {
+            if (removeLRP) {
+                if (lrpDispMap.containsKey(s.getSelectionName())) {
+                    lrpDispMap.get(s.getSelectionName()).dispose();
+                }
+                //remove the lrp from the tracking map
+                lrpDispMap.remove(s.getSelectionName());
             }
-            //remove the lrp from the tracking map
-            lrpDispMap.remove(s.getSelectionName());
+            //remove given selection from selection map
+            selectionMap.remove(s.getSelectionName());
         }
-        //remove given selection from selection map
-        selectionMap.remove(s.getSelectionName());
     }
 
     public List<OCTSelection> getSelections() {

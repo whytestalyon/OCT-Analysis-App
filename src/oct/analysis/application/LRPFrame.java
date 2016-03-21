@@ -46,7 +46,7 @@ public class LRPFrame extends JFrame implements Runnable {
 
     @Override
     public void run() {
-        this.setSize(400, 400);
+        this.setSize(800, 800);
         this.setLocationRelativeTo(relativeTo);
         this.setVisible(true);
     }

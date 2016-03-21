@@ -52,20 +52,32 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
         try {
             Line iz = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
             Line ez = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
+            OCTSelection prevSelection = null;
             for (int lrpPos = clickPoint.x - (int) (roiWidth / 2d); lrpPos <= clickPoint.x + (int) (roiWidth / 2d); lrpPos += Math.round(distanceBetweenLrp)) {
                 if (isCancelled()) {
                     throw new InterruptedException("OS Length worked canceled");
                 }
+                //check for a previous selection
+                if (lrpmngr.getSelections().size() > 0) {
+                    prevSelection = lrpmngr.getSelections().get(0);
+                }
                 //create selection and LRP for the current point that will be analyzed
-                OCTSelection curSel = lrpmngr.createSelection(lrpPos, "Current", SelectionType.NONFOVEAL, false);
+                OCTSelection curSel = lrpmngr.createSelection(lrpPos, "Current X = " + lrpPos, SelectionType.NONFOVEAL, false);
                 lrpmngr.addOrUpdateSelection(curSel);
                 octmngr.getImgPanel().repaint();
                 OSLengthWorker waitObject = this;
-                System.out.println("Calling display");
-                //display LRP to user
-                lrpmngr.displayLRPs(OCTAnalysisUI.getInstance());
+                //display current LRP to user near the previous LRP
+                System.out.println("Displaying LRP");
+                if (prevSelection == null) {
+                    lrpmngr.displayLRPs(OCTAnalysisUI.getInstance());
+                } else {
+                    lrpmngr.displayLRPs(lrpmngr.getLRP(prevSelection));
+                }
+                //remove previous LRP if one was present
+                System.out.println("Removing previous selection...");
+                lrpmngr.removeSelection(prevSelection, true);
                 //add click listener to the LRP panel
-                System.out.println("Adding chart mouse listener");
+                System.out.println("Adding click listener..");
                 lrpmngr.getLRP(curSel).getLrpPanel().addChartMouseListener(new ChartMouseListener() {
 
                     @Override
@@ -82,7 +94,6 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
                         //do nothing, don't care if the mouse has moved over the chart
                     }
                 });
-                System.out.println("Waiting...");
                 //wait for user click on LRP 
                 synchronized (this) {
                     this.wait();
@@ -90,11 +101,11 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
                 if (Thread.interrupted()) {
                     throw new InterruptedException("OS Length worked canceled");
                 }
-                //clean up in preperation for next LRP
-                System.out.println("Clicked outside!");
-                lrpmngr.removeSelections(true);
-                octmngr.getImgPanel().repaint();
+                System.out.println("Done waiting!");
             }
+            //remove last selection because analysis is done
+            lrpmngr.removeSelections(true);
+            octmngr.getImgPanel().repaint();
         } catch (InterruptedException ie) {
             //do nothing but return null since task was canceled
             System.out.println(ie.getMessage());
