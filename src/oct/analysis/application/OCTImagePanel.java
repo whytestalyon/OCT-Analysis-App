@@ -152,6 +152,10 @@ public class OCTImagePanel extends JPanel {
     public synchronized void addDrawnLines(List<Line> linesToDraw) {
         this.linesToDraw.addAll(linesToDraw);
     }
+    
+    public synchronized void addDrawnLine(Line lineToDraw) {
+        linesToDraw.add(lineToDraw);
+    }
 
     public synchronized void addDrawnLine(List<LinePoint>... linesToDraw) {
         Arrays.stream(linesToDraw).forEach(lp -> {

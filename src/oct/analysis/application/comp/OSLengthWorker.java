@@ -12,9 +12,12 @@ import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCTAnalysisManager;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
+import oct.analysis.application.lrp.LRPPanel;
 import oct.util.Line;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
+import org.jfree.chart.entity.ChartEntity;
+import org.jfree.chart.entity.XYItemEntity;
 
 /**
  *
@@ -52,6 +55,10 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
         try {
             Line iz = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
             Line ez = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
+            octmngr.getImgPanel().addDrawnLine(iz);
+            octmngr.getImgPanel().addDrawnLine(ez);
+            OCTAnalysisUI.getInstance().getDispSegmentationCheckBox().setSelected(true);
+            octmngr.getImgPanel().showLines();
             OCTSelection prevSelection = null;
             for (int lrpPos = clickPoint.x - (int) (roiWidth / 2d); lrpPos <= clickPoint.x + (int) (roiWidth / 2d); lrpPos += Math.round(distanceBetweenLrp)) {
                 if (isCancelled()) {
@@ -78,14 +85,45 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
                 lrpmngr.removeSelection(prevSelection, true);
                 //add click listener to the LRP panel
                 System.out.println("Adding click listener..");
-                lrpmngr.getLRP(curSel).getLrpPanel().addChartMouseListener(new ChartMouseListener() {
+                LRPPanel tmpPanel = lrpmngr.getLRP(curSel).getLrpPanel();
+                tmpPanel.addChartMouseListener(new ChartMouseListener() {
+
+                    int selectCntr = 0;
 
                     @Override
                     public void chartMouseClicked(ChartMouseEvent event) {
                         //handle user clicks on the chart
-                        System.out.println("Clicked inside!");
+                        ChartEntity entity = event.getEntity();
+                        if (entity instanceof XYItemEntity) {
+                            //calculate the coordinates of the clicked point
+                            XYItemEntity xyent = (XYItemEntity) entity;
+                            HighlightXYRenderer renderer = (HighlightXYRenderer) tmpPanel.getChart().getXYPlot().getRenderer();
+                            int y = octmngr.getImgPanel().getHeight() - ((int) Math.round(xyent.getDataset().getXValue(xyent.getSeriesIndex(), xyent.getItem())));
+                            Point clickedPoint = new Point(curSel.getXPositionOnOct(), y);
+                            //if user is clicking previously clicked point, deselect 
+                            //it, otherwise add to apropriate segmentation line
+                            if (selectCntr == 0) {
+                                ez.add(clickedPoint);
+                                octmngr.getImgPanel().repaint();
+                                renderer.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
+                                selectCntr++;
+                            } else if (selectCntr == 1) {
+                                if (ez.getLastPoint().equals(clickedPoint)) {
+                                    ez.remove(clickedPoint);
+                                    octmngr.getImgPanel().repaint();
+                                    renderer.setHighlightedItem(-1, -1);
+                                    selectCntr = 0;
+                                } else {
+                                    iz.add(clickedPoint);
+                                    octmngr.getImgPanel().repaint();
+                                    selectCntr++;
+                                }
+                            }
+                        }
                         synchronized (waitObject) {
-                            waitObject.notify();
+                            if (selectCntr == 2) {
+                                waitObject.notify();
+                            }
                         }
                     }
 
@@ -105,7 +143,25 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
             }
             //remove last selection because analysis is done
             lrpmngr.removeSelections(true);
+            octmngr.getImgPanel().clearDrawnPoint();
             octmngr.getImgPanel().repaint();
+
+            if (isCancelled() || Thread.interrupted()) {
+                throw new InterruptedException();
+            }
+            /*
+             calculate the difference between EZ and IZ
+             */
+            Line diff = new Line(iz.size());
+            for (int i = 0; i < iz.size(); i++) {
+                Point izPoint = iz.get(i);
+                Point ezPoint = ez.get(i);
+                diff.add(new Point(izPoint.x, Math.abs(ezPoint.y - izPoint.y)));
+            }
+            /*
+            fit a gaussian curve to the difference
+            */
+            
         } catch (InterruptedException ie) {
             //do nothing but return null since task was canceled
             System.out.println(ie.getMessage());
