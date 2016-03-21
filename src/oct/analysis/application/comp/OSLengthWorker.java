@@ -6,6 +6,7 @@
 package oct.analysis.application.comp;
 
 import java.awt.Point;
+import java.util.LinkedList;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTSelection;
@@ -14,6 +15,10 @@ import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.lrp.LRPPanel;
 import oct.util.Line;
+import oct.util.Util;
+import org.apache.commons.math3.analysis.function.Gaussian;
+import org.apache.commons.math3.fitting.GaussianCurveFitter;
+import org.apache.commons.math3.fitting.WeightedObservedPoints;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.entity.ChartEntity;
@@ -159,9 +164,22 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
                 diff.add(new Point(izPoint.x, Math.abs(ezPoint.y - izPoint.y)));
             }
             /*
-            fit a gaussian curve to the difference
-            */
-            
+             fit a gaussian curve to the difference
+             */
+            WeightedObservedPoints obs = new WeightedObservedPoints();
+            diff.forEach(p -> {
+                obs.add(p.getX(), p.getY());
+            });
+            double[] parameters = GaussianCurveFitter.create().fit(obs.toList());
+            Line gaussianFit = new Line(diff.getLastPoint().x - diff.getFirstPoint().x + 1);
+            Gaussian g = new Gaussian(parameters[0], parameters[1], parameters[2]);
+            for (int x = diff.getFirstPoint().x; x <= diff.getLastPoint().x; x++) {
+                gaussianFit.add(new Point(x, (int) Math.round(g.value(x))));
+            }
+            LinkedList<Line> glines = new LinkedList<>();
+            glines.add(diff);
+            glines.add(gaussianFit);
+            Util.graphLines(glines, false, octmngr.getOct().getImageHeight());
         } catch (InterruptedException ie) {
             //do nothing but return null since task was canceled
             System.out.println(ie.getMessage());
