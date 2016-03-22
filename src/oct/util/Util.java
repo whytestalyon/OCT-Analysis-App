@@ -58,7 +58,7 @@ import org.jfree.data.xy.XYSeriesCollection;
  * @author Brandon
  */
 public class Util {
-    
+
     public static double parseNumberFromInput(String in) {
         if (in != null && in.matches("[0-9]+(\\.[0-9]+)?")) {
             return Double.parseDouble(in);
@@ -66,7 +66,7 @@ public class Util {
             return -1;
         }
     }
-    
+
     public static OCT getOCT(BufferedImage octImage, OCTAnalysisUI octAnalysisUI, String octFileName) {
         boolean exit = false;
         //ask the user for the x-scale
@@ -104,7 +104,7 @@ public class Util {
         octMngr.setYscale(yscale);
         return new OCT(octImage, octFileName);
     }
-    
+
     public static BufferedImage deepCopyBufferedImage(BufferedImage bi) {
         ColorModel cm = bi.getColorModel();
         boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
@@ -154,7 +154,7 @@ public class Util {
                 rightPeakPoint = point;
             }
         }
-        
+
         return maxPoints;
     }
 
@@ -199,10 +199,10 @@ public class Util {
                 maxPoints.add(new LinePoint((int) Math.round(x), yDSc.getValue()));
             }
         }
-        
+
         return maxPoints;
     }
-    
+
     public static List<LinePoint> findMaxAndMins(List<LinePoint> line) {
         //create list of all positive Y values to get peaks
         ArrayList<LinePoint> convList = new ArrayList<>(line.size());
@@ -219,7 +219,7 @@ public class Util {
         ret.sort(Comparator.comparingInt(peak -> peak.getX()));
         return ret;
     }
-    
+
     public static List<LinePoint> findPeaksAndVallies(List<LinePoint> line) {
         //first find peaks
         List<LinePoint> peaks = getMaximums(line);
@@ -239,7 +239,7 @@ public class Util {
         ret.sort(Comparator.comparingInt(peak -> peak.getX()));
         return ret;
     }
-    
+
     public static void graphPoints(List<LinePoint>... pointsList) {
         XYSeriesCollection dataset = new XYSeriesCollection();
         int seriesCntr = 1;
@@ -251,9 +251,9 @@ public class Util {
             dataset.addSeries(data);
             seriesCntr++;
         }
-        
+
         JFrame graphFrame = new JFrame("Points graph");
-        
+
         JPanel chartPanel = createChartPanel("Points graph", dataset);
         graphFrame.add(chartPanel, BorderLayout.CENTER);
         SwingUtilities.invokeLater(() -> {
@@ -261,17 +261,33 @@ public class Util {
             graphFrame.setVisible(true);
         });
     }
-    
+
+    public static void graphSeries(XYSeries... series) {
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        Arrays.stream(series).forEach(s -> {
+            dataset.addSeries(s);
+        });
+        
+        JFrame graphFrame = new JFrame("Points graph");
+
+        JPanel chartPanel = createChartPanel("Points graph", dataset);
+        graphFrame.add(chartPanel, BorderLayout.CENTER);
+        SwingUtilities.invokeLater(() -> {
+            graphFrame.pack();
+            graphFrame.setVisible(true);
+        });
+    }
+
     public static Line mergeLines(Line... lines) {
         int minx = Arrays.stream(lines).flatMap(l -> l.stream()).mapToInt(p -> p.x).min().getAsInt();
         int maxx = Arrays.stream(lines).flatMap(l -> l.stream()).mapToInt(p -> p.x).max().getAsInt();
-        
+
         Set<Integer> distinctXs = Arrays.stream(lines).flatMap(l -> l.stream()).map(p -> p.x).collect(Collectors.toSet());
-        
+
         if (distinctXs.size() != (maxx - minx) + 1) {
             throw new IllegalArgumentException("lines must overlap to be merged.");
         }
-        
+
         Line mLine = new Line(1024);
         IntStream.rangeClosed(minx, maxx)
                 .forEachOrdered(x -> {
@@ -280,20 +296,20 @@ public class Util {
                 });
         return mLine;
     }
-    
+
     public static Line mergeDisconnetedLines(Line line1, Line line2) {
-        
+
         Point thisLineLeftPoint = line1.getFirstPoint();
         Point thisLineRightPoint = line1.getLastPoint();
         Point otherLineLeftPoint = line2.getFirstPoint();
         Point otherLineRightPoint = line2.getLastPoint();
-        
+
         int overlappingXCnt = Math.min(thisLineRightPoint.x, otherLineRightPoint.x) - Math.max(thisLineLeftPoint.x, otherLineLeftPoint.x);
-        
+
         Line mLine = new Line(1024);
         LinkedList<Point> allpts = new LinkedList<>(line1);
         allpts.addAll(line2);
-        
+
         if (overlappingXCnt < 0) {
             Set<Integer> unqX = allpts.stream().map(p -> p.x).collect(Collectors.toSet());
             if (thisLineLeftPoint.x < otherLineLeftPoint.x) {
@@ -317,21 +333,21 @@ public class Util {
         } else {
             int minx = Math.min(line1.getFirstPoint().x, line2.getFirstPoint().x);
             int maxx = Math.max(line1.getLastPoint().x, line2.getLastPoint().x);
-            
+
             IntStream.rangeClosed(minx, maxx)
                     .forEachOrdered(x -> {
                         double avgY = allpts.stream().filter(p -> p.x == x).mapToInt(p -> p.y).average().getAsDouble();
                         mLine.add(new Point(x, (int) Math.round(avgY)));
                     });
         }
-        
+
         return mLine;
     }
-    
+
     public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight) {
         graphLines(lines, invert_y, imgHeight, "Plotted Lines");
     }
-    
+
     public static void graphLines(List<Line> lines, boolean invert_y, int imgHeight, String title) {
         XYSeriesCollection dataset = new XYSeriesCollection();
         int seriesCntr = 1;
@@ -347,9 +363,9 @@ public class Util {
             dataset.addSeries(data);
             seriesCntr++;
         }
-        
+
         JFrame graphFrame = new JFrame(title);
-        
+
         JPanel chartPanel = createChartPanel("Plotted Lines", dataset);
         chartPanel.setPreferredSize(new Dimension(800, 800));
         graphFrame.add(chartPanel, BorderLayout.CENTER);
@@ -358,11 +374,11 @@ public class Util {
             graphFrame.setVisible(true);
         });
     }
-    
+
     private static JPanel createChartPanel(String title, XYDataset dataset) {
         String xAxisLabel = "X";
         String yAxisLabel = "Y";
-        
+
         JFreeChart chart = ChartFactory.createXYLineChart(title, xAxisLabel, yAxisLabel, dataset);
         ChartPanel panel = new ChartPanel(chart);
         panel.setPreferredSize(new Dimension(640, 480));
@@ -413,20 +429,20 @@ public class Util {
      * @return
      */
     public static int[][] convertTo2D(BufferedImage image) {
-        
+
         final int width = image.getWidth();
         final int height = image.getHeight();
-        
+
         int[][] result = new int[width][height];
         for (int x = 0; x < result.length; x++) {
             for (int y = 0; y < result[x].length; y++) {
                 result[x][y] = image.getRGB(x, y);
             }
         }
-        
+
         return result;
     }
-    
+
     public static double[][] getXYArraysFromPoints(List<Point> points) {
         double[] x = new double[points.size()];
         double[] y = new double[points.size()];
@@ -455,7 +471,7 @@ public class Util {
         }
         return new double[][]{x, y};
     }
-    
+
     public static AnalysisSaveState getAnalysisSaveState() {
         OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
         SelectionLRPManager selMngr = SelectionLRPManager.getInstance();
@@ -524,11 +540,11 @@ public class Util {
         saveObj.setBlurFactor(blur.getBlurFactor());
         saveObj.setSharpenSigma(sharp.getSharpenSigma());
         saveObj.setSharpenWeight(sharp.getSharpenWeight());
-        
+
         return saveObj;
-        
+
     }
-    
+
     public static void openSavedAnalysis(OCTAnalysisUI ui, AnalysisSaveState saveObj) throws IOException {
         OCTAnalysisManager analysisMngr = OCTAnalysisManager.getInstance();
         SelectionLRPManager selMngr = SelectionLRPManager.getInstance();

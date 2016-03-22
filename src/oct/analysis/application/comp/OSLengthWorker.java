@@ -5,8 +5,11 @@
  */
 package oct.analysis.application.comp;
 
+import ij.measure.CurveFitter;
+import ij.measure.Minimizer;
 import java.awt.Point;
 import java.util.LinkedList;
+import java.util.stream.DoubleStream;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTSelection;
@@ -23,6 +26,7 @@ import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.data.xy.XYSeries;
 
 /**
  *
@@ -164,22 +168,47 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
                 diff.add(new Point(izPoint.x, Math.abs(ezPoint.y - izPoint.y)));
             }
             /*
-             fit a gaussian curve to the difference
+             fit a gaussian curve to the difference using Apache math
              */
             WeightedObservedPoints obs = new WeightedObservedPoints();
             diff.forEach(p -> {
                 obs.add(p.getX(), p.getY());
             });
             double[] parameters = GaussianCurveFitter.create().fit(obs.toList());
-            Line gaussianFit = new Line(diff.getLastPoint().x - diff.getFirstPoint().x + 1);
             Gaussian g = new Gaussian(parameters[0], parameters[1], parameters[2]);
-            for (int x = diff.getFirstPoint().x; x <= diff.getLastPoint().x; x++) {
-                gaussianFit.add(new Point(x, (int) Math.round(g.value(x))));
+            /*
+             fit a gaussian curve to the difference using imagej
+             */
+            CurveFitter cf = new CurveFitter(diff.stream().mapToDouble(p -> p.getX()).toArray(), diff.stream().mapToDouble(p -> p.getY()).toArray());
+            cf.doFit(CurveFitter.GAUSSIAN);
+            boolean fitted = false;
+            for (int i = 0; i < 20; i++) {
+                Thread.sleep(100);
+                if (cf.getStatus() == Minimizer.SUCCESS) {
+                    fitted = true;
+                    break;
+                }
             }
-            LinkedList<Line> glines = new LinkedList<>();
-            glines.add(diff);
-            glines.add(gaussianFit);
-            Util.graphLines(glines, false, octmngr.getOct().getImageHeight());
+            //get graph points
+            XYSeries diffPoints = new XYSeries("Diff points");
+            diff.forEach(p -> {
+                diffPoints.add(p.getX(), p.getY());
+            });
+            XYSeries amgPoints = new XYSeries("Apache Math gaussian points");
+            XYSeries ijgPoints = new XYSeries("ImageJ gaussian points");
+            if (fitted) {
+                double[] params = cf.getParams();
+                for (double x = diff.getFirstPoint().getX(); x <= diff.getLastPoint().getX(); x += 0.25) {
+                    amgPoints.add(x, g.value(x));
+                    ijgPoints.add(x, cf.f(params, x));
+                }
+            } else {
+                System.err.println("Failed to fit, b/c " + Minimizer.STATUS_STRING[cf.getStatus()]);
+                for (double x = diff.getFirstPoint().getX(); x <= diff.getLastPoint().getX(); x += 0.25) {
+                    amgPoints.add(x, g.value(x));
+                }
+            }
+            Util.graphSeries(diffPoints, amgPoints, ijgPoints);
         } catch (InterruptedException ie) {
             //do nothing but return null since task was canceled
             System.out.println(ie.getMessage());
