@@ -49,6 +49,7 @@ import org.apache.commons.math3.analysis.interpolation.UnivariateInterpolator;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
@@ -262,15 +263,24 @@ public class Util {
         });
     }
 
-    public static void graphSeries(XYSeries... series) {
+    public static void graphSeries(String title, XYSeries[] series, boolean[] dispShapes, boolean[] dispLines) {
         XYSeriesCollection dataset = new XYSeriesCollection();
         Arrays.stream(series).forEach(s -> {
             dataset.addSeries(s);
         });
-        
-        JFrame graphFrame = new JFrame("Points graph");
 
-        JPanel chartPanel = createChartPanel("Points graph", dataset);
+        JFrame graphFrame = new JFrame(title);
+
+        ChartPanel chartPanel = createChartPanel(title, dataset);
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        renderer.setDrawOutlines(true);
+        renderer.setUseOutlinePaint(true);
+        for (int i = 0; i < series.length; i++) {
+            renderer.setSeriesLinesVisible(i, dispLines[i]);
+            renderer.setSeriesShapesVisible(i, dispShapes[i]);
+            renderer.setSeriesShapesFilled(i, dispShapes[i]);
+        }
+        chartPanel.getChart().getXYPlot().setRenderer(renderer);
         graphFrame.add(chartPanel, BorderLayout.CENTER);
         SwingUtilities.invokeLater(() -> {
             graphFrame.pack();
@@ -375,7 +385,7 @@ public class Util {
         });
     }
 
-    private static JPanel createChartPanel(String title, XYDataset dataset) {
+    private static ChartPanel createChartPanel(String title, XYDataset dataset) {
         String xAxisLabel = "X";
         String yAxisLabel = "Y";
 

@@ -70,8 +70,6 @@ public class LRPPanel extends ChartPanel {
         renderer.setSeriesPaint(1, Color.BLUE);
 
         //set draw properties for the hidden maxima data
-        renderer.setDrawOutlines(true);
-        renderer.setUseOutlinePaint(true);
         renderer.setSeriesLinesVisible(2, false);
         renderer.setSeriesShapesVisible(2, true);
         renderer.setSeriesShapesFilled(2, true);

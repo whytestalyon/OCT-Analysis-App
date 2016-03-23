@@ -8,12 +8,20 @@ package oct.analysis.application.comp;
 import ij.measure.CurveFitter;
 import ij.measure.Minimizer;
 import java.awt.Point;
+import java.text.DecimalFormat;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.DoubleStream;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.OSLengthResult;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.analysis.application.dat.SelectionType;
 import oct.analysis.application.lrp.LRPPanel;
@@ -26,19 +34,21 @@ import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.XYItemEntity;
+import org.jfree.data.xy.XYDataItem;
 import org.jfree.data.xy.XYSeries;
 
 /**
  *
  * @author Brandon M. Wilk {@literal <}wilkb777@gmail.com{@literal >}
  */
-public class OSLengthWorker extends SwingWorker<Double, Void> {
+public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
 
     private static final OCTAnalysisManager octmngr = OCTAnalysisManager.getInstance();
     private static final SelectionLRPManager lrpmngr = SelectionLRPManager.getInstance();
     private final Point clickPoint;
     private double distanceBetweenLrp, roiWidth;
     private final boolean disIsInPixels, roiIsInPixels;
+    private final DecimalFormat df = new DecimalFormat("#,##0.000");
 
     public OSLengthWorker(Point clickPoint, double distanceBetweenLrp, double roiWidth, boolean disIsInPixels, boolean roiIsInPixels) {
         this.clickPoint = clickPoint;
@@ -49,7 +59,7 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
     }
 
     @Override
-    protected Double doInBackground() throws Exception {
+    protected OSLengthResult doInBackground() throws Exception {
         //convert ROI width to pixels if it isn't already 
         if (!roiIsInPixels) {
             roiWidth = octmngr.microns2PixelsInX(roiWidth);
@@ -60,7 +70,7 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
         }
 
         //perform analysis
-        Double result = null;
+        OSLengthResult result = null;
         try {
             Line iz = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
             Line ez = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
@@ -109,18 +119,17 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
                             HighlightXYRenderer renderer = (HighlightXYRenderer) tmpPanel.getChart().getXYPlot().getRenderer();
                             int y = octmngr.getImgPanel().getHeight() - ((int) Math.round(xyent.getDataset().getXValue(xyent.getSeriesIndex(), xyent.getItem())));
                             Point clickedPoint = new Point(curSel.getXPositionOnOct(), y);
+                            renderer.addOrRemoveSelectedItem(xyent.getSeriesIndex(), xyent.getItem());
                             //if user is clicking previously clicked point, deselect 
                             //it, otherwise add to apropriate segmentation line
                             if (selectCntr == 0) {
                                 ez.add(clickedPoint);
                                 octmngr.getImgPanel().repaint();
-                                renderer.setHighlightedItem(xyent.getSeriesIndex(), xyent.getItem());
                                 selectCntr++;
                             } else if (selectCntr == 1) {
                                 if (ez.getLastPoint().equals(clickedPoint)) {
                                     ez.remove(clickedPoint);
                                     octmngr.getImgPanel().repaint();
-                                    renderer.setHighlightedItem(-1, -1);
                                     selectCntr = 0;
                                 } else {
                                     iz.add(clickedPoint);
@@ -182,39 +191,65 @@ public class OSLengthWorker extends SwingWorker<Double, Void> {
             CurveFitter cf = new CurveFitter(diff.stream().mapToDouble(p -> p.getX()).toArray(), diff.stream().mapToDouble(p -> p.getY()).toArray());
             cf.doFit(CurveFitter.GAUSSIAN);
             boolean fitted = false;
-            for (int i = 0; i < 20; i++) {
+            for (int i = 0; i < 30; i++) {
                 Thread.sleep(100);
                 if (cf.getStatus() == Minimizer.SUCCESS) {
                     fitted = true;
                     break;
                 }
             }
-            //get graph points
-            XYSeries diffPoints = new XYSeries("Diff points");
+            //get the values of the various fits at certain x points
+            XYSeries diffPoints = new XYSeries("Raw EZ/IZ Difference");
             diff.forEach(p -> {
                 diffPoints.add(p.getX(), p.getY());
             });
-            XYSeries amgPoints = new XYSeries("Apache Math gaussian points");
-            XYSeries ijgPoints = new XYSeries("ImageJ gaussian points");
+            XYSeries amgPoints = new XYSeries("Apache Math gaussian fit");
+            XYSeries ijgPoints = new XYSeries("ImageJ gaussian fit");
+            XYSeries amgmPoint = new XYSeries("Apache Math gaussian fit maximum");
+            XYSeries ijgmPoint = new XYSeries("ImageJ gaussian fit maximum");
             if (fitted) {
                 double[] params = cf.getParams();
                 for (double x = diff.getFirstPoint().getX(); x <= diff.getLastPoint().getX(); x += 0.25) {
                     amgPoints.add(x, g.value(x));
                     ijgPoints.add(x, cf.f(params, x));
                 }
+                amgmPoint.add(((List<XYDataItem>) amgPoints.getItems()).stream().filter(p -> p.getYValue() == amgPoints.getMaxY()).findFirst().orElse(null));
+                ijgmPoint.add(((List<XYDataItem>) ijgPoints.getItems()).stream().filter(p -> p.getYValue() == ijgPoints.getMaxY()).findFirst().orElse(null));
             } else {
-                System.err.println("Failed to fit, b/c " + Minimizer.STATUS_STRING[cf.getStatus()]);
+                System.err.println("Failed to fit, b/c " + cf.getStatusString());
                 for (double x = diff.getFirstPoint().getX(); x <= diff.getLastPoint().getX(); x += 0.25) {
                     amgPoints.add(x, g.value(x));
                 }
+                amgmPoint.add(((List<XYDataItem>) amgPoints.getItems()).stream().filter(p -> p.getYValue() == amgPoints.getMaxY()).findFirst().orElse(null));
             }
-            Util.graphSeries(diffPoints, amgPoints, ijgPoints);
+            result = new OSLengthResult(diffPoints, amgPoints, ijgPoints, amgmPoint, ijgmPoint);
         } catch (InterruptedException ie) {
             //do nothing but return null since task was canceled
             System.out.println(ie.getMessage());
         }
 
         return result;
+    }
+
+    @Override
+    protected void done() {
+        try {
+            OSLengthResult result = get();
+            lrpmngr.addOrUpdateSelection(lrpmngr.createSelection((int) Math.round(result.getMaxDiffLocation()), "Max OS length", SelectionType.FOVEAL, false));
+            octmngr.getImgPanel().repaint();
+            result.graphResult();
+            //display results message to user
+            JLabel info = new JLabel("<html><b>OS length results<b><html>");
+            Object[] message = new Object[]{
+                info,
+                "Max OS Length: " + df.format(octmngr.pixels2MicronsInY(result.getMaxDiff()))+ " \u00B5m",
+                "X Location of Max Length (pixels): " + Math.round(result.getMaxDiffLocation()),
+                "Fit used: " + result.getMaxDiffSource()
+            };
+            JOptionPane.showMessageDialog(OCTAnalysisUI.getInstance(), message);
+        } catch (InterruptedException | ExecutionException ex) {
+            Logger.getLogger(OSLengthWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
 }

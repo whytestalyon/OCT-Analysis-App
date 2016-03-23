@@ -136,6 +136,10 @@ public class OCTAnalysisManager {
         return microns * (1D / xscale);
     }
 
+    public double pixels2MicronsInY(double pixels) {
+        return pixels * yscale;
+    }
+
     /**
      * Define where the center of the fovea is.
      *
