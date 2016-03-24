@@ -7,17 +7,21 @@ package oct.analysis.application.comp;
 
 import ij.measure.CurveFitter;
 import ij.measure.Minimizer;
+import java.awt.BorderLayout;
 import java.awt.Point;
 import java.text.DecimalFormat;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BinaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.DoubleStream;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
+import oct.analysis.application.LRPFrame;
 import oct.analysis.application.OCTAnalysisUI;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCTAnalysisManager;
@@ -102,12 +106,25 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
                 //remove previous LRP if one was present
                 System.out.println("Removing previous selection...");
                 lrpmngr.removeSelection(prevSelection, true);
+
+                //add a 'next LRP' button to allow the user to navigate to the next LRP after
+                //making their peak selections
+                JButton nextbtn = new JButton("Next LRP");
+                nextbtn.addActionListener((evt) -> {
+                    synchronized (waitObject) {
+                        waitObject.notify();
+                    }
+                });
+                nextbtn.setEnabled(false);
+                LRPFrame curFrame = lrpmngr.getLRP(curSel);
+                curFrame.add(nextbtn, BorderLayout.PAGE_END);
+                curFrame.validate();
+
                 //add click listener to the LRP panel
                 System.out.println("Adding click listener..");
-                LRPPanel tmpPanel = lrpmngr.getLRP(curSel).getLrpPanel();
+                LRPPanel tmpPanel = curFrame.getLrpPanel();
+                LinkedList<SelectPoint> selectList = new LinkedList<>();
                 tmpPanel.addChartMouseListener(new ChartMouseListener() {
-
-                    LinkedList<SelectPoint> selectList = new LinkedList<>();
 
                     @Override
                     public void chartMouseClicked(ChartMouseEvent event) {
@@ -129,6 +146,11 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
                                 }
                                 selectList.add(clickedPoint);
                             }
+                            if (selectList.size() == 2) {
+                                nextbtn.setEnabled(true);
+                            } else {
+                                nextbtn.setEnabled(false);
+                            }
                         }
                     }
 
@@ -137,14 +159,22 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
                         //do nothing, don't care if the mouse has moved over the chart
                     }
                 });
-                //wait for user click on LRP 
+
+                //wait for user click on 'next LRP' button
                 synchronized (this) {
                     this.wait();
                 }
                 if (Thread.interrupted()) {
                     throw new InterruptedException("OS Length worked canceled");
                 }
-                System.out.println("Done waiting!");
+
+                //add selected points to respective segmentation lines
+                SelectPoint ezpt = selectList.stream().reduce(selectList.get(0), (SelectPoint t, SelectPoint u) -> (t.y < u.y) ? t : u);
+                ez.add(ezpt);
+                selectList.remove(ezpt);
+                iz.add(selectList.peek());
+
+                System.out.println("Done waiting, points added!");
             }
             //remove last selection because analysis is done
             lrpmngr.removeSelections(true);
