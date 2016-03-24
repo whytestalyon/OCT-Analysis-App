@@ -61,11 +61,12 @@ public class HighlightXYRenderer extends XYLineAndShapeRenderer {
         return super.getItemOutlinePaint(seriesIndex, itemIndex);
     }
 
+    
     @Override
     public Paint getItemFillPaint(int seriesIndex, int itemIndex) {
         SelectedItem item = new SelectedItem(seriesIndex, itemIndex);
         if (selectedItems.contains(item)) {
-            return Color.GREEN;
+            return Color.cyan;
         }
         return super.getItemFillPaint(seriesIndex, itemIndex); //To change body of generated methods, choose Tools | Templates.
     }
@@ -77,6 +78,7 @@ public class HighlightXYRenderer extends XYLineAndShapeRenderer {
         } else {
             selectedItems.add(item);
         }
+        notifyListeners(new RendererChangeEvent(this));
     }
 
     private class SelectedItem {

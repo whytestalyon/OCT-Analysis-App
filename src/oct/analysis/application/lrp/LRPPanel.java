@@ -52,7 +52,7 @@ public class LRPPanel extends ChartPanel {
         });
 
         //create the chart for displaying the data
-        setChart(ChartFactory.createXYLineChart(title, "Pixel Height", "Reflectivity", graphData, PlotOrientation.HORIZONTAL, false, true, false));
+        setChart(ChartFactory.createXYLineChart(title, "Pixel Height", "Reflectivity", graphData, PlotOrientation.HORIZONTAL, true, true, false));
 
         //create a custom renderer to control the display of each series
         //set draw properties for the LRP data
@@ -64,16 +64,17 @@ public class LRPPanel extends ChartPanel {
         //set draw properties for the maxima data
         renderer.setDrawOutlines(true);
         renderer.setUseOutlinePaint(true);
+        renderer.setUseFillPaint(true);
         renderer.setSeriesLinesVisible(1, false);
         renderer.setSeriesShapesVisible(1, true);
         renderer.setSeriesShapesFilled(1, true);
-        renderer.setSeriesPaint(1, Color.BLUE);
+        renderer.setSeriesFillPaint(1, Color.BLUE);
 
         //set draw properties for the hidden maxima data
         renderer.setSeriesLinesVisible(2, false);
         renderer.setSeriesShapesVisible(2, true);
         renderer.setSeriesShapesFilled(2, true);
-        renderer.setSeriesPaint(2, Color.MAGENTA);
+        renderer.setSeriesFillPaint(2, Color.MAGENTA);
 
         //set draw properties for each of the full-width half-max lines
         for (int i = 3; i < fwhmSeries.size() + 3; i++) {

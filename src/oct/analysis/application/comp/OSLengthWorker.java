@@ -107,7 +107,7 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
                 LRPPanel tmpPanel = lrpmngr.getLRP(curSel).getLrpPanel();
                 tmpPanel.addChartMouseListener(new ChartMouseListener() {
 
-                    int selectCntr = 0;
+                    LinkedList<SelectPoint> selectList = new LinkedList<>();
 
                     @Override
                     public void chartMouseClicked(ChartMouseEvent event) {
@@ -118,29 +118,16 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
                             XYItemEntity xyent = (XYItemEntity) entity;
                             HighlightXYRenderer renderer = (HighlightXYRenderer) tmpPanel.getChart().getXYPlot().getRenderer();
                             int y = octmngr.getImgPanel().getHeight() - ((int) Math.round(xyent.getDataset().getXValue(xyent.getSeriesIndex(), xyent.getItem())));
-                            Point clickedPoint = new Point(curSel.getXPositionOnOct(), y);
+                            SelectPoint clickedPoint = new SelectPoint(curSel.getXPositionOnOct(), y, xyent.getSeriesIndex(), xyent.getItem());
                             renderer.addOrRemoveSelectedItem(xyent.getSeriesIndex(), xyent.getItem());
                             //if user is clicking previously clicked point, deselect 
-                            //it, otherwise add to apropriate segmentation line
-                            if (selectCntr == 0) {
-                                ez.add(clickedPoint);
-                                octmngr.getImgPanel().repaint();
-                                selectCntr++;
-                            } else if (selectCntr == 1) {
-                                if (ez.getLastPoint().equals(clickedPoint)) {
-                                    ez.remove(clickedPoint);
-                                    octmngr.getImgPanel().repaint();
-                                    selectCntr = 0;
-                                } else {
-                                    iz.add(clickedPoint);
-                                    octmngr.getImgPanel().repaint();
-                                    selectCntr++;
+                            //it, otherwise add to list of selected points
+                            if (!selectList.remove(clickedPoint)) {
+                                if (selectList.size() == 2) {
+                                    SelectPoint removedPoint = selectList.pollFirst();
+                                    renderer.addOrRemoveSelectedItem(removedPoint.getSeries(), removedPoint.getItem());
                                 }
-                            }
-                        }
-                        synchronized (waitObject) {
-                            if (selectCntr == 2) {
-                                waitObject.notify();
+                                selectList.add(clickedPoint);
                             }
                         }
                     }
@@ -242,13 +229,32 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
             JLabel info = new JLabel("<html><b>OS length results<b><html>");
             Object[] message = new Object[]{
                 info,
-                "Max OS Length: " + df.format(octmngr.pixels2MicronsInY(result.getMaxDiff()))+ " \u00B5m",
+                "Max OS Length: " + df.format(octmngr.pixels2MicronsInY(result.getMaxDiff())) + " \u00B5m",
                 "X Location of Max Length (pixels): " + Math.round(result.getMaxDiffLocation()),
                 "Fit used: " + result.getMaxDiffSource()
             };
             JOptionPane.showMessageDialog(OCTAnalysisUI.getInstance(), message);
         } catch (InterruptedException | ExecutionException ex) {
             Logger.getLogger(OSLengthWorker.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private class SelectPoint extends Point {
+
+        private int series, item;
+
+        public SelectPoint(int x, int y, int series, int item) {
+            super(x, y);
+            this.series = series;
+            this.item = item;
+        }
+
+        public int getSeries() {
+            return series;
+        }
+
+        public int getItem() {
+            return item;
         }
     }
 
