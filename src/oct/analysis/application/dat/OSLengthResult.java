@@ -5,6 +5,7 @@
  */
 package oct.analysis.application.dat;
 
+import oct.util.Line;
 import oct.util.Util;
 import org.jfree.data.xy.XYSeries;
 
@@ -14,13 +15,30 @@ import org.jfree.data.xy.XYSeries;
  */
 public class OSLengthResult {
 
-    private final XYSeries diffPoints;
-    private final XYSeries amgPoints;
-    private final XYSeries ijgPoints;
-    private final XYSeries amgmPoint;
-    private final XYSeries ijgmPoint;
+    private XYSeries diffPoints;
+    private XYSeries amgPoints;
+    private XYSeries ijgPoints;
+    private XYSeries amgmPoint;
+    private XYSeries ijgmPoint;
+    private Line ez, iz;
+    
+    private OSLengthResult() {
+    }
 
-    public OSLengthResult(XYSeries diffPoints, XYSeries amgPoints, XYSeries ijgPoints, XYSeries amgmPoint, XYSeries ijgmPoint) {
+    public static OSLengthResult getInstance() {
+        return OSLengthResultHolder.INSTANCE;
+    }
+
+    private static class OSLengthResultHolder {
+
+        private static final OSLengthResult INSTANCE = new OSLengthResult();
+    }
+    
+    public void setSegments(Line ez, Line iz){
+        
+    }
+
+    public void setSeries(XYSeries diffPoints, XYSeries amgPoints, XYSeries ijgPoints, XYSeries amgmPoint, XYSeries ijgmPoint) {
         this.diffPoints = diffPoints;
         this.amgPoints = amgPoints;
         this.ijgPoints = ijgPoints;

@@ -73,8 +73,9 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
             distanceBetweenLrp = octmngr.microns2PixelsInX(distanceBetweenLrp);
         }
 
+        OSLengthResult result = OSLengthResult.getInstance();
+        
         //perform analysis
-        OSLengthResult result = null;
         try {
             Line iz = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
             Line ez = new Line((int) (roiWidth / distanceBetweenLrp) + 2);
@@ -239,7 +240,8 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
                 }
                 amgmPoint.add(((List<XYDataItem>) amgPoints.getItems()).stream().filter(p -> p.getYValue() == amgPoints.getMaxY()).findFirst().orElse(null));
             }
-            result = new OSLengthResult(diffPoints, amgPoints, ijgPoints, amgmPoint, ijgmPoint);
+            result.setSeries(diffPoints, amgPoints, ijgPoints, amgmPoint, ijgmPoint);
+            result.setSegments(ez, iz);
         } catch (InterruptedException ie) {
             //do nothing but return null since task was canceled
             System.out.println(ie.getMessage());
