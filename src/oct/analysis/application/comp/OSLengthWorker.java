@@ -52,7 +52,7 @@ public class OSLengthWorker extends SwingWorker<OSLengthResult, Void> {
     private final Point clickPoint;
     private double distanceBetweenLrp, roiWidth;
     private final boolean disIsInPixels, roiIsInPixels;
-    private final DecimalFormat df = new DecimalFormat("#,##0.000");
+    private final DecimalFormat df = new DecimalFormat("#,##0.00");
 
     public OSLengthWorker(Point clickPoint, double distanceBetweenLrp, double roiWidth, boolean disIsInPixels, boolean roiIsInPixels) {
         this.clickPoint = clickPoint;

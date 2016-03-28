@@ -282,10 +282,8 @@ public class Util {
         }
         chartPanel.getChart().getXYPlot().setRenderer(renderer);
         graphFrame.add(chartPanel, BorderLayout.CENTER);
-        SwingUtilities.invokeLater(() -> {
-            graphFrame.pack();
-            graphFrame.setVisible(true);
-        });
+        graphFrame.pack();
+        graphFrame.setVisible(true);
     }
 
     public static Line mergeLines(Line... lines) {
@@ -649,5 +647,9 @@ public class Util {
         if (analysisMngr.getAnalysisMode() != null) {
             ui.enableAnalysisTools();
         }
+    }
+
+    public static int getMax(int... values) {
+        return Arrays.stream(values).max().orElse(-1);
     }
 }

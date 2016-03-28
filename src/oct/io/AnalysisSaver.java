@@ -30,9 +30,11 @@ import oct.analysis.application.OCTImagePanel;
 import oct.analysis.application.OCTSelection;
 import oct.analysis.application.dat.OCT;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import oct.analysis.application.dat.OSLengthResult;
 import oct.analysis.application.dat.SelectionLRPManager;
 import oct.util.Util;
 import org.jfree.data.xy.XYDataItem;
+import org.jfree.data.xy.XYSeries;
 
 /**
  *
@@ -104,9 +106,111 @@ public class AnalysisSaver {
              accordingly
              */
             switch (octMngr.getAnalysisMode()) {
+                case OS_LENGTH:
+                    OSLengthResult oslr = OSLengthResult.getInstance();
+                    //export CSV of Segmentation lines information
+                    File segFile = new File(outputDir,
+                            fileNameStub + "_ez_iz_segmentation_" + fdate + ".csv");
+                    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(segFile)))) {
+                        pw.println("x coord.,EZ y coord.,IZ y coord.");
+                        //print to file
+                        for (int i = 0; i < oslr.getEz().size(); i++) {
+                            int x = oslr.getEz().get(i).x;
+                            int ezy = oslr.getEz().get(i).y;
+                            int izy = oslr.getIz().get(i).y;
+                            pw.println(x + "," + ezy + "," + izy);
+                        }
+                    }
+                    //export CSV file with the difference line, gaussian fit(s) and peak difference
+                    File fitFile = new File(outputDir,
+                            fileNameStub + "_os_length_diff_fit_" + fdate + ".csv");
+                    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(fitFile)))) {
+                        boolean hasImageJGaussian = oslr.getIjgPoints().getItemCount() != 0;
+                        String header = "diff. x coord.,diff y coord.,Apache math gaussian fit x coord.,Apache math gaussian fit y coord.,apache math gaussian fit peak x coord.,apache math gaussian fit peak y coord.";
+                        if (hasImageJGaussian) {
+                            header += "ImageJ guassian fit x coord.,ImageJ gaussian fit y coord.,ImageJ gaussian fit peak x coord.,ImageJ gaussian fit peak y coord.";
+                        }
+                        pw.println(header);
+                        //print to file
+                        int maxpts = Util.getMax(oslr.getAmgPoints().getItemCount(), oslr.getDiffPoints().getItemCount(), oslr.getIjgPoints().getItemCount());
+                        XYSeries diffLine = oslr.getDiffPoints();
+                        XYSeries amg = oslr.getAmgPoints();
+                        XYSeries ijg = oslr.getIjgPoints();
+                        for (int i = 0; i < maxpts; i++) {
+                            if (i == 0) {
+                                if (hasImageJGaussian) {
+                                    pw.println(
+                                            diffLine.getX(i).intValue() + "," + diffLine.getY(i).intValue() + ","
+                                            + amg.getX(i).intValue() + "," + amg.getY(i).intValue() + ","
+                                            + oslr.getAmgmPoint().getX(0).intValue() + "," + oslr.getAmgmPoint().getY(i).intValue() + ","
+                                            + ijg.getX(i).intValue() + "," + ijg.getY(i).intValue() + ","
+                                            + oslr.getIjgmPoint().getX(i).intValue() + "," + oslr.getIjgmPoint().getY(i).intValue()
+                                    );
+                                } else {
+                                    pw.println(
+                                            diffLine.getX(i).intValue() + "," + diffLine.getY(i).intValue() + ","
+                                            + amg.getX(i).intValue() + "," + amg.getY(i).intValue() + ","
+                                            + oslr.getAmgmPoint().getX(0).intValue() + "," + oslr.getAmgmPoint().getY(i).intValue()
+                                    );
+                                }
+                            } else {
+                                String diff = (diffLine.getItemCount() > i) ? diffLine.getX(i).intValue() + "," + diffLine.getY(i).intValue() + "," : ",,";
+                                String amgs = (amg.getItemCount() > i) ? amg.getX(i).intValue() + "," + amg.getY(i).intValue() + "," : ",,";
+                                String ijgs = (ijg.getItemCount() > i) ? ijg.getX(i).intValue() + "," + ijg.getY(i).intValue() + "," : ",,";
+                                if (hasImageJGaussian) {
+                                    pw.println(diff + amgs + ",," + ijgs);
+                                } else {
+                                    pw.println(diff + amgs);
+                                }
+                            }
+                        }
+                    }
+                    OCTSelection sel = selections.get(0);
+                    //name files with versioning to ensure that all files are named with same version
+                    //and files from ealier analysis exports aren't overwritten
+                    lrpFile = new File(outputDir,
+                            fileNameStub + "_os_length_lrp_" + fdate + ".csv");
+                    lrpPeaksFile = new File(outputDir,
+                            fileNameStub + "_os_length_lrp_peaks_" + fdate + ".csv");
+                    //export CSV of LRP information
+                    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpFile)))) {
+                        //grab lrp reflectivity
+                        List<XYDataItem> lrp = (List<XYDataItem>) sel
+                                .getLrpSeriesFromOCT(octMngr.getOctImage())
+                                .getItems();
+                        //print to file
+                        lrp.forEach(rp -> {
+                            pw.println(rp.getY().intValue() + "," + rp.getX().intValue());
+                        });
+                    }
+                    //export CSV of LRP Peaks information
+                    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(lrpPeaksFile)))) {
+                        //grab lrp reflectivity peak values
+                        List<XYDataItem> lrp = (List<XYDataItem>) OCTSelection.findMaximums(sel.getLrpSeriesFromOCT(octMngr.getOctImage()), "").getItems();
+                        //print to file
+                        lrp.forEach(rp -> {
+                            pw.println(rp.getY().intValue() + "," + rp.getX().intValue());
+                        });
+                    }
+                    //export stats for the analysis
+                    try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(statsFile)))) {
+                        //print position of selection
+                        pw.println("Max OS Length (Microns)," + df.format(octMngr.pixels2MicronsInY(oslr.getMaxDiff())));
+                        pw.println("Max OS Length gaussian fit method," + oslr.getMaxDiffSource());
+                        pw.println("Max OS Length distance from left edge of OCT (Pixels)," + sel.getXPositionOnOct());
+                        pw.println("Max OS Length distance from left edge of OCT (Microns)," + sel.getXPositionOnOct() * octMngr.getXscale());
+                        pw.println("LRP width (Pixels)," + sel.getWidth());
+                        pw.println("LRP width (Microns)," + sel.getWidth() * octMngr.getXscale());
+                        pw.println("Analysis type," + octMngr.getAnalysisMode());
+                        pw.println("LRP file name," + lrpFile.getName());
+                        pw.println("LRP Peaks file name," + lrpPeaksFile.getName());
+                        pw.println("OCT X scale," + octMngr.getXscale());
+                        pw.println("OCT Y scale," + octMngr.getYscale());
+                    }
+                    break;
                 case FIND_FOVEA:
                 case SINGLE:
-                    OCTSelection sel = selections.get(0);
+                    sel = selections.get(0);
                     //name files with versioning to ensure that all files are named with same version
                     //and files from ealier analysis exports aren't overwritten
                     lrpFile = new File(outputDir,
@@ -141,8 +245,8 @@ public class AnalysisSaver {
                         pw.println("LRP width (Pixels)," + sel.getWidth());
                         pw.println("LRP width (Microns)," + sel.getWidth() * octMngr.getXscale());
                         pw.println("Analysis type," + octMngr.getAnalysisMode());
-                        pw.println("LRP file names," + lrpFile.getName());
-                        pw.println("LRP Peaks file names," + lrpPeaksFile.getName());
+                        pw.println("LRP file name," + lrpFile.getName());
+                        pw.println("LRP Peaks file name," + lrpPeaksFile.getName());
                         pw.println("OCT X scale," + octMngr.getXscale());
                         pw.println("OCT Y scale," + octMngr.getYscale());
                     }
@@ -150,7 +254,6 @@ public class AnalysisSaver {
                 case EQUIDISTANT:
                 case EZ:
                 case MIRROR:
-                case OS_LENGTH:
                     ArrayList<String> fnameList = new ArrayList<>(selections.size());
                     ArrayList<String> fpnameList = new ArrayList<>(selections.size());
                     for (OCTSelection selection : selections) {

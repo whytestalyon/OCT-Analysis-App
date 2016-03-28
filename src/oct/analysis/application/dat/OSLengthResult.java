@@ -29,13 +29,42 @@ public class OSLengthResult {
         return OSLengthResultHolder.INSTANCE;
     }
 
+    public XYSeries getDiffPoints() {
+        return diffPoints;
+    }
+
+    public XYSeries getAmgPoints() {
+        return amgPoints;
+    }
+
+    public XYSeries getIjgPoints() {
+        return ijgPoints;
+    }
+
+    public XYSeries getAmgmPoint() {
+        return amgmPoint;
+    }
+
+    public XYSeries getIjgmPoint() {
+        return ijgmPoint;
+    }
+
+    public Line getEz() {
+        return ez;
+    }
+
+    public Line getIz() {
+        return iz;
+    }
+
     private static class OSLengthResultHolder {
 
         private static final OSLengthResult INSTANCE = new OSLengthResult();
     }
     
     public void setSegments(Line ez, Line iz){
-        
+        this.ez = ez;
+        this.iz = iz;
     }
 
     public void setSeries(XYSeries diffPoints, XYSeries amgPoints, XYSeries ijgPoints, XYSeries amgmPoint, XYSeries ijgmPoint) {
