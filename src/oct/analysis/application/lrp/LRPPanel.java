@@ -8,9 +8,13 @@ package oct.analysis.application.lrp;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 import oct.analysis.application.comp.HighlightXYRenderer;
 import oct.analysis.application.dat.OCTAnalysisManager;
+import org.apache.commons.math3.genetics.ElitisticListPopulation;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartMouseEvent;
 import org.jfree.chart.ChartMouseListener;
@@ -69,12 +73,14 @@ public class LRPPanel extends ChartPanel {
         renderer.setSeriesShapesVisible(1, true);
         renderer.setSeriesShapesFilled(1, true);
         renderer.setSeriesFillPaint(1, Color.BLUE);
+        renderer.setSeriesShape(1, new Ellipse2D.Double(-3.0, -3.0, 6.0, 6.0));
 
         //set draw properties for the hidden maxima data
         renderer.setSeriesLinesVisible(2, false);
         renderer.setSeriesShapesVisible(2, true);
         renderer.setSeriesShapesFilled(2, true);
         renderer.setSeriesFillPaint(2, Color.MAGENTA);
+        renderer.setSeriesShape(2, new Rectangle2D.Double(-3.0, -3.0, 6.0, 6.0));
 
         //set draw properties for each of the full-width half-max lines
         for (int i = 3; i < fwhmSeries.size() + 3; i++) {

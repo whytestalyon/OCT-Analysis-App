@@ -54,6 +54,7 @@ public class SharpenOperation implements FilterOperation {
 
     @Override
     public BufferedImage performOperation(BufferedImage bi) {
+        System.out.println("weight: " + sharpenWeight + ", radius: " + sharpenSigma);
 
         BlurOperation blur = new BlurOperation(sharpenSigma);
         BufferedImage sharpBi = blur.performOperation(bi);
